@@ -1,0 +1,40 @@
+# ---- Packaged extension artifacts ----
+*.crx
+*.pem
+*.zip
+dist/
+build/
+web-ext-artifacts/
+
+# ---- Local test profile (created by the --user-data-dir launch) ----
+chrome-ext-testprofile/
+*-testprofile/
+
+# ---- Node (if tooling is ever added) ----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ---- Python (icon generation) ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- Editors / IDEs ----
+.vscode/
+.idea/
+*.swp
+*~
+
+# ---- OS cruft ----
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---- Logs / env ----
+*.log
+.env
+.env.local

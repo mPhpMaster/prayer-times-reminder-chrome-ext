@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Prayer Times Reminder",
+  "version": "1.0.0",
+  "description": "Get a notification at each prayer time and view today's full prayer schedule for your location.",
+  "permissions": ["alarms", "notifications", "storage", "geolocation"],
+  "host_permissions": [
+    "https://api.aladhan.com/*",
+    "https://countriesnow.space/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Prayer Times",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

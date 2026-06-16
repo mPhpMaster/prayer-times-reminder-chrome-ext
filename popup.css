@@ -1,0 +1,163 @@
+:root {
+  --bg: #0f2027;
+  --bg-grad-1: #0f2027;
+  --bg-grad-2: #18313a;
+  --card: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.10);
+  --accent: #2dd4a7;
+  --accent-soft: rgba(45, 212, 167, 0.15);
+  --text: #eaf2f1;
+  --text-dim: #9fb3b0;
+  --danger: #ff8080;
+  --gold: #f4c95d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 340px;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: linear-gradient(160deg, var(--bg-grad-1), var(--bg-grad-2));
+  padding: 14px;
+}
+
+/* Header */
+.app-header { margin-bottom: 12px; }
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.title { display: flex; align-items: center; gap: 8px; }
+.logo { font-size: 22px; }
+.app-header h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.2px; }
+.lang-toggle {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lang-toggle:hover { filter: brightness(1.15); }
+.location-label {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.hijri-date {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+}
+.hijri-date:empty { display: none; }
+
+/* RTL: keep letter-spacing off Arabic labels and align text to the start */
+[dir="rtl"] .field-group label,
+[dir="rtl"] .next-label { letter-spacing: 0; }
+[dir="rtl"] body { font-family: "Segoe UI", "Tahoma", system-ui, sans-serif; }
+
+/* Next prayer banner */
+.next-prayer {
+  background: var(--accent-soft);
+  border: 1px solid rgba(45, 212, 167, 0.30);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.next-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.next-name { font-size: 20px; font-weight: 700; color: var(--accent); margin: 2px 0; }
+.next-countdown { font-size: 14px; color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* Timings list */
+.timings { list-style: none; }
+.timings li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+.timings li.is-next {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.timings li.is-past { opacity: 0.5; }
+.timings .prayer-name { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.timings .prayer-name .icon { font-size: 15px; }
+.timings .prayer-time { font-variant-numeric: tabular-nums; font-size: 15px; color: var(--text); }
+.timings li.sunrise .prayer-name { color: var(--gold); font-weight: 500; }
+
+/* Hint / status */
+.hint { font-size: 12px; color: var(--text-dim); text-align: center; margin: 10px 0; }
+
+/* Settings */
+.settings {
+  margin-top: 10px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.settings summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  list-style: none;
+  user-select: none;
+}
+.settings summary::-webkit-details-marker { display: none; }
+.field-group { margin: 10px 0; }
+.field-group label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+.field-group input,
+.field-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  font-size: 13px;
+}
+.field-group input:focus,
+.field-group select:focus { outline: none; border-color: var(--accent); }
+.field-group select option { background: var(--bg-grad-2); }
+
+.button-row { display: flex; gap: 8px; margin-top: 12px; }
+button {
+  flex: 1;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+button:hover { filter: brightness(1.1); }
+button:disabled { opacity: 0.5; cursor: default; }
+button.primary { background: var(--accent); color: #06231b; }
+button.secondary { background: rgba(255, 255, 255, 0.10); color: var(--text); }
+
+.error { color: var(--danger); font-size: 12px; margin-top: 8px; }
+
+/* Footer */
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+}

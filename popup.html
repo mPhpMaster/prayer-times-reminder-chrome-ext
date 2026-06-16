@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="popup.css" />
+  <title>Prayer Times</title>
+</head>
+<body>
+  <header class="app-header">
+    <div class="title-row">
+      <div class="title">
+        <span class="logo">🕌</span>
+        <h1 id="app-title">Prayer Times</h1>
+      </div>
+      <button id="lang-toggle" class="lang-toggle" title="العربية / English">العربية</button>
+    </div>
+    <div id="location-label" class="location-label">No location set</div>
+    <div id="hijri-date" class="hijri-date"></div>
+  </header>
+
+  <section class="next-prayer" id="next-prayer" hidden>
+    <div class="next-label" id="next-label">Next prayer</div>
+    <div class="next-name" id="next-name">—</div>
+    <div class="next-countdown" id="next-countdown">—</div>
+  </section>
+
+  <main>
+    <ul class="timings" id="timings">
+      <!-- rows injected by popup.js -->
+    </ul>
+
+    <p class="hint" id="status-hint">Choose your country and city below to load prayer times.</p>
+
+    <details class="settings" id="settings">
+      <summary id="settings-summary">⚙️ Location &amp; settings</summary>
+
+      <div class="field-group">
+        <label for="country" id="label-country">Country</label>
+        <select id="country"></select>
+      </div>
+
+      <div class="field-group">
+        <label for="city" id="label-city">City</label>
+        <select id="city" disabled></select>
+      </div>
+
+      <div class="field-group">
+        <label for="method" id="label-method">Calculation method</label>
+        <select id="method"></select>
+      </div>
+
+      <div class="button-row">
+        <button id="save-btn" class="primary">Save &amp; Load</button>
+        <button id="geo-btn" class="secondary" title="Use your current location">📍 Use my location</button>
+      </div>
+
+      <p class="error" id="error" hidden></p>
+    </details>
+  </main>
+
+  <footer class="app-footer">
+    <span id="footer-date"></span>
+    <span class="powered" id="footer-source">Data: AlAdhan API</span>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
