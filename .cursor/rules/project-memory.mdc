@@ -1,0 +1,17 @@
+---
+description: Core project context — prayer times Chrome extension, bilingual, themes selectable
+alwaysApply: true
+---
+
+# Project Memory
+
+## Core
+
+- Themes: **Midnight Emerald** (default) or Classic. User picks in Settings; stored as `theme` in `chrome.storage.local`.
+- Midnight Emerald: oklch palette, glassmorphism, teal glow — see `midnight-emerald-theme.md` / `theme.css`.
+- Plus Jakarta Sans display, Amiri for Arabic. RTL support for Arabic text.
+- Prayer times app: bilingual EN/AR, live countdown, AlAdhan API, Riyadh default.
+
+## Memories
+
+- [Midnight Emerald Theme](midnight-emerald-theme.md) — Full token palette, gradients, utilities, fonts, and component patterns. See also `.cursor/rules/midnight-emerald-theme.mdc`.
