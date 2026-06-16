@@ -1,0 +1,191 @@
+@import url("https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+/* Shared token mappings (values set per theme below) */
+/* Default theme: Midnight Emerald (:root fallback + explicit data-theme) */
+:root,
+[data-theme="midnight-emerald"] {
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: "Amiri", "Scheherazade New", serif;
+  --radius: 1rem;
+
+  --background: oklch(0.18 0.03 180);
+  --foreground: oklch(0.97 0.01 180);
+  --card: oklch(0.23 0.035 185);
+  --popover: oklch(0.23 0.035 185);
+  --primary: oklch(0.78 0.14 170);
+  --primary-foreground: oklch(0.18 0.03 180);
+  --secondary: oklch(0.28 0.04 190);
+  --muted: oklch(0.27 0.03 190);
+  --muted-foreground: oklch(0.7 0.02 180);
+  --accent: oklch(0.32 0.06 185);
+  --destructive: oklch(0.65 0.22 25);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.78 0.14 170);
+  --gold: oklch(0.82 0.14 85);
+  --teal: oklch(0.78 0.14 170);
+
+  --gradient-bg:
+    radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.78 0.14 170 / 0.12), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, oklch(0.78 0.14 170 / 0.08), transparent 50%),
+    linear-gradient(to bottom, oklch(0.16 0.03 190), oklch(0.2 0.04 180));
+  --gradient-card: linear-gradient(145deg, oklch(0.26 0.04 185 / 0.9), oklch(0.22 0.035 190 / 0.85));
+  --gradient-next: linear-gradient(135deg, oklch(0.32 0.09 170 / 0.85), oklch(0.28 0.07 185 / 0.7));
+  --shadow-glow: 0 0 40px -10px oklch(0.78 0.14 170 / 0.5);
+  --shadow-card: 0 10px 40px -15px oklch(0 0 0 / 0.5);
+
+  --countdown-block-bg: oklch(0.2 0.03 185 / 0.5);
+  --countdown-seconds-border: oklch(0.78 0.14 170 / 0.5);
+  --progress-track-bg: oklch(0.2 0.03 185 / 0.6);
+  --progress-fill: linear-gradient(to right, oklch(0.78 0.14 170 / 0.7), var(--teal));
+  --progress-glow: 0 0 10px oklch(0.78 0.14 170 / 0.5);
+  --focus-ring-shadow: 0 0 0 2px oklch(0.78 0.14 170 / 0.25);
+  --next-item-border: oklch(0.78 0.14 170 / 0.35);
+  --next-item-glow:
+    0 0 0 1px oklch(0.78 0.14 170 / 0.6),
+    0 0 30px -5px oklch(0.78 0.14 170 / 0.4);
+
+  --glass-blur: blur(12px);
+  --show-orbs: block;
+}
+
+[data-theme="classic"] {
+  --font-display: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-arabic: "Segoe UI", "Tahoma", "Noto Nastaliq Urdu", system-ui, sans-serif;
+  --radius: 0.625rem;
+
+  --background: #0f2027;
+  --foreground: #eaf2f1;
+  --card: rgba(255, 255, 255, 0.06);
+  --popover: #18313a;
+  --primary: #2dd4a7;
+  --primary-foreground: #06231b;
+  --secondary: rgba(255, 255, 255, 0.1);
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: #9fb3b0;
+  --accent: #2dd4a7;
+  --destructive: #ff8080;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(0, 0, 0, 0.25);
+  --ring: #2dd4a7;
+  --gold: #f4c95d;
+  --teal: #2dd4a7;
+
+  --gradient-bg: linear-gradient(160deg, #0f2027, #18313a);
+  --gradient-card: rgba(255, 255, 255, 0.06);
+  --gradient-next: rgba(45, 212, 167, 0.15);
+  --shadow-glow: none;
+  --shadow-card: none;
+
+  --countdown-block-bg: transparent;
+  --countdown-seconds-border: var(--border);
+  --progress-track-bg: transparent;
+  --progress-fill: linear-gradient(to right, rgba(45, 212, 167, 0.5), var(--teal));
+  --progress-glow: none;
+  --focus-ring-shadow: none;
+  --next-item-border: var(--primary);
+  --next-item-glow: 0 0 0 1px var(--primary) inset;
+
+  --glass-blur: none;
+  --show-orbs: none;
+}
+
+:root,
+[data-theme="midnight-emerald"],
+[data-theme="classic"] {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-popover: var(--popover);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-teal: var(--teal);
+}
+
+html,
+body {
+  color-scheme: dark;
+  background: var(--gradient-bg);
+  background-attachment: fixed;
+  color: var(--color-foreground);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+[dir="rtl"] {
+  font-family: var(--font-arabic);
+}
+
+.glass-card {
+  background: var(--gradient-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius);
+}
+
+.next-card {
+  background: var(--gradient-next);
+  border: 1px solid var(--next-item-border);
+  box-shadow: var(--shadow-glow);
+  border-radius: var(--radius);
+}
+
+.text-teal { color: var(--teal); }
+.text-gold { color: var(--gold); }
+
+.ring-teal {
+  box-shadow: var(--next-item-glow);
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.orb {
+  display: var(--show-orbs);
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(48px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb-top {
+  top: -40px;
+  left: 50%;
+  translate: -50% 0;
+  width: 200px;
+  height: 120px;
+  background: oklch(0.78 0.14 170 / 0.15);
+}
+
+.orb-bottom {
+  bottom: -60px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: oklch(0.78 0.14 170 / 0.1);
+}
+
+[data-theme="classic"] .countdown-blocks,
+[data-theme="classic"] .progress-track {
+  display: none !important;
+}
+
+[data-theme="midnight-emerald"] .next-countdown:not(.force-show) {
+  display: none !important;
+}

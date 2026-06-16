@@ -1,4 +1,4 @@
-# Prayer Times Reminder — Chrome Extension
+# Prayer Times Reminder — Chrome Extension (English)
 
 ![Prayer Times — English UI](screenshots/en.png)
 
@@ -14,16 +14,7 @@ A Manifest V3 Chrome extension that:
 - 🌙 **Hijri date** shown alongside the Gregorian date.
 - 📿 **Periodic dhikr** — optional floating reminder with 100 unique phrases on the active tab; tap to dismiss or auto-hide after 10 seconds.
 
-## Translations
-
-- [English](README.en.md)
-- [Deutsch](README.de.md)
-- [العربية](README.ar.md)
-- [اردو](README.ur.md)
-- [हिन्दी](README.hi.md)
-- [Bahasa Indonesia](README.id.md)
-- [Français](README.fr.md)
-- [Español](README.es.md)
+[English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
 Prayer times come from the free [AlAdhan API](https://aladhan.com/prayer-times-api); the city list comes from the free [CountriesNow API](https://countriesnow.space). No API keys required.
 
