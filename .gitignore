@@ -6,6 +6,9 @@ dist/
 build/
 web-ext-artifacts/
 
+# ---- Store-screenshot transient harness (written by make_store_screenshots.py) ----
+_store_harness.html
+
 # ---- Local test profile (created by the --user-data-dir launch) ----
 chrome-ext-testprofile/
 *-testprofile/
