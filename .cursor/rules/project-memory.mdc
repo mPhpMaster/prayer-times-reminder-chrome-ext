@@ -1,5 +1,5 @@
 ---
-description: Core project context — prayer times Chrome extension, bilingual, themes selectable
+description: Core project context — Prayer Times Reminder Chrome extension (MV3), 8 languages, tab-lock "Prayer Times Break", dhikr reminders, selectable themes
 alwaysApply: true
 ---
 
@@ -7,10 +7,25 @@ alwaysApply: true
 
 ## Core
 
-- Themes: **Midnight Emerald** (default) or Classic. User picks in Settings; stored as `theme` in `chrome.storage.local`.
-- Midnight Emerald: oklch palette, glassmorphism, teal glow — see `midnight-emerald-theme.md` / `theme.css`.
-- Plus Jakarta Sans display, Amiri for Arabic. RTL support for Arabic text.
-- Prayer times app: bilingual EN/AR, live countdown, AlAdhan API, Riyadh default.
+- **Prayer Times Reminder** — Manifest V3 Chrome extension. Fetches daily prayer times (AlAdhan API), shows the schedule with a live countdown to the next prayer, and notifies at each prayer time.
+- **Languages: 8** — en, de, ar, ur, hi, id, fr, es. Default is **Arabic** (`DEFAULT_SETTINGS.lang = "ar"`). RTL for `ar` and `ur`. All strings/data live in `i18n.js` (`I18N`, `SUPPORTED_LANGS`, `COUNTRIES`, `METHODS`, `DATE_FORMATS`, `TASBIH_POSITIONS`, `DEFAULT_SETTINGS`).
+- **Themes: Midnight Emerald** (default) or **Classic**. User picks in Settings; stored as `theme` in `chrome.storage.local`. Midnight Emerald = oklch palette, glassmorphism, teal glow (see `theme.css` / `midnight-emerald-theme.md`); Classic falls back to system tokens.
+- **Fonts:** Plus Jakarta Sans (display) + Amiri (Arabic, via `--font-arabic`) in Midnight Emerald; system fonts in Classic.
+- **Default location:** Riyadh, Saudi Arabia, Umm al-Qura method (id 4).
+
+## Features
+
+- **Prayer Times Break** (the tab-lock feature, `prayerBreak` string, localized per language): at prayer time, locks **all open tabs** with a countdown overlay for a configurable duration (1–120 min, default 5); optional manual unlock. Injected via `content-lock.js`.
+- **Periodic dhikr** — floating reminder card (`content-tasbih.js`, 100 phrases in `tasbih-phrases.js`), fixed or random interval, positionable; tap or auto-hide to dismiss.
+- **Dates** — Hijri date in the header (softened muted-gold style) + Gregorian footer date; one selectable format applies to both.
+- **Onboarding** — first-install welcome wizard (`welcome.html/css/js`) that embeds `popup.html#settings` in a self-sizing iframe and walks through language → pin → appearance → location → lock → dhikr.
+- **Data sources:** AlAdhan API (times), CountriesNow (city lists), Nominatim (reverse geocode for "use my location"). No API keys.
+
+## Architecture
+
+- `background.js` — service worker: schedules `chrome.alarms`, fires localized notifications, drives the tab lock. Imports `i18n.js` via `importScripts`.
+- `popup.html/css/js` — popup UI (schedule, countdown, language selector, settings); also reused as the embedded settings surface for the welcome wizard.
+- `theme.css` — shared theme tokens (both themes).
 
 ## Memories
 

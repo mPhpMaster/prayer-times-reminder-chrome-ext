@@ -1,33 +1,59 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="midnight-emerald">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="theme.css" />
-  <link rel="stylesheet" href="welcome.css" />
-  <title>Prayer Times</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="welcome.css" />
+    <title>Prayer Times Reminder</title>
 </head>
+
 <body>
-  <div class="orb orb-top" aria-hidden="true"></div>
-  <div class="orb orb-bottom" aria-hidden="true"></div>
-  <main class="card glass-card">
-    <div class="logo">🕌</div>
-    <h1 id="welcome-title">—</h1>
-    <p class="lead" id="welcome-lead">—</p>
+    <div class="orb orb-top" aria-hidden="true"></div>
+    <div class="orb orb-bottom" aria-hidden="true"></div>
 
-    <section class="pin-box next-card" aria-labelledby="welcome-pin-title">
-      <h2 id="welcome-pin-title">—</h2>
-      <ol>
-        <li id="welcome-step-1">—</li>
-        <li id="welcome-step-2">—</li>
-        <li id="welcome-step-3">—</li>
-      </ol>
-    </section>
+    <main class="card glass-card wizard">
+        <div class="logo">🕌</div>
+        <h1 id="welcome-title">—</h1>
+        <p id="welcome-prayer-break" class="lead">—</p>
 
-    <p class="note" id="welcome-note"></p>
-  </main>
+        <div class="wizard-progress" id="wizard-progress" aria-hidden="true"></div>
 
-  <script src="i18n.js"></script>
-  <script src="welcome.js"></script>
+        <!-- Step 1: language -->
+        <section class="wizard-pane" data-pane="language">
+            <h2 class="wizard-step-title" id="step-language-title">—</h2>
+            <p class="lead" id="welcome-lead">—</p>
+            <select id="wizard-lang" class="wizard-lang" aria-labelledby="step-language-title"></select>
+        </section>
+
+        <!-- Step 2: how to pin -->
+        <section class="wizard-pane" data-pane="pin" hidden>
+            <div class="pin-box next-card" aria-labelledby="welcome-pin-title">
+                <h2 id="welcome-pin-title">—</h2>
+                <ol>
+                    <li id="welcome-step-1">—</li>
+                    <li id="welcome-step-2">—</li>
+                    <li id="welcome-step-3">—</li>
+                </ol>
+            </div>
+            <p class="note" id="welcome-note"></p>
+        </section>
+
+        <!-- Steps 3+: settings groups (the popup, reused) -->
+        <section class="wizard-pane" data-pane="settings" hidden>
+            <h2 class="wizard-step-title" id="step-settings-title">—</h2>
+            <iframe id="settings-frame" src="popup.html#settings" title="Settings" scrolling="no"></iframe>
+        </section>
+
+        <div class="wizard-nav">
+            <button type="button" id="wizard-back" class="secondary">—</button>
+            <button type="button" id="wizard-next" class="primary">—</button>
+        </div>
+    </main>
+
+    <script src="i18n.js"></script>
+    <script src="welcome.js"></script>
 </body>
+
 </html>

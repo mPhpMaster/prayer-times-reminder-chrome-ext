@@ -1,24 +1,30 @@
 # Prayer Times Reminder — Chrome Extension (English)
 
+> **Prayer Times Break** — when prayer time arrives, your open tabs lock so you can step away and pray.
+
 ![Prayer Times — English UI](screenshots/en.png)
 
 A Manifest V3 Chrome extension that:
 
-- 🔔 **Notifies you 5 minutes before each prayer** and again when the time arrives (Fajr, Dhuhr, Asr, Maghrib, Isha) — in your chosen language.
-- 🔒 **Optional tab lock** — when prayer time arrives, blocks the active browser tab for a configurable duration (1–120 minutes, default 5) with a countdown overlay; optional manual unlock via close button.
+- 🔔 **Notifies you at each prayer time** (Fajr, Dhuhr, Asr, Maghrib, Isha) — in your chosen language.
+- 🔒 **Optional tab lock** — when prayer time arrives, blocks **all open browser tabs** for a configurable duration (1–120 minutes, default 5) with a countdown overlay; tabs you open or navigate to during the lock are covered too; optional manual unlock via close button.
 - 🕌 **Shows the full daily prayer schedule** for your city/country, with a live countdown to the next prayer.
 - 🌍 **Country & city dropdowns** — pick a country, and the city list loads automatically.
 - 🌐 **8 languages** — switch from the popup header or **Settings → Language** (see [Supported languages](#supported-languages)).
 - 🌗 **Theme** — Midnight Emerald (default) or Classic — selectable in Settings.
-- 📅 **Gregorian date format** — choose how the footer date is displayed (e.g. `10-04-2026`, `10 April 2026`, long text).
+- 📅 **Date format** — choose how both the Hijri and Gregorian dates are displayed (e.g. `10-04-2026`, `10 April 2026`, long text).
 - 🌙 **Hijri date** shown alongside the Gregorian date.
-- 📿 **Periodic dhikr** — optional floating reminder with 100 unique phrases on the active tab; tap to dismiss or auto-hide after 10 seconds.
+- 📿 **Periodic dhikr** — optional floating reminder with 150 unique phrases on the active tab; tap to dismiss or auto-hide after 10 seconds.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
 Prayer times come from the free [AlAdhan API](https://aladhan.com/prayer-times-api); the city list comes from the free [CountriesNow API](https://countriesnow.space). No API keys required.
 
-## Install (load unpacked)
+## Install
+
+**Install from the Chrome Web Store (recommended):** [Add to Chrome](https://chromewebstore.google.com/detail/prayer-times-reminder/knahkbkmbjghaiillhngjbhoinmeegoc)
+
+Or load it unpacked for development:
 
 1. Open `chrome://extensions` in Chrome.
 2. Toggle **Developer mode** on (top-right).
@@ -39,9 +45,9 @@ That's it — the extension will fetch today's times, show them, and schedule a 
 |---------|-------------|
 | Country / City | Location used for prayer times (or use geolocation). |
 | Calculation method | AlAdhan method (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Diyanet, etc.). |
-| Date format | How the Gregorian date appears in the footer. |
+| Date format | How both the Hijri and Gregorian dates appear. |
 | Number style | When Arabic or Urdu is active: Arabic-Indic (٠١٢٣) or Western (0123) digits for times and countdowns. |
-| Lock tab during prayer | Injects a full-page overlay on the active tab at prayer time. |
+| Lock tab during prayer | Injects a full-page overlay on all open tabs at prayer time. |
 | Lock duration | How long the tab stays locked (1–120 minutes). |
 | Allow manual unlock | Shows a close (×) button to dismiss the lock screen early. |
 | Test tab lock | Preview the lock overlay on the current tab (works on normal websites, not `chrome://` pages). |
@@ -73,23 +79,24 @@ Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `t
 | File | Purpose |
 |------|---------|
 | `manifest.json` | MV3 manifest (permissions: alarms, notifications, storage, geolocation, tabs, scripting). |
-| `background.js` | Service worker — fetches times, schedules `chrome.alarms`, fires localized notifications, locks active tab at prayer time. |
+| `background.js` | Service worker — fetches times, schedules `chrome.alarms`, fires localized notifications, locks all open tabs at prayer time. |
 | `content-lock.js` | Injected overlay (shadow DOM) that blocks page interaction until the timer ends or the user unlocks manually. |
 | `content-tasbih.js` | Injected floating dhikr card; dismiss on tap or after 10 seconds. |
-| `tasbih-phrases.js` | 100 unique dhikr phrases (Arabic + English transliteration). |
+| `tasbih-phrases.js` | 150 unique dhikr phrases. |
 | `welcome.html` / `welcome.css` | First-install welcome page with pin-to-toolbar instructions (localized). |
 | `i18n.js` | Shared translations (EN/DE/AR/UR/HI/ID/FR/ES), prayer names, country list, calculation methods, date formats, digit helper. |
 | `popup.html` / `popup.css` / `popup.js` | The popup UI (schedule, countdown, language selector, settings). |
+| `theme.css` | Shared Midnight Emerald theme tokens and utilities (popup, settings, welcome). |
 | `icons/` | Extension icons (crescent + star). |
 | `make_icons.py` | Regenerates the PNG icons (dev-only, not needed at runtime). |
 | `PRIVACY.md` | Privacy policy for the extension. |
 
 ## How it works
 
-- **Scheduling:** on install/startup and whenever your location changes, the service worker fetches today's timings and creates one-shot `chrome.alarms` entries 5 minutes before each upcoming prayer and at the prayer time itself, plus a refresh alarm just after midnight.
-- **Tab lock:** if enabled in settings, when a prayer alarm fires the extension injects `content-lock.js` into the active tab and shows a countdown overlay for the configured duration. The overlay blocks keyboard, scroll, and pointer input on the page. Enable **Allow manual unlock** to show a close (×) button. Use **Test tab lock** in settings to preview it on the current tab.
+- **Scheduling:** on install/startup and whenever your location changes, the service worker fetches today's timings and creates one-shot `chrome.alarms` entries at each upcoming prayer time, plus a refresh alarm just after midnight.
+- **Tab lock:** if enabled in settings, when a prayer alarm fires the extension injects `content-lock.js` into every open tab and shows a countdown overlay for the configured duration. The overlay blocks keyboard, scroll, and pointer input on the page. Tabs you open or navigate to during the lock window are locked automatically too. Enable **Allow manual unlock** to show a close (×) button. Use **Test tab lock** in settings to preview it on the current tab.
 - **Dhikr reminder:** if enabled, a `chrome.alarms` timer shows a random phrase from `tasbih-phrases.js` on the active tab at a fixed interval or a random interval within your min/max range. The card does not block the page; click it to dismiss or wait 10 seconds.
-- **Notifications:** when a reminder or prayer alarm fires, a system notification appears (`requireInteraction` so it stays until dismissed).
+- **Notifications:** when a prayer time arrives, a localized system notification appears.
 - **Popup:** renders the cached schedule instantly, then refreshes from the network; the next prayer is highlighted with a second-by-second countdown.
 
 ## Calculation methods

@@ -1,16 +1,18 @@
 # Prayer Times Reminder — Chrome Extension (Español)
 
+> **Pausa de horarios de oración** — cuando llega la hora de la oración, tus pestañas abiertas se bloquean para que puedas apartarte y orar.
+
 ![Horarios de oración — interfaz en español](screenshots/es.png)
 
 Una extensión de Chrome (Manifest V3) que:
 
-- 🔔 **Te notifica 5 minutos antes de cada oración**, y de nuevo cuando llega la hora (Fajr, Dhuhr, Asr, Maghrib, Isha) — en el idioma que hayas elegido.
-- 🔒 **Bloqueo opcional de la pestaña** — cuando llega la hora, bloquea la pestaña de navegador activa durante una duración configurable (1–120 minutos, por defecto 5) con una cuenta atrás; opción de desbloqueo manual mediante el botón de cerrar.
+- 🔔 **Te notifica a la hora de cada oración** (Fajr, Dhuhr, Asr, Maghrib, Isha) — en el idioma que hayas elegido.
+- 🔒 **Bloqueo opcional de pestañas** — cuando llega la hora, bloquea TODAS las pestañas abiertas del navegador durante una duración configurable (1–120 minutos, por defecto 5) con una cuenta atrás; las pestañas que abras o a las que navegues durante el bloqueo también quedan cubiertas; opción de desbloqueo manual mediante el botón de cerrar.
 - 🕌 **Muestra el horario diario completo** para tu ciudad/país, con una cuenta atrás en tiempo real hacia la siguiente oración.
 - 🌍 **Menús desplegables de país y ciudad** — elige un país y la lista de ciudades se cargará automáticamente.
 - 🌐 **8 idiomas** — cambia desde el encabezado del popup o **Settings → Language** (ver [Supported languages](#supported-languages)).
 - 🌗 **Tema** — Midnight Emerald (por defecto) o Classic — seleccionable en Configuración.
-- 📅 **Formato de fecha gregoriana** — elige cómo se muestra la fecha en el pie (por ejemplo `10-04-2026`, `10 April 2026`, texto largo).
+- 📅 **Formato de fecha** — elige cómo se muestran las fechas Hijri y gregoriana (por ejemplo `10-04-2026`, `10 April 2026`, texto largo).
 - 🌙 **Fecha Hijri** mostrada junto con la fecha gregoriana.
 - 📿 **Dhikr periódico** — recordatorio flotante opcional con 100 frases únicas en la pestaña activa; tócalo para cerrar o se ocultará automáticamente después de 10 segundos.
 
@@ -18,7 +20,11 @@ Una extensión de Chrome (Manifest V3) que:
 
 Los horarios de oración provienen de la API gratuita [AlAdhan API](https://aladhan.com/prayer-times-api); la lista de ciudades proviene de la API gratuita [CountriesNow API](https://countriesnow.space). No se requieren claves API.
 
-## Instalación (load unpacked)
+## Instalación
+
+**Instalar desde la Chrome Web Store (recomendado):** [Añadir a Chrome](https://chromewebstore.google.com/detail/prayer-times-reminder/knahkbkmbjghaiillhngjbhoinmeegoc)
+
+O cárgala sin empaquetar para desarrollo:
 
 1. Abre `chrome://extensions` en Chrome.
 2. Activa **Developer mode** (arriba a la derecha).
@@ -39,9 +45,9 @@ Listo — la extensión obtendrá los horarios de hoy, los mostrará y programar
 |---------|-------------|
 | Country / City | Ubicación usada para los horarios de oración (o usa geolocalización). |
 | Calculation method | Método AlAdhan (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Diyanet, etc.). |
-| Date format | Cómo aparece la fecha gregoriana en el pie. |
+| Date format | Cómo aparecen las fechas Hijri y gregoriana. |
 | Number style | Cuando están activos árabe o urdu: dígitos Arabic-Indic (٠١٢٣) o Western (0123) para horarios y cuenta atrás. |
-| Lock tab during prayer | Inyecta una capa de página completa en la pestaña activa en la hora de la oración. |
+| Lock tab during prayer | Inyecta una capa de página completa en todas las pestañas abiertas en la hora de la oración. |
 | Lock duration | Cuánto tiempo permanece bloqueada la pestaña (1–120 minutos). |
 | Allow manual unlock | Muestra un botón de cerrar (×) para descartar la pantalla de bloqueo antes. |
 | Test tab lock | Vista previa de la capa de bloqueo en la pestaña actual (funciona en sitios normales, no en páginas `chrome://`). |
@@ -73,10 +79,10 @@ Las traducciones viven en `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Las frases de 
 | File | Purpose |
 |------|---------|
 | `manifest.json` | Manifest MV3 (permissions: alarms, notifications, storage, geolocation, tabs, scripting). |
-| `background.js` | Service worker — obtiene los horarios, agenda `chrome.alarms`, muestra notificaciones localizadas y bloquea la pestaña activa en la hora de oración. |
+| `background.js` | Service worker — obtiene los horarios, agenda `chrome.alarms`, muestra notificaciones localizadas y bloquea todas las pestañas abiertas en la hora de oración. |
 | `content-lock.js` | Capa inyectada (shadow DOM) que bloquea la interacción con la página hasta que termine el temporizador o el usuario desbloquee manualmente. |
 | `content-tasbih.js` | Tarjeta flotante de dhikr inyectada; se descarta al tocarla o después de 10 segundos. |
-| `tasbih-phrases.js` | 100 frases únicas de dhikr (Árabe + transliteración inglesa). |
+| `tasbih-phrases.js` | 150 frases únicas de dhikr. |
 | `welcome.html` / `welcome.css` | Página de bienvenida al instalar (instrucciones para fijar en la barra) (localizada). |
 | `i18n.js` | Traducciones compartidas (EN/DE/AR/UR/HI/ID/FR/ES), nombres de oraciones, lista de países, métodos de cálculo, formatos de fecha y ayuda de dígitos. |
 | `popup.html` / `popup.css` / `popup.js` | UI del popup (horarios, cuenta atrás, selector de idioma y configuración). |
@@ -86,10 +92,10 @@ Las traducciones viven en `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Las frases de 
 
 ## Cómo funciona
 
-- **Programación:** en instalación/inicio y cada vez que cambia tu ubicación, el service worker obtiene los horarios del día y crea entradas one-shot de `chrome.alarms` 5 minutos antes de cada oración próxima y en el momento exacto, además de un alarm de actualización justo después de medianoche.
-- **Bloqueo de pestaña:** si está activado en Configuración, cuando suena una alarma de oración la extensión inyecta `content-lock.js` en la pestaña activa y muestra una cuenta atrás durante la duración configurada. La capa bloquea teclado, desplazamiento y la entrada del puntero. Activa **Allow manual unlock** para mostrar el botón de cerrar (×). Usa **Test tab lock** en Configuración para previsualizar en la pestaña actual.
+- **Programación:** en instalación/inicio y cada vez que cambia tu ubicación, el service worker obtiene los horarios del día y crea entradas one-shot de `chrome.alarms` en el momento exacto de cada oración próxima, además de un alarm de actualización justo después de medianoche.
+- **Bloqueo de pestañas:** si está activado en Configuración, cuando suena una alarma de oración la extensión inyecta `content-lock.js` en todas las pestañas abiertas y muestra una cuenta atrás durante la duración configurada. Las pestañas que abras o a las que navegues durante el periodo de bloqueo también se bloquean automáticamente. La capa bloquea teclado, desplazamiento y la entrada del puntero. Activa **Allow manual unlock** para mostrar el botón de cerrar (×). Usa **Test tab lock** en Configuración para previsualizar en la pestaña actual.
 - **Recordatorio de dhikr:** si está activado, un temporizador `chrome.alarms` muestra una frase aleatoria de `tasbih-phrases.js` en la pestaña activa en un intervalo fijo o aleatorio dentro del rango min/max. La tarjeta no bloquea la página; haz clic para descartar o espera 10 segundos.
-- **Notificaciones:** cuando se activa un recordatorio o alarma de oración, aparece una notificación del sistema (`requireInteraction` para que se mantenga hasta que la cierres).
+- **Notificaciones:** cuando llega la hora de una oración, aparece una notificación del sistema localizada.
 - **Popup:** renderiza el horario en caché al instante y luego se refresca desde la red; la siguiente oración se resalta con una cuenta atrás segundo a segundo.
 
 ## Métodos de cálculo
@@ -104,3 +110,4 @@ Consulta [PRIVACY.md](PRIVACY.md) para saber qué datos se almacenan localmente 
 
 MIT — ver [LICENSE](LICENSE).
 
+<p align="center"><sub>Por la faz de Allah el Altísimo, en nombre de todos los musulmanes.</sub></p>

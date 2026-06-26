@@ -10,6 +10,23 @@ body {
 
 #main-view[hidden] { display: none !important; }
 
+/* Embedded in the welcome page: fill the iframe and drop the popup chrome
+   (background orbs, settings header/back button) so it blends in seamlessly. */
+body.embedded {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+}
+body.embedded .orb { display: none; }
+body.embedded .settings-header { display: none; }
+/* The wizard drives saving/location, so its own button row is hidden. The
+   class rule would otherwise beat the [hidden] the wizard sets. */
+body.embedded .button-row { display: none !important; }
+/* Test buttons don't belong in onboarding — they remain in the popup. */
+body.embedded .test-lock-btn,
+body.embedded .test-tasbih-btn { display: none !important; }
+body.embedded .settings-body { border-radius: var(--radius); }
+
 .app-shell {
   position: relative;
   z-index: 1;
@@ -45,10 +62,12 @@ body {
   color: var(--muted-foreground);
 }
 .hijri-date {
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--gold);
+  margin-top: 3px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  /* Softer than solid gold: a muted gold blended toward the foreground tone. */
+  color: color-mix(in oklch, var(--gold) 55%, var(--muted-foreground));
 }
 .hijri-date:empty { display: none; }
 
@@ -164,7 +183,8 @@ body {
   font-size: 15px;
   color: var(--color-foreground);
 }
-.timings li.sunrise .prayer-name { color: var(--gold); font-weight: 500; }
+.timings li.sunrise .prayer-name,
+.timings li.duha .prayer-name { color: var(--gold); font-weight: 500; }
 
 /* Hint / status */
 .hint {

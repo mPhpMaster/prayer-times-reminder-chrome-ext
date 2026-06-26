@@ -1,16 +1,18 @@
 # Prayer Times Reminder — Chrome Extension (Français)
 
+> **Pause des heures de prière** — à l'heure de la prière, vos onglets ouverts se verrouillent pour vous permettre de vous éloigner et de prier.
+
 ![Heures de prière — interface française](screenshots/fr.png)
 
 Une extension Chrome (Manifest V3) qui :
 
-- 🔔 **Vous notifie 5 minutes avant chaque prière**, puis à l’arrivée du moment (Fajr, Dhuhr, Asr, Maghrib, Isha) — dans la langue que vous choisissez.
-- 🔒 **Verrouillage optionnel de l’onglet** — à l’heure de la prière, bloque l’onglet de navigateur actif pendant une durée configurable (1–120 minutes, par défaut 5) avec un compte à rebours ; option de déverrouillage manuel via le bouton de fermeture.
+- 🔔 **Vous notifie à l’heure de chaque prière** (Fajr, Dhuhr, Asr, Maghrib, Isha) — dans la langue que vous choisissez.
+- 🔒 **Verrouillage optionnel des onglets** — à l’heure de la prière, bloque tous les onglets de navigateur ouverts pendant une durée configurable (1–120 minutes, par défaut 5) avec un compte à rebours ; les onglets que vous ouvrez ou vers lesquels vous naviguez pendant le verrouillage sont également couverts ; option de déverrouillage manuel via le bouton de fermeture.
 - 🕌 **Affiche le programme complet des prières** pour votre ville/pays, avec un compte à rebours en temps réel vers la prochaine prière.
 - 🌍 **Sélecteurs pays & ville** — choisissez un pays, et la liste des villes se charge automatiquement.
 - 🌐 **8 langues** — basculez depuis le menu du popup ou **Settings → Language** (voir [Supported languages](#supported-languages)).
 - 🌗 **Thème** — Midnight Emerald (par défaut) ou Classic — sélectionnable dans les paramètres.
-- 📅 **Format de la date grégorienne** — choisissez comment la date du pied de page est affichée (par ex. `10-04-2026`, `10 April 2026`, texte long).
+- 📅 **Format de date** — choisissez comment les dates Hijri et grégorienne sont affichées (par ex. `10-04-2026`, `10 April 2026`, texte long).
 - 🌙 **Date Hijri** affichée à côté de la date grégorienne.
 - 📿 **Dhikr périodique** — rappel flottant optionnel avec 100 phrases uniques sur l’onglet actif ; cliquez pour fermer ou masquez automatiquement après 10 secondes.
 
@@ -18,7 +20,11 @@ Une extension Chrome (Manifest V3) qui :
 
 Les heures de prière proviennent de l’API gratuite [AlAdhan API](https://aladhan.com/prayer-times-api) ; la liste des villes provient de l’API gratuite [CountriesNow API](https://countriesnow.space). Aucune clé API requise.
 
-## Installation (load unpacked)
+## Installation
+
+**Installer depuis le Chrome Web Store (recommandé) :** [Ajouter à Chrome](https://chromewebstore.google.com/detail/prayer-times-reminder/knahkbkmbjghaiillhngjbhoinmeegoc)
+
+Ou chargez-la non empaquetée pour le développement :
 
 1. Ouvrez `chrome://extensions` dans Chrome.
 2. Activez **Developer mode** (en haut à droite).
@@ -39,9 +45,9 @@ C’est tout — l’extension récupère les horaires d’aujourd’hui, les af
 |---------|-------------|
 | Country / City | Lieu utilisé pour les heures de prière (ou utilisez la géolocalisation). |
 | Calculation method | Méthode AlAdhan (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Diyanet, etc.). |
-| Date format | Comment la date grégorienne apparaît dans le pied de page. |
+| Date format | Comment les dates Hijri et grégorienne apparaissent. |
 | Number style | Quand l’arabe ou l’ourdou est actif : chiffres Arabic-Indic (٠١٢٣) ou occidentaux (0123) pour les horaires et le compte à rebours. |
-| Lock tab during prayer | Injecte un overlay plein écran sur l’onglet actif à l’heure de prière. |
+| Lock tab during prayer | Injecte un overlay plein écran sur tous les onglets ouverts à l’heure de prière. |
 | Lock duration | Durée pendant laquelle l’onglet reste verrouillé (1–120 minutes). |
 | Allow manual unlock | Affiche un bouton de fermeture (×) pour masquer l’écran de verrouillage plus tôt. |
 | Test tab lock | Aperçu de l’overlay de verrouillage sur l’onglet actuel (fonctionne sur des sites normaux, pas sur les pages `chrome://`). |
@@ -73,10 +79,10 @@ Les traductions vivent dans `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Les phrases 
 | File | Purpose |
 |------|---------|
 | `manifest.json` | Manifest MV3 (permissions : alarms, notifications, storage, geolocation, tabs, scripting). |
-| `background.js` | Service worker — récupère les horaires, planifie `chrome.alarms`, envoie des notifications localisées, et verrouille l’onglet actif à l’heure de prière. |
+| `background.js` | Service worker — récupère les horaires, planifie `chrome.alarms`, envoie des notifications localisées, et verrouille tous les onglets ouverts à l’heure de prière. |
 | `content-lock.js` | Overlay injecté (shadow DOM) qui bloque l’interaction de la page jusqu’à la fin du minuteur ou le déverrouillage manuel. |
 | `content-tasbih.js` | Carte dhikr flottante injectée ; disparaît au clic ou après 10 secondes. |
-| `tasbih-phrases.js` | 100 phrases dhikr uniques (arabe + translittération anglaise). |
+| `tasbih-phrases.js` | 150 phrases dhikr uniques. |
 | `welcome.html` / `welcome.css` | Page de bienvenue lors de la première installation avec instructions d’épinglage (localisées). |
 | `i18n.js` | Traductions partagées (EN/DE/AR/UR/HI/ID/FR/ES), noms des prières, liste des pays, méthodes de calcul, formats de date, aide pour les chiffres. |
 | `popup.html` / `popup.css` / `popup.js` | L’interface du popup (programme, compte à rebours, sélecteur de langue, paramètres). |
@@ -86,10 +92,10 @@ Les traductions vivent dans `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Les phrases 
 
 ## Fonctionnement
 
-- **Planification :** à l’installation/démarrage et à chaque changement de localisation, le service worker récupère les horaires du jour et crée des entrées `chrome.alarms` one-shot 5 minutes avant chaque prière à venir et à l’heure exacte, plus une alarme de rafraîchissement juste après minuit.
-- **Verrouillage de l’onglet :** si activé dans les paramètres, quand une alarme de prière se déclenche l’extension injecte `content-lock.js` dans l’onglet actif et affiche un compte à rebours pour la durée configurée. L’overlay bloque le clavier, le défilement et l’entrée du pointeur. Activez **Allow manual unlock** pour afficher un bouton de fermeture (×). Utilisez **Test tab lock** pour prévisualiser sur l’onglet actuel.
+- **Planification :** à l’installation/démarrage et à chaque changement de localisation, le service worker récupère les horaires du jour et crée des entrées `chrome.alarms` one-shot à l’heure de chaque prière à venir, plus une alarme de rafraîchissement juste après minuit.
+- **Verrouillage des onglets :** si activé dans les paramètres, quand une alarme de prière se déclenche l’extension injecte `content-lock.js` dans tous les onglets ouverts et affiche un compte à rebours pour la durée configurée. Les onglets que vous ouvrez ou vers lesquels vous naviguez pendant la fenêtre de verrouillage sont également verrouillés automatiquement. L’overlay bloque le clavier, le défilement et l’entrée du pointeur. Activez **Allow manual unlock** pour afficher un bouton de fermeture (×). Utilisez **Test tab lock** pour prévisualiser sur l’onglet actuel.
 - **Rappel dhikr :** si activé, un minuteur `chrome.alarms` affiche une phrase aléatoire de `tasbih-phrases.js` sur l’onglet actif à intervalle fixe ou aléatoire dans votre plage min/max. La carte ne bloque pas la page : cliquez dessus pour fermer ou attendez 10 secondes.
-- **Notifications :** lorsque le rappel ou une alarme de prière se déclenche, une notification système apparaît (`requireInteraction` pour qu’elle reste jusqu’à fermeture).
+- **Notifications :** lorsque l’heure d’une prière arrive, une notification système localisée apparaît.
 - **Popup :** rend instantanément le programme mis en cache, puis se rafraîchit depuis le réseau ; la prochaine prière est mise en avant avec un compte à rebours seconde par seconde.
 
 ## Méthodes de calcul
@@ -104,3 +110,4 @@ Voir [PRIVACY.md](PRIVACY.md) pour savoir quelles données sont stockées locale
 
 MIT — voir [LICENSE](LICENSE).
 
+<p align="center"><sub>Pour la face d'Allah le Très-Haut, au nom de tous les musulmans.</sub></p>

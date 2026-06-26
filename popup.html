@@ -1,204 +1,207 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="midnight-emerald">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="theme.css" />
-  <link rel="stylesheet" href="popup.css" />
-  <title>Prayer Times</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Prayer Times Reminder</title>
 </head>
+
 <body>
-  <div class="orb orb-top" aria-hidden="true"></div>
-  <div class="orb orb-bottom" aria-hidden="true"></div>
+    <div class="orb orb-top" aria-hidden="true"></div>
+    <div class="orb orb-bottom" aria-hidden="true"></div>
 
-  <div id="main-view" class="app-shell">
-    <header class="app-header">
-      <div class="title-row">
-        <div class="title">
-          <span class="logo">🕌</span>
-          <h1 id="app-title">Prayer Times</h1>
-        </div>
-        <select id="lang-select" class="lang-select" aria-label="Language"></select>
-      </div>
-      <div id="location-label" class="location-label">No location set</div>
-      <div id="hijri-date" class="hijri-date"></div>
-    </header>
-
-    <section class="next-prayer next-card" id="next-prayer" hidden>
-      <div class="next-label" id="next-label">Next prayer</div>
-      <div class="next-name text-teal" id="next-name">—</div>
-      <div class="countdown-blocks" id="countdown-blocks" hidden>
-        <div class="countdown-block">
-          <span class="countdown-value" id="countdown-hours">00</span>
-          <span class="countdown-unit" id="countdown-hours-label">HOURS</span>
-        </div>
-        <div class="countdown-block">
-          <span class="countdown-value" id="countdown-min">00</span>
-          <span class="countdown-unit" id="countdown-min-label">MIN</span>
-        </div>
-        <div class="countdown-block is-seconds animate-pulse-soft">
-          <span class="countdown-value" id="countdown-sec">00</span>
-          <span class="countdown-unit" id="countdown-sec-label">SEC</span>
-        </div>
-      </div>
-      <div class="progress-track" id="progress-track" hidden>
-        <div class="progress-fill" id="next-progress"></div>
-      </div>
-      <div class="next-countdown" id="next-countdown" hidden>—</div>
-    </section>
-
-    <main class="main-content">
-      <ul class="timings" id="timings">
-        <!-- rows injected by popup.js -->
-      </ul>
-
-      <p class="hint" id="status-hint">Choose your country and city below to load prayer times.</p>
-
-      <button type="button" id="open-settings-btn" class="open-settings-btn">⚙️ Settings</button>
-    </main>
-
-    <footer class="app-footer">
-      <span id="footer-date"></span>
-      <span class="powered" id="footer-source">Data: AlAdhan API</span>
-    </footer>
-  </div>
-
-  <div id="settings-view" class="settings-view app-shell" hidden>
-    <header class="settings-header">
-      <button type="button" id="back-btn" class="back-btn">← Back</button>
-      <h2 id="settings-title" class="settings-title">Settings</h2>
-    </header>
-
-    <div class="settings-body glass-card">
-      <div class="field-group">
-        <label id="label-theme">Theme</label>
-        <div class="radio-row" role="radiogroup" aria-labelledby="label-theme">
-          <label class="radio-option">
-            <input type="radio" name="theme" id="theme-midnight" value="midnight-emerald" checked />
-            <span id="label-theme-midnight">Midnight Emerald</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="theme" id="theme-classic" value="classic" />
-            <span id="label-theme-classic">Classic</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label for="settings-lang-select" id="label-settings-lang">Language</label>
-        <select id="settings-lang-select"></select>
-      </div>
-
-      <div class="field-group">
-        <label for="country" id="label-country">Country</label>
-        <select id="country"></select>
-      </div>
-
-      <div class="field-group">
-        <label for="city" id="label-city">City</label>
-        <select id="city" disabled></select>
-      </div>
-
-      <div class="field-group">
-        <label for="method" id="label-method">Calculation method</label>
-        <select id="method"></select>
-      </div>
-
-      <div class="field-group">
-        <label for="date-format" id="label-date-format">Date format</label>
-        <select id="date-format"></select>
-      </div>
-
-      <div class="field-group" id="digits-group" hidden>
-        <label id="label-digits">Number style</label>
-        <div class="radio-row" role="radiogroup" aria-labelledby="label-digits">
-          <label class="radio-option">
-            <input type="radio" name="digits" id="digits-arabic" value="arabic" checked />
-            <span id="label-digits-arabic">Arabic (٠١٢٣)</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="digits" id="digits-western" value="western" />
-            <span id="label-digits-western">English (0123)</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="field-group toggle-row">
-        <label class="toggle-label" for="tab-lock">
-          <input type="checkbox" id="tab-lock" />
-          <span id="label-tab-lock">Lock tab during prayer</span>
-        </label>
-        <p class="field-hint" id="hint-tab-lock">Blocks the active browser tab when prayer time arrives.</p>
-
-        <div id="lock-options" class="lock-options" hidden>
-          <div class="field-group nested">
-            <label for="lock-minutes" id="label-lock-minutes">Lock duration (minutes)</label>
-            <input type="number" id="lock-minutes" min="1" max="120" value="5" />
-          </div>
-          <label class="toggle-label nested" for="allow-unlock">
-            <input type="checkbox" id="allow-unlock" />
-            <span id="label-allow-unlock">Allow manual unlock</span>
-          </label>
-          <p class="field-hint" id="hint-allow-unlock">Shows a close button on the lock screen to dismiss it early.</p>
-        </div>
-
-        <button type="button" id="test-lock-btn" class="secondary test-lock-btn">Test tab lock</button>
-      </div>
-
-      <div class="field-group toggle-row">
-        <label class="toggle-label" for="tasbih-enabled">
-          <input type="checkbox" id="tasbih-enabled" checked />
-          <span id="label-tasbih">Periodic dhikr reminder</span>
-        </label>
-        <p class="field-hint" id="hint-tasbih">Shows a random dhikr on the active tab while you browse.</p>
-
-        <div id="tasbih-options" class="tasbih-options" hidden>
-          <div class="radio-row tasbih-mode-row" role="radiogroup" aria-labelledby="label-tasbih">
-            <label class="radio-option">
-              <input type="radio" name="tasbih-mode" id="tasbih-mode-fixed" value="fixed" />
-              <span id="label-tasbih-fixed">Every X minutes</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="tasbih-mode" id="tasbih-mode-random" value="random" checked />
-              <span id="label-tasbih-random">Random interval</span>
-            </label>
-          </div>
-
-          <div id="tasbih-fixed-options" class="field-group nested">
-            <label for="tasbih-minutes" id="label-tasbih-minutes">Interval (minutes)</label>
-            <input type="number" id="tasbih-minutes" min="1" max="120" value="15" />
-          </div>
-
-          <div id="tasbih-random-options" class="tasbih-random-options" hidden>
-            <div class="field-group nested">
-              <label for="tasbih-random-min" id="label-tasbih-random-min">Minimum (minutes)</label>
-              <input type="number" id="tasbih-random-min" min="1" max="120" value="5" />
+    <div id="main-view" class="app-shell">
+        <header class="app-header">
+            <div class="title-row">
+                <div class="title">
+                    <span class="logo">🕌</span>
+                    <h1 id="app-title">Prayer Times Reminder</h1>
+                </div>
+                <select id="lang-select" class="lang-select" aria-label="Language"></select>
             </div>
-            <div class="field-group nested">
-              <label for="tasbih-random-max" id="label-tasbih-random-max">Maximum (minutes)</label>
-              <input type="number" id="tasbih-random-max" min="1" max="120" value="15" />
+            <div id="location-label" class="location-label">No location set</div>
+            <div id="hijri-date" class="hijri-date"></div>
+        </header>
+
+        <section class="next-prayer next-card" id="next-prayer" hidden>
+            <div class="next-label" id="next-label">Next prayer</div>
+            <div class="next-name text-teal" id="next-name">—</div>
+            <div class="countdown-blocks" id="countdown-blocks" hidden>
+                <div class="countdown-block">
+                    <span class="countdown-value" id="countdown-hours">00</span>
+                    <span class="countdown-unit" id="countdown-hours-label">HOURS</span>
+                </div>
+                <div class="countdown-block">
+                    <span class="countdown-value" id="countdown-min">00</span>
+                    <span class="countdown-unit" id="countdown-min-label">MIN</span>
+                </div>
+                <div class="countdown-block is-seconds animate-pulse-soft">
+                    <span class="countdown-value" id="countdown-sec">00</span>
+                    <span class="countdown-unit" id="countdown-sec-label">SEC</span>
+                </div>
             </div>
-          </div>
+            <div class="progress-track" id="progress-track" hidden>
+                <div class="progress-fill" id="next-progress"></div>
+            </div>
+            <div class="next-countdown" id="next-countdown" hidden>—</div>
+        </section>
 
-          <div class="field-group nested">
-            <label for="tasbih-position" id="label-tasbih-position">On-screen position</label>
-            <select id="tasbih-position"></select>
-          </div>
-        </div>
+        <main class="main-content">
+            <ul class="timings" id="timings">
+                <!-- rows injected by popup.js -->
+            </ul>
 
-        <button type="button" id="test-tasbih-btn" class="secondary test-tasbih-btn">Test dhikr</button>
-      </div>
+            <p class="hint" id="status-hint">Choose your country and city below to load prayer times.</p>
 
-      <div class="button-row">
-        <button type="button" id="save-btn" class="primary">Save &amp; Load</button>
-        <button type="button" id="geo-btn" class="secondary" title="Use your current location">📍 Use my location</button>
-      </div>
+            <button type="button" id="open-settings-btn" class="open-settings-btn">⚙️ Settings</button>
+        </main>
 
-      <p class="error" id="error" hidden></p>
+        <footer class="app-footer">
+            <span id="footer-date"></span>
+            <span class="powered" id="footer-source">Data: AlAdhan API</span>
+        </footer>
     </div>
-  </div>
 
-  <script src="i18n.js"></script>
-  <script src="popup.js"></script>
+    <div id="settings-view" class="settings-view app-shell" hidden>
+        <header class="settings-header">
+            <button type="button" id="back-btn" class="back-btn">← Back</button>
+            <h2 id="settings-title" class="settings-title">Settings</h2>
+        </header>
+
+        <div class="settings-body glass-card" id="settings-body">
+            <div class="field-group" data-group="appearance">
+                <label id="label-theme">Theme</label>
+                <div class="radio-row" role="radiogroup" aria-labelledby="label-theme">
+                    <label class="radio-option">
+                        <input type="radio" name="theme" id="theme-midnight" value="midnight-emerald" checked />
+                        <span id="label-theme-midnight">Midnight Emerald</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="theme" id="theme-classic" value="classic" />
+                        <span id="label-theme-classic">Classic</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="field-group" data-group="language">
+                <label for="settings-lang-select" id="label-settings-lang">Language</label>
+                <select id="settings-lang-select"></select>
+            </div>
+
+            <div class="field-group" data-group="location">
+                <label for="country" id="label-country">Country</label>
+                <select id="country"></select>
+            </div>
+
+            <div class="field-group" data-group="location">
+                <label for="city" id="label-city">City</label>
+                <select id="city" disabled></select>
+            </div>
+
+            <div class="field-group" data-group="location">
+                <label for="method" id="label-method">Calculation method</label>
+                <select id="method"></select>
+            </div>
+
+            <div class="field-group" data-group="appearance">
+                <label for="date-format" id="label-date-format">Date format</label>
+                <select id="date-format"></select>
+            </div>
+
+            <div class="field-group" id="digits-group" data-group="appearance" hidden>
+                <label id="label-digits">Number style</label>
+                <div class="radio-row" role="radiogroup" aria-labelledby="label-digits">
+                    <label class="radio-option">
+                        <input type="radio" name="digits" id="digits-arabic" value="arabic" checked />
+                        <span id="label-digits-arabic">Arabic (٠١٢٣)</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="digits" id="digits-western" value="western" />
+                        <span id="label-digits-western">English (0123)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="field-group toggle-row" data-group="lock">
+                <label class="toggle-label" for="tab-lock">
+                    <input type="checkbox" id="tab-lock" />
+                    <span id="label-tab-lock">Lock tab during prayer</span>
+                </label>
+                <p class="field-hint" id="hint-tab-lock">Blocks the active browser tab when prayer time arrives.</p>
+
+                <div id="lock-options" class="lock-options" hidden>
+                    <div class="field-group nested">
+                        <label for="lock-minutes" id="label-lock-minutes">Lock duration (minutes)</label>
+                        <input type="number" id="lock-minutes" min="1" max="120" value="5" />
+                    </div>
+                    <label class="toggle-label nested" for="allow-unlock">
+                        <input type="checkbox" id="allow-unlock" />
+                        <span id="label-allow-unlock">Allow manual unlock</span>
+                    </label>
+                    <p class="field-hint" id="hint-allow-unlock">Shows a close button on the lock screen to dismiss it early.</p>
+                </div>
+
+                <button type="button" id="test-lock-btn" class="secondary test-lock-btn">Test tab lock</button>
+            </div>
+
+            <div class="field-group toggle-row" data-group="dhikr">
+                <label class="toggle-label" for="tasbih-enabled">
+                    <input type="checkbox" id="tasbih-enabled" checked />
+                    <span id="label-tasbih">Periodic dhikr reminder</span>
+                </label>
+                <p class="field-hint" id="hint-tasbih">Shows a random dhikr on the active tab while you browse.</p>
+
+                <div id="tasbih-options" class="tasbih-options" hidden>
+                    <div class="radio-row tasbih-mode-row" role="radiogroup" aria-labelledby="label-tasbih">
+                        <label class="radio-option">
+                            <input type="radio" name="tasbih-mode" id="tasbih-mode-fixed" value="fixed" />
+                            <span id="label-tasbih-fixed">Every X minutes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="tasbih-mode" id="tasbih-mode-random" value="random" checked />
+                            <span id="label-tasbih-random">Random interval</span>
+                        </label>
+                    </div>
+
+                    <div id="tasbih-fixed-options" class="field-group nested">
+                        <label for="tasbih-minutes" id="label-tasbih-minutes">Interval (minutes)</label>
+                        <input type="number" id="tasbih-minutes" min="1" max="120" value="15" />
+                    </div>
+
+                    <div id="tasbih-random-options" class="tasbih-random-options" hidden>
+                        <div class="field-group nested">
+                            <label for="tasbih-random-min" id="label-tasbih-random-min">Minimum (minutes)</label>
+                            <input type="number" id="tasbih-random-min" min="1" max="120" value="5" />
+                        </div>
+                        <div class="field-group nested">
+                            <label for="tasbih-random-max" id="label-tasbih-random-max">Maximum (minutes)</label>
+                            <input type="number" id="tasbih-random-max" min="1" max="120" value="15" />
+                        </div>
+                    </div>
+
+                    <div class="field-group nested">
+                        <label for="tasbih-position" id="label-tasbih-position">On-screen position</label>
+                        <select id="tasbih-position"></select>
+                    </div>
+                </div>
+
+                <button type="button" id="test-tasbih-btn" class="secondary test-tasbih-btn">Test dhikr</button>
+            </div>
+
+            <div class="button-row">
+                <button type="button" id="save-btn" class="primary">Save &amp; Load</button>
+                <button type="button" id="geo-btn" class="secondary" title="Use your current location">📍 Use my location</button>
+            </div>
+
+            <p class="error" id="error" hidden></p>
+        </div>
+    </div>
+
+    <script src="i18n.js"></script>
+    <script src="popup.js"></script>
 </body>
+
 </html>

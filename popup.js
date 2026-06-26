@@ -4,10 +4,11 @@
 const ALADHAN = "https://api.aladhan.com/v1";
 const CITIES_API = "https://countriesnow.space/api/v0.1/countries/cities/q";
 
-// Display order. Sunrise is informational (not a prayer to notify for).
+// Display order. Sunrise and Duha are informational (not prayers to notify for).
 const ROWS = [
   { key: "Fajr", icon: "🌄" },
-  { key: "Sunrise", icon: "🌅", sunrise: true },
+  { key: "Sunrise", icon: "🌅", sunrise: true, info: true },
+  { key: "Duha", icon: "🌞", duha: true, info: true },
   { key: "Dhuhr", icon: "☀️" },
   { key: "Asr", icon: "🌤️" },
   { key: "Maghrib", icon: "🌇" },
@@ -95,6 +96,7 @@ const el = {
   labelTasbihPosition: document.getElementById("label-tasbih-position"),
   testTasbihBtn: document.getElementById("test-tasbih-btn"),
   error: document.getElementById("error"),
+  settingsBody: document.getElementById("settings-body"),
   footerDate: document.getElementById("footer-date"),
   footerSource: document.getElementById("footer-source")
 };
@@ -536,7 +538,23 @@ function prayerProgress(timings, next) {
   return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
 }
 
+// Duha (forenoon) prayer isn't returned by the Aladhan API. Its time begins
+// once the sun has risen a spear's length above the horizon — conventionally a
+// short while after sunrise — so we derive it as Sunrise + this many minutes.
+const DUHA_AFTER_SUNRISE_MINUTES = 20;
+
+// Returns a copy of the timings with a computed Duha entry (Sunrise + offset).
+// Idempotent and non-mutating, so it's safe to call on every render.
+function withDuha(timings) {
+  if (!timings || !timings.Sunrise || timings.Duha) return timings;
+  const t = parseTimeToDate(timings.Sunrise);
+  if (!t) return timings;
+  t.setMinutes(t.getMinutes() + DUHA_AFTER_SUNRISE_MINUTES);
+  return { ...timings, Duha: `${pad(t.getHours())}:${pad(t.getMinutes())}` };
+}
+
 function renderTimings(timings) {
+  timings = withDuha(timings);
   currentTimings = timings;
   el.timings.innerHTML = "";
   const now = new Date();
@@ -550,10 +568,11 @@ function renderTimings(timings) {
     const li = document.createElement("li");
     li.classList.add("glass-card");
     if (row.sunrise) li.classList.add("sunrise");
+    if (row.duha) li.classList.add("duha");
     if (next && next.key === row.key) li.classList.add("is-next");
-    else if (t && t.getTime() < now.getTime() && !row.sunrise) li.classList.add("is-past");
+    else if (t && t.getTime() < now.getTime()) li.classList.add("is-past");
 
-    const name = T().prayers[row.key] || row.key;
+    const name = prayerLabel(T(), row.key);
     li.innerHTML =
       `<span class="prayer-name"><span class="icon">${row.icon}</span>${name}</span>` +
       `<span class="prayer-time">${fmtTime(raw)}</span>`;
@@ -583,7 +602,7 @@ function startCountdown(timings) {
     const h = Math.floor(diff / 3.6e6);
     const m = Math.floor((diff % 3.6e6) / 6e4);
     const s = Math.floor((diff % 6e4) / 1000);
-    el.nextName.textContent = T().prayers[next.key] || next.key;
+    el.nextName.textContent = prayerLabel(T(), next.key);
     if (isMidnightEmeraldTheme()) {
       el.countdownHours.textContent = localizeNum(pad(h));
       el.countdownMin.textContent = localizeNum(pad(m));
@@ -616,14 +635,21 @@ function labelFor(location) {
   return `${cityLabel(location.city, location.country)}, ${countryLabel(location.country)}`;
 }
 
+// The localized name of the current weekday (e.g. الجمعة / Friday / Freitag),
+// tied to the displayed date when available and today otherwise.
+function weekdayName() {
+  const parts = gregorianParts(currentDate && currentDate.gregorian);
+  const d = parts ? new Date(parts.yy, parts.mm - 1, parts.dd) : new Date();
+  const locale = T().locale || (lang === "ar" ? "ar" : "en");
+  return d.toLocaleDateString(locale, { weekday: "long" });
+}
+
 // Renders the Hijri date line and the Gregorian footer date in the active language.
 function renderDates() {
+  const weekday = weekdayName();
   const h = currentDate && currentDate.hijri;
-  if (h) {
-    el.hijriDate.textContent = localizeNum(formatHijriDate(h, dateFormat));
-  } else {
-    el.hijriDate.textContent = "";
-  }
+  const hijri = h ? localizeNum(formatHijriDate(h, dateFormat)) : "";
+  el.hijriDate.textContent = hijri ? `${weekday} • ${hijri}` : weekday;
 
   const g = currentDate && currentDate.gregorian;
   const parts = gregorianParts(g);
@@ -901,14 +927,16 @@ document.querySelectorAll('input[name="theme"]').forEach((input) => {
   });
 });
 
-el.saveBtn.addEventListener("click", async () => {
+// Validate the chosen country/city, persist the location, and load its timings.
+// Shared by the Save button and the welcome wizard's Finish step.
+async function commitLocation() {
   const country = el.country.value;
   const city = el.city.value;
   const method = Number(el.method.value);
 
   if (!country || !city) {
     showError(T().errFields);
-    return;
+    return { ok: false, reason: "fields" };
   }
 
   const location = { mode: "city", city, country, method };
@@ -916,7 +944,12 @@ el.saveBtn.addEventListener("click", async () => {
   el.locationLabel.textContent = labelFor(location);
   ensureLocationCityArabic(location);
   await loadTimings(location);
-  showMainView();
+  return { ok: true };
+}
+
+el.saveBtn.addEventListener("click", async () => {
+  const result = await commitLocation();
+  if (result.ok) showMainView();
 });
 
 el.geoBtn.addEventListener("click", () => {
@@ -1057,4 +1090,65 @@ el.testTasbihBtn.addEventListener("click", async () => {
   }
 });
 
-init();
+// ---- Welcome-page wizard embed ----------------------------------------------
+// When embedded as popup.html#settings, the popup is the settings surface for
+// the welcome wizard: it shows one field group at a time (driven by the parent),
+// reports its height so the iframe self-sizes, and commits the location on Finish.
+
+function reportEmbedHeight() {
+  // Measure the body's content height, not documentElement.scrollHeight: the
+  // latter is floored by the iframe's viewport height, so once the iframe grows
+  // (all groups are briefly visible before the wizard hides all but one) it can
+  // never shrink back, leaving a tall empty gap below the active group.
+  const height = Math.ceil(document.body.getBoundingClientRect().height);
+  parent.postMessage({ type: "PTW_HEIGHT", height }, "*");
+}
+
+let currentWizardGroup = null;
+
+// Show only the field group for the current wizard step; hide the rest plus the
+// save/location button row (the wizard drives those). The error line stays.
+function showWizardGroup(group) {
+  currentWizardGroup = group;
+  for (const child of el.settingsBody.children) {
+    if (child === el.error) continue;
+    const g = child.getAttribute("data-group");
+    child.hidden = g ? g !== group : true;
+  }
+  // Respect nested visibility rules within the group we just revealed.
+  if (group === "appearance") updateDigitsVisibility();
+  if (group === "lock") updateLockOptionsVisibility();
+  if (group === "dhikr") updateTasbihOptionsVisibility();
+  reportEmbedHeight();
+}
+
+function startWizardEmbed() {
+  document.body.classList.add("embedded");
+  showSettingsView();
+
+  window.addEventListener("message", async (event) => {
+    const msg = event.data;
+    if (!msg || typeof msg !== "object") return;
+    if (msg.type === "PTW_GROUP") {
+      showWizardGroup(msg.group);
+    } else if (msg.type === "PTW_LANG") {
+      if (msg.lang) await setLanguage(msg.lang);
+      if (currentWizardGroup) showWizardGroup(currentWizardGroup);
+      else reportEmbedHeight();
+    } else if (msg.type === "PTW_COMMIT") {
+      const result = await commitLocation();
+      parent.postMessage({ type: "PTW_COMMIT_RESULT", ...result }, "*");
+    }
+  });
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(reportEmbedHeight).observe(document.body);
+  }
+
+  // Tell the parent we're ready for the initial language + group.
+  parent.postMessage({ type: "PTW_READY" }, "*");
+}
+
+init().then(() => {
+  if (window.location.hash === "#settings") startWizardEmbed();
+});

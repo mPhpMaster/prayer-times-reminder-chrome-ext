@@ -238,6 +238,12 @@
       closeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         clearLock();
+        // End the lock window everywhere, not just this tab.
+        try {
+          chrome.runtime.sendMessage({ type: "UNLOCK_ALL" });
+        } catch {
+          // Background may be asleep; CLEAR_LOCK broadcast will still arrive.
+        }
       });
     } else {
       closeBtn.remove();
