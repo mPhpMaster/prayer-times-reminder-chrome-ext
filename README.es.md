@@ -14,7 +14,7 @@ Una extensión de Chrome (Manifest V3) que:
 - 🌗 **Tema** — Midnight Emerald (por defecto) o Classic — seleccionable en Configuración.
 - 📅 **Formato de fecha** — elige cómo se muestran las fechas Hijri y gregoriana (por ejemplo `10-04-2026`, `10 April 2026`, texto largo).
 - 🌙 **Fecha Hijri** mostrada junto con la fecha gregoriana.
-- 📿 **Dhikr periódico** — recordatorio flotante opcional con 100 frases únicas en la pestaña activa; tócalo para cerrar o se ocultará automáticamente después de 10 segundos.
+- 📿 **Dhikr periódico** — recordatorio flotante opcional con 139 frases únicas en la pestaña activa; tócalo para cerrar o se ocultará automáticamente después de 10 segundos.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
@@ -82,7 +82,7 @@ Las traducciones viven en `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Las frases de 
 | `background.js` | Service worker — obtiene los horarios, agenda `chrome.alarms`, muestra notificaciones localizadas y bloquea todas las pestañas abiertas en la hora de oración. |
 | `content-lock.js` | Capa inyectada (shadow DOM) que bloquea la interacción con la página hasta que termine el temporizador o el usuario desbloquee manualmente. |
 | `content-tasbih.js` | Tarjeta flotante de dhikr inyectada; se descarta al tocarla o después de 10 segundos. |
-| `tasbih-phrases.js` | 150 frases únicas de dhikr. |
+| `tasbih-phrases.js` | 139 frases únicas de dhikr. |
 | `welcome.html` / `welcome.css` | Página de bienvenida al instalar (instrucciones para fijar en la barra) (localizada). |
 | `i18n.js` | Traducciones compartidas (EN/DE/AR/UR/HI/ID/FR/ES), nombres de oraciones, lista de países, métodos de cálculo, formatos de fecha y ayuda de dígitos. |
 | `popup.html` / `popup.css` / `popup.js` | UI del popup (horarios, cuenta atrás, selector de idioma y configuración). |

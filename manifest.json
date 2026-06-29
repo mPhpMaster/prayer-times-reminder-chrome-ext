@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Prayer Times Reminder",
     "short_name": "Prayer Times Break",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "Prayer Times Break: locks your tabs at prayer time so you can pray — plus reminders, daily schedule, dhikr, themes, and 8 languages.",
     "permissions": ["alarms", "notifications", "storage", "geolocation", "tabs", "scripting"],
     "host_permissions": [

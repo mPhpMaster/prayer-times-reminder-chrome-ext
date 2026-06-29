@@ -1,4 +1,4 @@
-// 150 unique dhikr phrases — { ar, en, ur, fr, es, id, de }
+// 139 unique dhikr phrases — { ar, en, ur, fr, es, id, de }
 
 const TASBIH_PHRASES = [
     // Basic tasbih (15)
@@ -594,7 +594,7 @@ const TASBIH_PHRASES = [
         es: "Alabado sea Allah por la bendición de la oración"
     },
 
-    // Salawat (10)
+    // Salawat (9)
     {
         ar: "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ",
         en: "Allahumma salli ala Muhammad wa ala ali Muhammad",
@@ -641,15 +641,6 @@ const TASBIH_PHRASES = [
         es: "Que la paz y las bendiciones de Allah sean con él, su familia y sus compañeros"
     },
     {
-        ar: "اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ",
-        en: "Allahumma salli ala sayyidina Muhammad",
-        ur: "اللہم صل علیٰ سیدنا محمد",
-        fr: "Ô Allah, accorde Tes prières à notre maître Muhammad",
-        id: "Ya Allah, limpahkanlah shalawat kepada junjungan kami Muhammad",
-        de: "O Allah, segne unseren Herrn Muhammad",
-        es: "Oh Allah, concede Tus bendiciones a nuestro señor Muhammad"
-    },
-    {
         ar: "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ عَبْدِكَ وَرَسُولِكَ",
         en: "Allahumma salli ala Muhammad abdika wa rasulik",
         ur: "اللہم صل علیٰ محمد عبدک ورسولک",
@@ -668,13 +659,13 @@ const TASBIH_PHRASES = [
         es: "Oh Allah, concede Tus bendiciones a Muhammad y a los creyentes y las creyentes"
     },
     {
-        ar: "اللَّهُمَّ اجْعَلْ صَلَاتَكَ وَسَلَامَكَ عَلَى سَيِّدِنَا مُحَمَّدٍ",
-        en: "Allahummaj'al salataka wa salamaka ala sayyidina Muhammad",
-        ur: "اللہم اجعل صلاتک وسلامک علیٰ سیدنا محمد",
-        fr: "Ô Allah, place Tes prières et Ta paix sur notre maître Muhammad",
-        id: "Ya Allah, limpahkanlah shalawat dan salam-Mu kepada junjungan kami Muhammad",
-        de: "O Allah, lege Deinen Segen und Frieden auf unseren Herrn Muhammad",
-        es: "Oh Allah, concede Tu bendición y Tu paz a nuestro señor Muhammad"
+        ar: "اللَّهُمَّ اجْعَلْ صَلَاتَكَ وَسَلَامَكَ عَلَى مُحَمَّدٍ",
+        en: "Allahummaj'al salataka wa salamaka ala Muhammad",
+        ur: "اللہم اجعل صلاتک وسلامک علیٰ محمد",
+        fr: "Ô Allah, place Tes prières et Ta paix sur Muhammad",
+        id: "Ya Allah, limpahkanlah shalawat dan salam-Mu kepada Muhammad",
+        de: "O Allah, lege Deinen Segen und Frieden auf Muhammad",
+        es: "Oh Allah, concede Tu bendición y Tu paz a Muhammad"
     },
     {
         ar: "اللَّهُمَّ صَلِّ عَلَيْهِ وَسَلِّمْ تَسْلِيمًا",
@@ -913,98 +904,6 @@ const TASBIH_PHRASES = [
         id: "Ya Allah, jadikanlah aku termasuk orang yang bertaubat dan orang yang menyucikan diri",
         de: "O Allah, mache mich zu den Reuevollen und zu den sich Reinigenden",
         es: "Oh Allah, hazme de los que se arrepienten y de los que se purifican"
-    },
-
-    // Names of Allah — Ya [Name] (10)
-    {
-        ar: "يَا غَفُورُ",
-        en: "Ya Ghafur",
-        ur: "یا غفور",
-        fr: "Ô Pardonneur",
-        id: "Ya Al-Ghafur",
-        de: "O Vergebender",
-        es: "Oh Perdonador"
-    },
-    {
-        ar: "يَا وَدُودُ",
-        en: "Ya Wadud",
-        ur: "یا ودود",
-        fr: "Ô Tout Aimant",
-        id: "Ya Al-Wadud",
-        de: "O Liebevoller",
-        es: "Oh Amoroso"
-    },
-    {
-        ar: "يَا سَلَامُ",
-        en: "Ya Salam",
-        ur: "یا سلام",
-        fr: "Ô Source de Paix",
-        id: "Ya As-Salam",
-        de: "O Friedensquelle",
-        es: "Oh Fuente de Paz"
-    },
-    {
-        ar: "يَا قُدُّوسُ",
-        en: "Ya Quddus",
-        ur: "یا قدوس",
-        fr: "Ô Très Saint",
-        id: "Ya Al-Quddus",
-        de: "O Heiliger",
-        es: "Oh Santísimo"
-    },
-    {
-        ar: "يَا لَطِيفُ",
-        en: "Ya Latif",
-        ur: "یا لطیف",
-        fr: "Ô Subtil Bienveillant",
-        id: "Ya Al-Lathif",
-        de: "O Feinfühliger",
-        es: "Oh Sutil Bondadoso"
-    },
-    {
-        ar: "يَا كَرِيمُ",
-        en: "Ya Kareem",
-        ur: "یا کریم",
-        fr: "Ô Très Généreux",
-        id: "Ya Al-Karim",
-        de: "O Großzügiger",
-        es: "Oh Generoso"
-    },
-    {
-        ar: "يَا حَلِيمُ",
-        en: "Ya Haleem",
-        ur: "یا حلیم",
-        fr: "Ô Très Indulgent",
-        id: "Ya Al-Halim",
-        de: "O Nachsichtiger",
-        es: "Oh Indulgente"
-    },
-    {
-        ar: "يَا عَزِيزُ",
-        en: "Ya Azeez",
-        ur: "یا عزیز",
-        fr: "Ô Tout Puissant",
-        id: "Ya Al-Aziz",
-        de: "O Allmächtiger",
-        es: "Oh Poderoso"
-    },
-    {
-        ar: "يَا وَهَّابُ",
-        en: "Ya Wahhab",
-        ur: "یا وہاب",
-        fr: "Ô Grand Donateur",
-        id: "Ya Al-Wahhab",
-        de: "O Schenkender",
-        es: "Oh Dador"
-    },
-    {
-        ar: "يَا فَتَّاحُ",
-        en: "Ya Fattah",
-        ur: "یا فتاح",
-        fr: "Ô Celui qui ouvre",
-        id: "Ya Al-Fattah",
-        de: "O Eröffnender",
-        es: "Oh Quien abre los caminos"
     },
 
     // Refuge and protection (10)

@@ -14,7 +14,7 @@ Ekstensi Chrome (Manifest V3) yang:
 - 🌗 **Tema** — Midnight Emerald (default) atau Classic — dapat dipilih di Pengaturan.
 - 📅 **Format tanggal** — pilih cara tanggal Hijriah dan Gregorian ditampilkan.
 - 🌙 **Tanggal Hijriah** ditampilkan bersama tanggal Gregorian.
-- 📿 **Dzikir berkala** — pengingat mengambang opsional dengan 100 frasa unik di tab aktif; ketuk untuk menutup atau hilang otomatis setelah 10 detik.
+- 📿 **Dzikir berkala** — pengingat mengambang opsional dengan 139 frasa unik di tab aktif; ketuk untuk menutup atau hilang otomatis setelah 10 detik.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
@@ -82,7 +82,7 @@ Terjemahan ada di `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Frasa dzikir di `tasbi
 | `background.js` | Service worker — mengambil waktu, menjadwalkan `chrome.alarms`, mengirim notifikasi lokal, mengunci semua tab yang terbuka saat waktu shalat. |
 | `content-lock.js` | Overlay disuntikkan (shadow DOM) yang memblokir interaksi halaman sampai timer selesai atau Anda buka kunci manual. |
 | `content-tasbih.js` | Kartu dzikir mengambang disuntikkan; tutup dengan ketuk atau setelah 10 detik. |
-| `tasbih-phrases.js` | 150 frasa dzikir unik. |
+| `tasbih-phrases.js` | 139 frasa dzikir unik. |
 | `welcome.html` / `welcome.css` | Halaman selamat datang instalasi pertama dengan instruksi sematkan ke toolbar (lokal). |
 | `i18n.js` | Terjemahan bersama (EN/DE/AR/UR/HI/ID/FR/ES), nama shalat, daftar negara, metode perhitungan, format tanggal, helper digit. |
 | `popup.html` / `popup.css` / `popup.js` | UI popup (jadwal, hitung mundur, pemilih bahasa, pengaturan). |

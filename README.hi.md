@@ -14,7 +14,7 @@ A Manifest V3 Chrome extension that:
 - 🌗 **Theme** — Midnight Emerald (डिफ़ॉल्ट) या Classic — Settings में चुनें।
 - 📅 **Date format** — Hijri और Gregorian दोनों तारीख़ें कैसे दिखेंगी चुनें।
 - 🌙 **Hijri date** — Gregorian तारीख़ के साथ दिखती है।
-- 📿 **Periodic dhikr** — सक्रिय टैब पर एक रैंडम धिक्र (150 वाक्य) फ़्लोट करता है; टैप करके बंद करें या 10 सेकंड बाद अपने-आप छिप जाएगा।
+- 📿 **Periodic dhikr** — सक्रिय टैब पर एक रैंडम धिक्र (139 वाक्य) फ़्लोट करता है; टैप करके बंद करें या 10 सेकंड बाद अपने-आप छिप जाएगा।
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
@@ -82,7 +82,7 @@ Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `t
 | `background.js` | Service worker — fetches times, schedules `chrome.alarms`, fires localized notifications, locks all open tabs at prayer time. |
 | `content-lock.js` | Injected overlay (shadow DOM) that blocks page interaction until the timer ends or the user unlocks manually. |
 | `content-tasbih.js` | Injected floating dhikr card; dismiss on tap or after 10 seconds. |
-| `tasbih-phrases.js` | 150 unique dhikr phrases. |
+| `tasbih-phrases.js` | 139 unique dhikr phrases. |
 | `welcome.html` / `welcome.css` | First-install welcome page with pin-to-toolbar instructions (localized). |
 | `i18n.js` | Shared translations (EN/DE/AR/UR/HI/ID/FR/ES), prayer names, country list, calculation methods, date formats, digit helper. |
 | `popup.html` / `popup.css` / `popup.js` | The popup UI (schedule, countdown, language selector, settings). |

@@ -1213,11 +1213,6 @@ const METHODS = [{
         id: 14,
         en: "Spiritual Admin. of Russia",
         ar: "الإدارة الروحية لمسلمي روسيا"
-    },
-    {
-        id: 0,
-        en: "Shia Ithna-Ashari",
-        ar: "الشيعة الإثنا عشرية"
     }
 ];
 

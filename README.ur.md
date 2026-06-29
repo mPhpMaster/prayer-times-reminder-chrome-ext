@@ -14,8 +14,7 @@
 - 🌗 **Theme** — Midnight Emerald (ڈیفالٹ) یا Classic — Settings میں منتخب کیا جا سکتا ہے۔
 - 📅 **Date format** — Hijri اور Gregorian دونوں تاریخیں کس طرح دکھانی ہیں منتخب کریں (مثلاً `10-04-2026`, `10 April 2026`, طویل متن)۔
 - 🌙 **Hijri date** — Gregorian تاریخ کے ساتھ دکھائی جاتی ہے۔
-- 📿 **Periodic dhikr** — اختیاری فلوٹنگ ریمائنڈر جس میں فعال ٹیب پر 100 منفرد جملے ہوتے ہیں؛ چھپانے کے لیے دبائیں یا 10 سیکنڈ بعد خودکار طور پر ہٹ جائے گا۔
-- 📿 **Periodic dhikr** — اختیاری فلوٹنگ ریمائنڈر جس میں فعال ٹیب پر 150 منفرد جملے ہوتے ہیں؛ چھپانے کے لیے دبائیں یا 10 سیکنڈ بعد خودکار طور پر ہٹ جائے گا۔
+- 📿 **Periodic dhikr** — اختیاری فلوٹنگ ریمائنڈر جس میں فعال ٹیب پر 139 منفرد جملے ہوتے ہیں؛ چھپانے کے لیے دبائیں یا 10 سیکنڈ بعد خودکار طور پر ہٹ جائے گا۔
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
@@ -83,7 +82,7 @@ UI، نوٹیفکیشنز، لاک اوورلے، dhikr کارڈ، اور خوش
 | `background.js` | سروس ورکر — اوقات لاتا ہے، `chrome.alarms` شیڈول کرتا ہے، لوکلائز نوٹیفکیشن دکھاتا ہے، اور نماز کے وقت تمام کھلے ٹیبز لاک کرتا ہے۔ |
 | `content-lock.js` | Injected overlay (shadow DOM) جو ٹائمر ختم ہونے تک یا صارف کے دستی ان لاک تک صفحے کی انٹر ایکشن روک دے۔ |
 | `content-tasbih.js` | Injected floating dhikr کارڈ؛ دبانے پر یا 10 سیکنڈ بعد غائب۔ |
-| `tasbih-phrases.js` | 150 منفرد dhikr فقرے۔ |
+| `tasbih-phrases.js` | 139 منفرد dhikr فقرے۔ |
 | `welcome.html` / `welcome.css` | پہلی بار انسٹال کے لیے خوش آمدید صفحہ، pin-to-toolbar ہدایات کے ساتھ (لوکلائز)۔ |
 | `i18n.js` | مشترکہ ترجمے (EN/DE/AR/UR/HI/ID/FR/ES)، نمازوں کے نام، ملکوں کی فہرست، حساب کے طریقے، تاریخ کی فارمیٹس، اور اعداد کا مددگار۔ |
 | `popup.html` / `popup.css` / `popup.js` | popup UI (شیڈول، کاؤنٹ ڈاؤن، زبان کا انتخاب، سیٹنگز)۔ |

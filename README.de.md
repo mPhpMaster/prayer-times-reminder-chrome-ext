@@ -14,7 +14,7 @@ Eine Chrome-Erweiterung (Manifest V3), die:
 - 🌗 **Design** — Midnight Emerald (Standard) oder Classic — in den Einstellungen wählbar.
 - 📅 **Datumsformat** — wählen Sie, wie das Hidschri- und das gregorianische Datum angezeigt werden.
 - 🌙 **Hidschri-Datum** wird neben dem gregorianischen Datum angezeigt.
-- 📿 **Periodischer Dhikr** — optionaler schwebender Hinweis mit 100 einzigartigen Formulierungen auf dem aktiven Tab; antippen zum Schließen oder automatisches Ausblenden nach 10 Sekunden.
+- 📿 **Periodischer Dhikr** — optionaler schwebender Hinweis mit 139 einzigartigen Formulierungen auf dem aktiven Tab; antippen zum Schließen oder automatisches Ausblenden nach 10 Sekunden.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
@@ -82,7 +82,7 @@ UI, Benachrichtigungen, Sperr-Overlay, Dhikr-Karte und Willkommensseite sind lok
 | `background.js` | Service Worker — lädt Zeiten, plant `chrome.alarms`, sendet lokalisierte Benachrichtigungen, sperrt alle geöffneten Tabs zur Gebetszeit. |
 | `content-lock.js` | Injected Overlay (Shadow DOM), das Seiteninteraktion blockiert, bis der Timer endet oder Sie manuell entsperren. |
 | `content-tasbih.js` | Injected schwebende Dhikr-Karte; schließen per Tippen oder nach 10 Sekunden. |
-| `tasbih-phrases.js` | 150 einzigartige Dhikr-Formulierungen. |
+| `tasbih-phrases.js` | 139 einzigartige Dhikr-Formulierungen. |
 | `welcome.html` / `welcome.css` | Willkommensseite bei Erstinstallation mit Anheft-Anleitung (lokalisiert). |
 | `i18n.js` | Gemeinsame Übersetzungen (EN/DE/AR/UR/HI/ID/FR/ES), Gebetsnamen, Länderliste, Berechnungsmethoden, Datumsformate, Ziffern-Helfer. |
 | `popup.html` / `popup.css` / `popup.js` | Popup-Oberfläche (Plan, Countdown, Sprachauswahl, Einstellungen). |
