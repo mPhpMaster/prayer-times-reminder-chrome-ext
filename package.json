@@ -1,0 +1,27 @@
+{
+  "name": "prayer-times-reminder",
+  "version": "2.1.2",
+  "description": "Prayer Times Reminder — Chrome MV3 extension (prayer times, tab lock, dhikr, 8 languages).",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build": "node tools/build.js",
+    "sync": "node tools/sync-core.mjs extension",
+    "sync:desktop": "node tools/sync-core.mjs desktop",
+    "sync:mobile": "node tools/sync-core.mjs mobile",
+    "sync:all": "node tools/sync-core.mjs all",
+    "version:bump": "node tools/version.mjs bump",
+    "version:rollback": "node tools/version.mjs rollback",
+    "version:release": "node tools/version.mjs bump --build",
+    "ship": "node tools/release.mjs",
+    "test": "node tools/sync-core.mjs extension && node tools/test/run.js && node tools/test/logic.js && node tools/test/smoke.js",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{js,css,html,json,md}\""
+  },
+  "devDependencies": {
+    "adhan": "^4.4.4",
+    "eslint": "^9.13.0",
+    "prettier": "^3.3.3",
+    "tz-lookup": "^6.1.25"
+  }
+}

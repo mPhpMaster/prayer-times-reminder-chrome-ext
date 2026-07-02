@@ -1,0 +1,530 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  position: relative;
+  width: 340px;
+  padding: 14px 14px 8px;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+#main-view[hidden] { display: none !important; }
+
+/* Embedded in the welcome page: fill the iframe and drop the popup chrome
+   (background orbs, settings header/back button) so it blends in seamlessly. */
+body.embedded {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+}
+body.embedded .orb { display: none; }
+body.embedded .settings-header { display: none; }
+/* The wizard drives saving/location, so its own button row is hidden. The
+   class rule would otherwise beat the [hidden] the wizard sets. */
+body.embedded .button-row { display: none !important; }
+/* Test buttons don't belong in onboarding — they remain in the popup. */
+body.embedded .test-lock-btn,
+body.embedded .test-tasbih-btn { display: none !important; }
+body.embedded .settings-body { border-radius: var(--radius); }
+
+.app-shell {
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.app-header { margin-bottom: 12px; }
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.title { display: flex; align-items: center; gap: 8px; }
+.logo { font-size: 22px; }
+.app-header h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.2px; }
+.lang-select {
+  flex: 0 0 auto;
+  max-width: 110px;
+  padding: 5px 8px;
+  border-radius: calc(var(--radius) * 0.5);
+  border: 1px solid var(--color-border);
+  background: var(--color-input);
+  color: var(--color-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color-scheme: dark;
+}
+.lang-select:hover { filter: brightness(1.15); }
+.lang-select option {
+  color: var(--foreground);
+  background-color: var(--popover);
+}
+/* Header actions: settings gear + language selector, grouped at the end. */
+.title-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: var(--color-input);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 0.5);
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+.icon-btn:hover { filter: brightness(1.15); }
+
+/* Header info panel: weekday centered, then dates split across a row. Echoes
+   the next-prayer card below it. */
+.info-panel {
+  margin-top: 10px;
+  background: var(--color-input);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.weekday-line {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+  color: var(--color-foreground);
+}
+.weekday-line:empty { display: none; }
+.dates-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.hijri-date {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  /* Softer than solid gold: a muted gold blended toward the foreground tone. */
+  color: color-mix(in oklch, var(--gold) 60%, var(--muted-foreground));
+}
+.gregorian-date {
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+  color: var(--muted-foreground);
+}
+
+[dir="rtl"] .field-group label,
+[dir="rtl"] .next-label { letter-spacing: 0; }
+
+/* Next prayer hero */
+.next-prayer {
+  padding: 16px 14px 14px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.next-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted-foreground);
+}
+.next-name {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 4px 0 12px;
+}
+[dir="rtl"] .next-name { font-family: var(--font-arabic); }
+
+.countdown-blocks {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.countdown-blocks[hidden] { display: none !important; }
+
+.countdown-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 64px;
+  padding: 10px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--countdown-block-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+.countdown-block.is-seconds {
+  border-color: var(--countdown-seconds-border);
+}
+.countdown-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-foreground);
+  line-height: 1.2;
+}
+.countdown-unit {
+  margin-top: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.progress-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--progress-track-bg);
+  overflow: hidden;
+}
+.progress-track[hidden] { display: none !important; }
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: var(--progress-fill);
+  box-shadow: var(--progress-glow);
+  transition: width 1s linear;
+}
+
+.next-countdown {
+  font-size: 14px;
+  color: var(--color-foreground);
+  font-variant-numeric: tabular-nums;
+  margin-top: 8px;
+}
+.next-countdown[hidden] { display: none !important; }
+
+/* Timings list */
+.timings { list-style: none; }
+.timings li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+}
+.timings li.is-next {
+  border-color: var(--next-item-border);
+  box-shadow: var(--next-item-glow);
+}
+.timings li.is-past { opacity: 0.5; }
+.timings .prayer-name {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+[dir="rtl"] .timings .prayer-name { font-family: var(--font-arabic); }
+.timings .prayer-name .icon { font-size: 15px; }
+.timings .prayer-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  color: var(--color-foreground);
+}
+.timings li.sunrise .prayer-name,
+.timings li.duha .prayer-name { color: var(--gold); font-weight: 500; }
+
+/* Hint / status */
+.hint {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  text-align: center;
+  margin: 10px 0;
+}
+
+.open-settings-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--gradient-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--color-foreground);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+  box-shadow: var(--shadow-card);
+}
+.open-settings-btn:hover { filter: brightness(1.1); }
+
+/* Settings full-screen view */
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+.settings-view[hidden] { display: none !important; }
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.settings-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+[dir="rtl"] .settings-title { text-align: center; }
+.back-btn {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: calc(var(--radius) * 0.5);
+  border: 1px solid var(--color-border);
+  background: var(--color-input);
+  color: var(--color-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.back-btn:hover { filter: brightness(1.15); }
+
+.settings-body {
+  padding: 12px;
+}
+
+/* Settings fields */
+.field-group { margin: 10px 0; }
+.field-group label,
+.field-group .field-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted-foreground);
+  margin-bottom: 4px;
+}
+.field-group input,
+.field-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: calc(var(--radius) * 0.5);
+  border: 1px solid var(--color-border);
+  background: var(--color-input);
+  color: var(--color-foreground);
+  font-size: 13px;
+  color-scheme: dark;
+}
+.field-group input:focus,
+.field-group select:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: var(--focus-ring-shadow);
+}
+select option {
+  color: var(--foreground);
+  background-color: var(--popover);
+}
+select option:checked {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.radio-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-foreground);
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.radio-option input[type="radio"] {
+  width: auto;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+
+.toggle-row { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--color-border); }
+.toggle-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.toggle-label input[type="checkbox"] {
+  width: auto;
+  margin-top: 2px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+.field-hint {
+  margin: 6px 0 0 26px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.4;
+}
+[dir="rtl"] .field-hint { margin: 6px 26px 0 0; }
+.lock-options {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+.field-group.nested { margin: 10px 0 0; }
+.field-group.nested label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted-foreground);
+  margin-bottom: 4px;
+}
+.toggle-label.nested { margin-top: 12px; }
+[dir="rtl"] .lock-options .field-hint { margin: 6px 26px 0 0; }
+
+.test-lock-btn {
+  width: 100%;
+  margin-top: 10px;
+  flex: none;
+}
+
+.tasbih-options {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+.tasbih-mode-row { margin: 8px 0 10px 26px; }
+[dir="rtl"] .tasbih-mode-row { margin: 8px 26px 10px 0; }
+.tasbih-random-options { display: grid; gap: 0; }
+/* The display:grid above beats the UA [hidden] rule, so hiding the random
+   min/max group (fixed mode) needs an explicit override. */
+.tasbih-random-options[hidden] { display: none !important; }
+
+/* On-screen position picker: a mini "screen" split into a 3x2 grid of clickable
+   zones. Forced LTR so the tiles map to real screen corners in every language
+   (the position is physical, not text-direction relative). */
+.position-grid {
+  direction: ltr;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 4px;
+  aspect-ratio: 16 / 9;
+  max-width: 210px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 0.5);
+  background: var(--color-input);
+}
+.pos-tile {
+  position: relative;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: rgba(127, 127, 127, 0.12);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.pos-tile:hover { background: rgba(127, 127, 127, 0.22); filter: none; }
+.pos-tile .pos-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted-foreground);
+}
+.pos-tile[data-pos$="-left"] .pos-dot { left: 5px; }
+.pos-tile[data-pos$="-right"] .pos-dot { right: 5px; }
+.pos-tile[data-pos$="-center"] .pos-dot { left: 50%; transform: translateX(-50%); }
+.pos-tile[data-pos^="top-"] .pos-dot { top: 5px; }
+.pos-tile[data-pos^="bottom-"] .pos-dot { bottom: 5px; }
+.pos-tile[aria-checked="true"] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+.pos-tile[aria-checked="true"] .pos-dot { background: var(--primary); }
+.pos-tile:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.test-tasbih-btn {
+  width: 100%;
+  margin-top: 10px;
+  flex: none;
+}
+
+.button-row { display: flex; gap: 8px; margin-top: 12px; }
+button {
+  flex: 1;
+  padding: 9px 10px;
+  border-radius: calc(var(--radius) * 0.5);
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+button:hover { filter: brightness(1.1); }
+button:disabled { opacity: 0.5; cursor: default; }
+button.primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+button.secondary {
+  background: var(--color-input);
+  border: 1px solid var(--color-border);
+  color: var(--color-foreground);
+}
+
+.error { color: var(--destructive); font-size: 12px; margin-top: 8px; }
+
+/* Footer */
+.app-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.footer-loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted-foreground);
+}
+.footer-loc .loc-pin { display: inline-flex; flex: 0 0 auto; color: var(--gold); }
+.location-label { font-size: 11px; color: var(--muted-foreground); }
+
+/* --- Mobile (Capacitor) shell --------------------------------------------- */
+/* On mobile the page IS the whole phone screen, so fill it and center the
+   content. Desktop keeps the compact tray-popup layout (same as the browser
+   popup — the window is sized to the content), so it needs no override. */
+html[data-platform="capacitor"] {
+  width: 100%;
+  height: 100%;
+}
+html[data-platform="capacitor"] body {
+  width: 100%;
+  min-height: 100vh;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+html[data-platform="capacitor"] #main-view,
+html[data-platform="capacitor"] #settings-view {
+  width: 100%;
+  max-width: 400px;
+}

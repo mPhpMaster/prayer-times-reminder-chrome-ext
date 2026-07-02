@@ -1,0 +1,20 @@
+{
+  "printWidth": 100,
+  "tabWidth": 4,
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "none",
+  "overrides": [
+    {
+      "files": [
+        "popup.js",
+        "popup.css",
+        "welcome.js",
+        "welcome.css",
+        "content-lock.js",
+        "content-tasbih.js"
+      ],
+      "options": { "tabWidth": 2 }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Prayer Lock</title>
+    <link rel="stylesheet" href="theme.css" />
+    <style>
+      html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <!-- Loaded inside the native LockActivity's WebView. Reuses the shared
+         overlay-lock.js; the native side calls window.__ptActivate(config) after
+         load and unlock routes back through the AndroidLock JS interface. -->
+    <script src="overlay-lock.js"></script>
+    <script>
+      (function () {
+        // Unlock => tell the native plugin to end the lock everywhere.
+        window.__prayerLockOnUnlock = function () {
+          if (window.AndroidLock && window.AndroidLock.unlock) window.AndroidLock.unlock();
+        };
+        // Native entry point: called with the lock config JSON after page load.
+        window.__ptActivate = function (config) {
+          if (typeof config === "string") {
+            try { config = JSON.parse(config); } catch (e) { return; }
+          }
+          if (window.__prayerTabLockActivate) window.__prayerTabLockActivate(config);
+        };
+        // If the native side stashed a config before this script ran, use it.
+        if (window.__pendingLockConfig) window.__ptActivate(window.__pendingLockConfig);
+      })();
+    </script>
+  </body>
+</html>

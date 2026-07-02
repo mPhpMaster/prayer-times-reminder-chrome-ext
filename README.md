@@ -18,14 +18,14 @@ A Manifest V3 Chrome extension that:
 
 ## Translations
 
-- [English](README.en.md)
-- [Deutsch](README.de.md)
-- [العربية](README.ar.md)
-- [اردو](README.ur.md)
-- [हिन्दी](README.hi.md)
-- [Bahasa Indonesia](README.id.md)
-- [Français](README.fr.md)
-- [Español](README.es.md)
+- [English](docs/README.en.md)
+- [Deutsch](docs/README.de.md)
+- [العربية](docs/README.ar.md)
+- [اردو](docs/README.ur.md)
+- [हिन्दी](docs/README.hi.md)
+- [Bahasa Indonesia](docs/README.id.md)
+- [Français](docs/README.fr.md)
+- [Español](docs/README.es.md)
 
 Prayer times come from the free [AlAdhan API](https://aladhan.com/prayer-times-api); the city list comes from the free [CountriesNow API](https://countriesnow.space). No API keys required.
 
@@ -53,7 +53,7 @@ That's it — the extension will fetch today's times, show them, and schedule a 
 | Setting | Description |
 |---------|-------------|
 | Country / City | Location used for prayer times (or use geolocation). |
-| Calculation method | AlAdhan method (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Diyanet, etc.). |
+| Calculation method | AlAdhan method (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Gulf, Diyanet, JAKIM, Kemenag, Moonsighting, etc.). |
 | Date format | How both the Hijri and Gregorian dates appear. |
 | Number style | When Arabic or Urdu is active: Arabic-Indic (٠١٢٣) or Western (0123) digits for times and countdowns. |
 | Lock tab during prayer | Injects a full-page overlay on all open tabs at prayer time. |
@@ -97,7 +97,7 @@ Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `t
 | `popup.html` / `popup.css` / `popup.js` | The popup UI (schedule, countdown, language selector, settings). |
 | `theme.css` | Shared Midnight Emerald theme tokens and utilities (popup, settings, welcome). |
 | `icons/` | Extension icons (crescent + star). |
-| `make_icons.py` | Regenerates the PNG icons (dev-only, not needed at runtime). |
+| `scripts/make_icons.py` | Regenerates the PNG icons (dev-only, not needed at runtime). |
 | `PRIVACY.md` | Privacy policy for the extension. |
 
 ## How it works
@@ -110,7 +110,7 @@ Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `t
 
 ## Calculation methods
 
-The settings dropdown exposes common AlAdhan methods (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Diyanet, etc.). Pick whichever matches your local mosque/authority for the most accurate times.
+The settings dropdown exposes common AlAdhan methods — ISNA (North America), Muslim World League, Umm al-Qura (Makkah), Egyptian, Karachi, Gulf, Kuwait, Qatar, Singapore (MUIS), France, Diyanet (Turkey), Russia, Dubai, JAKIM (Malaysia), Kemenag (Indonesia), Morocco, Tunisia, Algeria, Jordan, and Moonsighting Committee Worldwide. Pick whichever matches your local mosque/authority for the most accurate times.
 
 ## Privacy
 

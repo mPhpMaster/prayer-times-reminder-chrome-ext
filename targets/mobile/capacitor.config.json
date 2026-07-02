@@ -1,0 +1,12 @@
+{
+  "appId": "com.example.prayer",
+  "appName": "Prayer",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#2dd4a7"
+    }
+  }
+}

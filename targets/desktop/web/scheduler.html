@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Prayer scheduler</title>
+  </head>
+  <body>
+    <!-- Hidden, always-alive background window. Runs the shared scheduling logic
+         and fires the native lock at each prayer time. No UI. -->
+    <script src="adapter.js"></script>
+    <script src="platform.js"></script>
+    <script src="i18n.js"></script>
+    <script src="vendor/adhan.js"></script>
+    <script src="vendor/tz-lookup.js"></script>
+    <script src="prayer-engine.js"></script>
+    <script src="scheduler-core.js"></script>
+    <script src="dhikr-core.js"></script>
+    <script src="lock-config.js"></script>
+    <script src="scheduler.js"></script>
+  </body>
+</html>

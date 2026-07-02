@@ -6,6 +6,11 @@ dist/
 build/
 web-ext-artifacts/
 
+# ---- sync-core generated target outputs (assembled from core/ + targets/<t>/) ----
+targets/extension/build/
+targets/desktop/src/
+targets/mobile/www/
+
 # ---- Store-screenshot transient harness (written by make_store_screenshots.py) ----
 _store_harness.html
 
@@ -14,6 +19,7 @@ chrome-ext-testprofile/
 *-testprofile/
 
 # ---- Node (if tooling is ever added) ----
+.version-backup
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -41,3 +47,20 @@ Desktop.ini
 *.log
 .env
 .env.local
+
+# ---- Tauri / Rust build artifacts ----
+targets/desktop/src-tauri/target/
+targets/desktop/src-tauri/gen/
+# Cargo.lock IS tracked (this is an app): it pins time=0.3.51 to dodge the
+# cookie 0.18.1 vs time 0.3.52 breakage in the tauri 2.11 graph.
+
+# ---- Capacitor / Android build artifacts ----
+# (the native source under targets/mobile/android/ IS tracked; Capacitor's own
+#  android/.gitignore covers build outputs like .gradle/, app/build/, etc.)
+targets/mobile/www/
+targets/mobile/node_modules/
+targets/mobile/android/.gradle/
+targets/mobile/android/build/
+targets/mobile/android/app/build/
+targets/mobile/android/capacitor-cordova-android-plugins/
+targets/mobile/android/local.properties

@@ -1,0 +1,21 @@
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "description": "Shares `core/` via `tools/sync-core.mjs mobile`, which assembles the web layer into `www/`. `web/index.html` redirects to the shared `popup.html`; the web ⇄ native bridge is `web/adapter.js` (`Platform` over Capacitor plugins + `Capacitor.Plugins.PrayerLock`).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/geolocation": "^8.2.0",
+    "@capacitor/local-notifications": "^8.2.0",
+    "@capacitor/preferences": "^8.0.1"
+  }
+}

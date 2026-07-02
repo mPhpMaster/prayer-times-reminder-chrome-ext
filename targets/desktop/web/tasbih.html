@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Dhikr</title>
+    <link rel="stylesheet" href="theme.css" />
+    <style>
+      /* Solid dark background so the small window always renders (no reliance on
+         window transparency). The card paints on top. */
+      html, body { margin: 0; height: 100%; background: #0c1c1c; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <!-- Small always-on-top dhikr card window. Reuses the shared overlay-tasbih.js;
+         the phrase is picked here (i18n + tasbih-phrases) so the shared popup
+         needn't load the phrase bank. Rust emits "activate-dhikr" with the
+         current { lang, theme } and auto-closes the window. -->
+    <script src="i18n.js"></script>
+    <script src="tasbih-phrases.js"></script>
+    <script src="overlay-tasbih.js"></script>
+    <script>
+      (function () {
+        const TAURI = globalThis.__TAURI__ || {};
+        const listen = TAURI.event && TAURI.event.listen;
+        const invoke = TAURI.core && TAURI.core.invoke;
+
+        function activate(cfg) {
+          cfg = cfg || {};
+          const lang = cfg.lang || "en";
+          const L = tr(lang);
+          const payload = {
+            type: "ACTIVATE_TASBIH",
+            display: randomTasbihPhrase(lang),
+            label: L.tasbihCardLabel,
+            dir: L.dir,
+            lang,
+            theme: normalizeTheme(cfg.theme),
+            position: "bottom-center",
+          };
+          if (window.__prayerTasbihActivate) window.__prayerTasbihActivate(payload);
+        }
+
+        if (listen) listen("activate-dhikr", (e) => activate(e.payload));
+        // In case the event fired before this listener attached, ask Rust for it.
+        if (invoke) invoke("get_dhikr_config").then((c) => c && activate(c)).catch(() => {});
+      })();
+    </script>
+  </body>
+</html>

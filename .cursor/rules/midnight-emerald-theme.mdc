@@ -10,7 +10,7 @@ Complete design tokens and rules for the **Midnight Emerald** theme variant — 
 
 This repo also includes a **Classic** theme (selected in Settings). The rules in this document apply to the Midnight Emerald variant (`[data-theme="midnight-emerald"]`).
 
-Source of truth: `midnight-emerald-theme.md`. Implementation: `theme.css`.
+Source of truth: `docs/midnight-emerald-theme.md`. Implementation: `theme.css`.
 
 ## Palette (oklch only — never hex/RGB)
 

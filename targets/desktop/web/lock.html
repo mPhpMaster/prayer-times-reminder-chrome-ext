@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prayer Lock</title>
+    <link rel="stylesheet" href="theme.css" />
+    <style>
+      html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <!-- The overlay paints itself into <html>; this page is the full-screen,
+         always-on-top Tauri window. overlay-lock.js is the shared core UI. -->
+    <script src="overlay-lock.js"></script>
+    <script>
+      (function () {
+        const TAURI = globalThis.__TAURI__ || {};
+        const invoke = TAURI.core && TAURI.core.invoke;
+        const listen = TAURI.event && TAURI.event.listen;
+
+        // Unlock action: tell Rust to end the lock everywhere (close all lock
+        // windows, unmute, re-enable camera).
+        window.__prayerLockOnUnlock = () => { if (invoke) invoke("clear_lock"); };
+
+        function activate(config) {
+          if (window.__prayerTabLockActivate) window.__prayerTabLockActivate(config);
+        }
+
+        // Rust emits "activate-lock" with the full config when the window opens.
+        if (listen) {
+          listen("activate-lock", (e) => activate(e.payload));
+          listen("clear-lock", () => window.__prayerTabLockClear && window.__prayerTabLockClear());
+        }
+        // Ask Rust for the current config in case the event fired before we
+        // attached (window ready race).
+        if (invoke) invoke("get_lock_config").then((c) => c && activate(c)).catch(() => {});
+      })();
+    </script>
+  </body>
+</html>

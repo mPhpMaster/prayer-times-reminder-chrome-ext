@@ -1,6 +1,6 @@
 # Privacy Policy — Prayer Times Reminder
 
-_Last updated: 16 June 2026_
+_Last updated: 30 June 2026_
 
 **Prayer Times Reminder** ("the extension") is designed to respect your privacy.
 This policy explains what data the extension uses and how.
@@ -36,9 +36,11 @@ requests to two free public APIs:
   coordinates and the calculation method in order to return prayer times.
 - **CountriesNow API** (`countriesnow.space`) — receives a country name in order
   to return its list of cities.
-- **Nominatim API** (`nominatim.openstreetmap.org`) — receives your approximate
-  latitude/longitude (only when you click **Use my location**) in order to
-  reverse-geocode a city and country name.
+- **Nominatim API** (`nominatim.openstreetmap.org`) — only when the interface
+  language is set to **Arabic**, receives the **name of the city you select**
+  (as text, with its country) in order to look up that city's Arabic-script
+  label for display. Your coordinates are **not** sent to Nominatim, and it is
+  not contacted in other languages.
 
 Only the minimum information needed to fulfill the request is sent. No personal
 identifiers, accounts, or contact details are transmitted.
@@ -48,8 +50,11 @@ identifiers, accounts, or contact details are transmitted.
 If you enable **Lock tab during prayer**, the extension injects a script
 (`content-lock.js`) into **every open tab** when a prayer alarm fires
 (or, when you click **Test tab lock**, into the tab you are testing). This
-requires the `tabs`, `scripting`, and `<all_urls>` permissions so the overlay
-can be shown on regular websites.
+requires the `scripting` permission plus access to your open tabs. That tab
+access is an **optional** host permission (`<all_urls>`) that is **not** granted
+at install time — the extension asks for it the first time you turn tab lock on
+(or run **Test tab lock**), and you can decline. Tab lock only works once you
+allow it.
 
 The injected script:
 
@@ -66,14 +71,14 @@ Tab lock cannot run on restricted Chrome pages (e.g. `chrome://` or
 ## Periodic dhikr and page access
 
 If you enable **Periodic dhikr**, the extension injects a script
-(`content-tasbih.js`) into the **currently active tab** on a timer (or when you
-click **Test dhikr**). This uses the same `tabs`, `scripting`, and `<all_urls>`
-permissions as tab lock so the floating card can appear on regular websites.
+(`content-tasbih.js`) into your **open tabs** on a timer (or when you click
+**Test dhikr**). This uses the same `scripting` permission and optional tab
+access (`<all_urls>`) as tab lock so the floating card can appear on regular
+websites.
 
 The injected script:
 
-- Runs only on the tab that is active when the dhikr alarm fires (or the tab you
-  test on).
+- Runs on your open tabs when the dhikr alarm fires (or the tab you test on).
 - Does **not** read page content, form data, passwords, or browsing history.
 - Shows a small floating card with a dhikr phrase; it does not block page
   interaction. Tap the card to dismiss it, or it auto-hides after 10 seconds.
@@ -98,12 +103,11 @@ Dhikr reminders cannot run on restricted Chrome pages (e.g. `chrome://` or
 | `notifications` | Show prayer-time alerts in your system notification area. |
 | `storage` | Save your location, language, preferences, and cached times locally. |
 | `geolocation` | Optional; only used if you click **Use my location**. |
-| `tabs` | Enumerate open tabs to apply the prayer-time lock overlay (and the active tab for the dhikr card). |
-| `scripting` | Inject the lock overlay script into all open tabs at prayer time (and the dhikr card into the active tab). |
+| `scripting` | Inject the lock overlay and dhikr card scripts into your open tabs. |
 | `https://api.aladhan.com/*` | Fetch prayer times for your location. |
 | `https://countriesnow.space/*` | Fetch city lists for the country dropdown. |
 | `https://nominatim.openstreetmap.org/*` | Reverse-geocode coordinates when you use **Use my location**. |
-| `<all_urls>` | Inject the tab-lock overlay on open website tabs, or the dhikr card on the active tab (only when those features are used). |
+| `<all_urls>` (optional) | Inject the tab-lock overlay and the dhikr card on your open website tabs. Requested at runtime when you first enable tab lock or dhikr — not granted at install, and you can decline. |
 
 ## Contact
 
