@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Dhikr</title>
+    <link rel="stylesheet" href="theme.css" />
+    <style>
+      html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <!-- Loaded inside the native dhikr overlay window (TYPE_APPLICATION_OVERLAY,
+         click-through). Reuses the shared overlay-tasbih.js balloon; the native
+         side calls window.__ptShowDhikr(config) after load with the stored
+         settings (lang/theme/position). The phrase is picked here so the native
+         layer needn't know the phrase bank. -->
+    <script src="i18n.js"></script>
+    <script src="tasbih-phrases.js"></script>
+    <script src="overlay-tasbih.js"></script>
+    <script>
+      // Card tapped (or auto-dismissed) => close the native overlay window too.
+      function closeNative() {
+        if (window.AndroidDhikr && window.AndroidDhikr.dismiss) window.AndroidDhikr.dismiss();
+      }
+      window.__prayerTasbihOnClear = closeNative;
+      // The overlay window is a touchable corner region slightly larger than
+      // the card — a tap just beside the card should dismiss as well, not sit
+      // there swallowing touches.
+      document.addEventListener("click", closeNative);
+
+      window.__ptShowDhikr = function (config) {
+        if (typeof config === "string") {
+          try { config = JSON.parse(config); } catch (e) { return; }
+        }
+        config = config || {};
+        const lang = config.lang || "en";
+        const L = tr(lang);
+        window.__prayerTasbihActivate({
+          display: randomTasbihPhrase(lang),
+          label: L.tasbihCardLabel,
+          dir: L.dir,
+          lang,
+          theme: normalizeTheme(config.theme),
+          position: normalizeTasbihPosition(config.position),
+        });
+      };
+    </script>
+  </body>
+</html>

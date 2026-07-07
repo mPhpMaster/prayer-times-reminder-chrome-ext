@@ -143,7 +143,7 @@ ok("lock-config allowUnlock false", lc.allowUnlock === false);
 ok("lock-config has dir + lang + countdownPrefix",
   !!lc.dir && lc.lang === "en" && typeof lc.countdownPrefix === "string");
 const lct = ctx.buildLockConfig({ lang: "en", allowUnlock: true }, { test: true });
-eq("lock-config test -> 10s", lct.durationSecs, 10);
+eq("lock-config test -> 5s", lct.durationSecs, 5);
 ok("lock-config test prayerName non-empty", typeof lct.prayerName === "string" && lct.prayerName.length > 0);
 ok("lock-config allowUnlock true honored", lct.allowUnlock === true);
 ok("lock-config clamps absurd lockMinutes",

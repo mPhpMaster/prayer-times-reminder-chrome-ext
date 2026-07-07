@@ -48,6 +48,46 @@ fn log_js(msg: String) {
     log_line(&format!("[js] {msg}"));
 }
 
+// --- WebView2 memory trimming ---------------------------------------------------
+// The app keeps two resident webviews (settings popup + hidden scheduler); left
+// alone, each idles at WebView2's default working set. LOW memory target lets the
+// browser shrink caches; TrySuspend additionally parks a *hidden* webview's
+// renderer like an Edge sleeping tab (WebView2 auto-resumes it on show). Never
+// suspend the scheduler — its timers fire the prayer locks.
+#[cfg(windows)]
+fn trim_webview_memory(win: &tauri::WebviewWindow, low: bool, suspend: bool) {
+    let label = win.label().to_string();
+    let _ = win.with_webview(move |wv| {
+        use webview2_com::Microsoft::Web::WebView2::Win32::{
+            ICoreWebView2_19, ICoreWebView2_3, COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL,
+        };
+        use windows_core::Interface;
+        let controller = wv.controller();
+        let core = match unsafe { controller.CoreWebView2() } {
+            Ok(c) => c,
+            Err(e) => {
+                log_line(&format!("trim_webview_memory({label}): no core: {e}"));
+                return;
+            }
+        };
+        if let Ok(v19) = core.cast::<ICoreWebView2_19>() {
+            let level = COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL(if low { 1 } else { 0 });
+            let _ = unsafe { v19.SetMemoryUsageTargetLevel(level) };
+        }
+        if suspend {
+            if let Ok(v3) = core.cast::<ICoreWebView2_3>() {
+                let handler = webview2_com::TrySuspendCompletedHandler::create(Box::new(
+                    move |_hr, _suspended| Ok(()),
+                ));
+                let _ = unsafe { v3.TrySuspend(&handler) };
+            }
+        }
+    });
+}
+
+#[cfg(not(windows))]
+fn trim_webview_memory(_win: &tauri::WebviewWindow, _low: bool, _suspend: bool) {}
+
 // Open one full-screen, always-on-top lock window per monitor and push the
 // config to each. Idempotent per label so re-entry doesn't stack windows.
 fn open_lock_windows(app: &tauri::AppHandle, config: &serde_json::Value) -> Result<(), String> {
@@ -80,6 +120,11 @@ fn build_lock_window(
         .always_on_top(true)
         .decorations(false)
         .skip_taskbar(true)
+        // A lock screen must be a fixed, full-monitor cover: not resizable (no
+        // edge-drag) and not minimizable (can't be shrunk away to bypass it).
+        .resizable(false)
+        .minimizable(false)
+        .maximizable(false)
         .visible(false)
         .build()
     {
@@ -97,6 +142,21 @@ fn build_lock_window(
     if let Some(m) = monitor {
         let _ = win.set_position(*m.position());
         let _ = win.set_size(*m.size());
+        // Pin the window to its monitor: `resizable(false)` stops edge-drags,
+        // but the window can still be MOVED (Win+Shift+Arrow, snap shortcuts…)
+        // whenever manual unlock is allowed and the input hooks aren't engaged.
+        // Snap it straight back on any move away from its spot.
+        let expected = *m.position();
+        let size = *m.size();
+        let win_snap = win.clone();
+        win.on_window_event(move |event| {
+            if let tauri::WindowEvent::Moved(pos) = event {
+                if *pos != expected {
+                    let _ = win_snap.set_position(expected);
+                    let _ = win_snap.set_size(size);
+                }
+            }
+        });
     } else {
         let _ = win.set_fullscreen(true);
     }
@@ -123,15 +183,33 @@ fn audio_mute_async(mute: bool) {
     });
 }
 
+// Block/restore app camera access off the main thread (the registry write is
+// fast, but keep the lock/unlock path non-blocking, like audio).
+#[cfg(windows)]
+fn camera_block_async(block: bool) {
+    std::thread::spawn(move || {
+        if block {
+            camera::disable();
+        } else {
+            camera::enable();
+        }
+    });
+}
+
 // Do the actual clearing. MUST run on the main thread (window ops); call it via
 // clear_on_main from timer / shortcut threads.
 fn do_clear(app: &tauri::AppHandle) {
+    // Restore input first so the user regains control immediately.
+    #[cfg(windows)]
+    input_block::stop();
     if let Some(state) = app.try_state::<AppState>() {
         *state.lock_config.lock().unwrap() = None;
     }
     close_lock_windows(app);
     #[cfg(windows)]
     audio_mute_async(false);
+    #[cfg(windows)]
+    camera_block_async(false);
 }
 
 // Run clearing on a fresh worker thread. Window ops dispatched from a worker
@@ -159,8 +237,23 @@ fn start_lock(
         let _ = open_lock_windows(&app_win, &cfg);
     });
 
+    // Silence the speaker + mic only when the "silent during prayer" setting is
+    // on (config.silent, default true). Off → leave audio untouched.
+    let silent = config.get("silent").and_then(|v| v.as_bool()).unwrap_or(true);
     #[cfg(windows)]
-    audio_mute_async(true);
+    if silent {
+        audio_mute_async(true);
+    }
+    #[cfg(windows)]
+    camera_block_async(true);
+
+    // Strict lock (manual unlock off) → block all keyboard + mouse so the covered
+    // screen can't be moved (Win+Arrow / drag), Alt-Tabbed, or clicked. Lenient
+    // locks keep input live so the ✕ / Esc unlock still works.
+    #[cfg(windows)]
+    if !config.get("allowUnlock").and_then(|v| v.as_bool()).unwrap_or(false) {
+        input_block::start();
+    }
 
     // Auto-unlock fallback so a user is never trapped if the JS timer is lost.
     let is_test = config.get("test").and_then(|v| v.as_bool()).unwrap_or(false);
@@ -202,14 +295,26 @@ fn show_dhikr(
     // Store first so the window can pull it on load (get_dhikr_config).
     *state.dhikr_config.lock().unwrap() = Some(config);
 
-    // Build + place the small dhikr window from a worker thread.
+    // Build + place the dhikr overlay(s) from a worker thread — one transparent
+    // click-through window per monitor (like the lock), so the balloon shows on
+    // every screen and always above everything.
     let app_win = app.clone();
     std::thread::spawn(move || {
-        if let Some(w) = app_win.get_webview_window("dhikr") {
-            let _ = w.close();
+        for (label, w) in app_win.webview_windows() {
+            if label.starts_with("dhikr") {
+                let _ = w.close();
+            }
         }
-        let win = match WebviewWindowBuilder::new(&app_win, "dhikr", WebviewUrl::App("tasbih.html".into()))
-            .inner_size(380.0, 190.0)
+        let monitors = app_win.available_monitors().unwrap_or_default();
+        let count = monitors.len().max(1);
+        for i in 0..count {
+            let label = format!("dhikr-{i}");
+            let win = match WebviewWindowBuilder::new(
+                &app_win,
+                &label,
+                WebviewUrl::App("tasbih.html".into()),
+            )
+            .transparent(true)
             .always_on_top(true)
             .decorations(false)
             .skip_taskbar(true)
@@ -217,31 +322,40 @@ fn show_dhikr(
             .focused(false)
             .visible(false)
             .build()
-        {
-            Ok(w) => w,
-            Err(e) => {
-                log_line(&format!("show_dhikr: build ERROR: {e}"));
-                return;
+            {
+                Ok(w) => w,
+                Err(e) => {
+                    log_line(&format!("show_dhikr: {label} build ERROR: {e}"));
+                    continue;
+                }
+            };
+            // Cover this monitor exactly (position + size, NOT set_fullscreen —
+            // that retargets to the primary and can misplace on multi-monitor).
+            // The window is transparent + click-through, so it reads as a floating
+            // balloon: the shared overlay-tasbih.js anchors the card to the corner
+            // chosen in Settings, exactly like the extension does in a tab.
+            if let Some(m) = monitors.get(i) {
+                let _ = win.set_position(*m.position());
+                let _ = win.set_size(*m.size());
             }
-        };
-        if let Ok(Some(m)) = win.primary_monitor() {
-            let size = m.size();
-            let pos = m.position();
-            let scale = m.scale_factor();
-            let x = pos.x + size.width as i32 - (400.0 * scale) as i32;
-            let y = pos.y + size.height as i32 - (250.0 * scale) as i32;
-            let _ = win.set_position(tauri::PhysicalPosition::new(x, y));
+            let _ = win.set_ignore_cursor_events(true);
+            let _ = win.show();
+            // Re-assert topmost AFTER show: among HWND_TOPMOST windows the most
+            // recently asserted wins, so the balloon lands above other
+            // always-on-top windows (including our own settings popup).
+            let _ = win.set_always_on_top(true);
         }
-        let _ = win.show();
-        log_line("show_dhikr: window shown");
+        log_line(&format!("show_dhikr: {count} window(s) shown"));
     });
 
     // Auto-close after the card's own dismiss (close from a worker thread).
     let app_close = app.clone();
     std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_secs(12));
-        if let Some(w) = app_close.get_webview_window("dhikr") {
-            let _ = w.close();
+        for (label, w) in app_close.webview_windows() {
+            if label.starts_with("dhikr") {
+                let _ = w.close();
+            }
         }
     });
     Ok(())
@@ -267,14 +381,21 @@ fn position_popup(win: &tauri::WebviewWindow) {
 fn show_popup(app: &tauri::AppHandle) {
     if let Some(win) = app.get_webview_window("settings") {
         position_popup(&win);
+        // Showing auto-resumes a suspended webview; also lift the memory cap.
+        trim_webview_memory(&win, false, false);
         let _ = win.show();
         let _ = win.set_focus();
+        // The window survives between opens, so reopen on the main view even if
+        // it was dismissed while on Settings.
+        let _ = win.eval("window.__ptPopupReset && window.__ptPopupReset();");
     }
 }
 
 fn hide_popup(app: &tauri::AppHandle) {
     if let Some(win) = app.get_webview_window("settings") {
         let _ = win.hide();
+        // Park the hidden popup: low memory target + suspend its renderer.
+        trim_webview_memory(&win, true, true);
         if let Some(state) = app.try_state::<AppState>() {
             *state.popup_hidden_at.lock().unwrap() = Some(std::time::Instant::now());
         }
@@ -305,12 +426,85 @@ fn toggle_popup(app: &tauri::AppHandle) {
 fn quit_app(app: &tauri::AppHandle) {
     #[cfg(windows)]
     {
+        // Restore camera access before we hard-kill the process tree.
+        camera::enable();
         let pid = std::process::id().to_string();
         let _ = std::process::Command::new("taskkill")
             .args(["/F", "/T", "/PID", &pid])
             .spawn();
     }
     app.exit(0);
+}
+
+// --- Companion Chrome extension ---------------------------------------------
+// The published Web Store id (see the READMEs' store link) and listing URL.
+const CHROME_EXT_ID: &str = "knahkbkmbjghaiillhngjbhoinmeegoc";
+const CHROME_STORE_URL: &str =
+    "https://chromewebstore.google.com/detail/prayer-times-reminder/knahkbkmbjghaiillhngjbhoinmeegoc";
+
+// True if any Chromium-based browser on this machine has the extension installed
+// — its unpacked folder `<UserData>/<Profile>/Extensions/<id>/` exists on disk.
+#[tauri::command]
+fn chrome_extension_installed() -> bool {
+    let mut roots: Vec<std::path::PathBuf> = Vec::new();
+    if let Some(local) = std::env::var_os("LOCALAPPDATA").map(std::path::PathBuf::from) {
+        for rel in [
+            "Google/Chrome/User Data",
+            "Google/Chrome Beta/User Data",
+            "Microsoft/Edge/User Data",
+            "BraveSoftware/Brave-Browser/User Data",
+            "Chromium/User Data",
+            "Vivaldi/User Data",
+        ] {
+            roots.push(local.join(rel));
+        }
+    }
+    if let Some(roaming) = std::env::var_os("APPDATA").map(std::path::PathBuf::from) {
+        // Opera keeps its profile directly (no "User Data" wrapper).
+        roots.push(roaming.join("Opera Software/Opera Stable"));
+        roots.push(roaming.join("Opera Software/Opera GX Stable"));
+    }
+    roots.iter().any(|r| profile_has_ext(r))
+}
+
+// Scan each profile dir under `root` (Default, Profile 1, …) for the extension,
+// and also `root` itself (Opera stores the profile at the root).
+fn profile_has_ext(root: &std::path::Path) -> bool {
+    if root.join("Extensions").join(CHROME_EXT_ID).is_dir() {
+        return true;
+    }
+    let Ok(entries) = std::fs::read_dir(root) else {
+        return false;
+    };
+    entries.flatten().any(|e| {
+        e.file_type().map(|t| t.is_dir()).unwrap_or(false)
+            && e.path().join("Extensions").join(CHROME_EXT_ID).is_dir()
+    })
+}
+
+// --- Launch on Windows startup (autostart plugin) --------------------------
+#[tauri::command]
+fn get_autostart(app: tauri::AppHandle) -> bool {
+    use tauri_plugin_autostart::ManagerExt;
+    app.autolaunch().is_enabled().unwrap_or(false)
+}
+
+#[tauri::command]
+fn set_autostart(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+    let mgr = app.autolaunch();
+    if enabled { mgr.enable() } else { mgr.disable() }.map_err(|e| e.to_string())
+}
+
+// Open the Web Store listing in the user's default browser.
+#[tauri::command]
+fn open_chrome_store() -> Result<(), String> {
+    #[cfg(windows)]
+    std::process::Command::new("cmd")
+        .args(["/C", "start", "", CHROME_STORE_URL])
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 fn main() {
@@ -342,9 +536,23 @@ fn main() {
             get_lock_config,
             show_dhikr,
             get_dhikr_config,
+            chrome_extension_installed,
+            open_chrome_store,
+            get_autostart,
+            set_autostart,
             log_js
         ])
         .setup(|app| {
+            // Let the input-block keyboard hook clear the lock on Ctrl+Alt+U
+            // (while input is blocked, the global-shortcut plugin can't fire).
+            #[cfg(windows)]
+            input_block::set_app(app.handle().clone());
+
+            // Undo a leftover camera "Deny" if a previous session crashed while
+            // locked (restores the user's prior value from the marker file).
+            #[cfg(windows)]
+            camera::recover();
+
             // Register the emergency-unlock shortcut (Ctrl+Alt+U).
             {
                 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
@@ -383,9 +591,12 @@ fn main() {
                 })
                 .build(app)?;
 
-            // Tray-flyout behavior: dismiss the popup when it loses focus (click
-            // away) and hide (not destroy) on close, so the hidden background
-            // scheduler keeps the app alive.
+            // Tray-flyout behavior: the popup stays always-on-top while open, but
+            // clicking anywhere outside (blur) dismisses it — like the volume/clock
+            // flyouts. Close also just hides (not destroys), so the hidden
+            // background scheduler keeps the app alive. The 300ms debounce in
+            // toggle_popup keeps the tray click that caused the blur from
+            // immediately reopening it.
             if let Some(settings) = app.get_webview_window("settings") {
                 let handle = app.handle().clone();
                 settings.on_window_event(move |event| match event {
@@ -399,10 +610,154 @@ fn main() {
                     _ => {}
                 });
             }
+
+            // First launch: reveal the settings window so the user can set things
+            // up. Later runs (and Windows-startup launches) stay in the tray. A
+            // marker file in the app config dir records that first run happened.
+            if let Ok(dir) = app.path().app_config_dir() {
+                let marker = dir.join("first-run-done");
+                if !marker.exists() {
+                    let _ = std::fs::create_dir_all(&dir);
+                    let _ = std::fs::write(&marker, b"1");
+                    show_popup(app.handle());
+                }
+            }
+
+            // Trim the resident webviews once they've finished booting: the
+            // scheduler always runs under a LOW memory target (its timers keep
+            // running), and the settings popup is parked too if it's hidden
+            // (tray-only start). Delayed so CoreWebView2 is fully initialized.
+            let handle = app.handle().clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_secs(10));
+                if let Some(bg) = handle.get_webview_window("background") {
+                    trim_webview_memory(&bg, true, false);
+                }
+                if let Some(settings) = handle.get_webview_window("settings") {
+                    if !settings.is_visible().unwrap_or(true) {
+                        trim_webview_memory(&settings, true, true);
+                    }
+                }
+            });
             Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running prayer-desktop");
+}
+
+// --- Windows input lockdown: block all keyboard + mouse during a STRICT lock ---
+// Global low-level hooks on a dedicated message-pump thread swallow every key and
+// mouse event, so the covered screen can't be moved (Win+Arrow / drag), Alt-Tabbed,
+// or clicked. Only engaged when manual unlock is off. Escapes that always work: the
+// auto-unlock timer, Ctrl+Alt+Del (a secure sequence no hook can catch), and the
+// in-hook emergency Ctrl+Alt+U, which clears the lock (and thus removes the hooks).
+#[cfg(windows)]
+mod input_block {
+    use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+    use std::sync::OnceLock;
+    use tauri::AppHandle;
+    use windows::Win32::Foundation::{LPARAM, LRESULT, WPARAM};
+    use windows::Win32::System::Threading::GetCurrentThreadId;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        CallNextHookEx, DispatchMessageW, GetMessageW, PostThreadMessageW, SetWindowsHookExW,
+        UnhookWindowsHookEx, HC_ACTION, KBDLLHOOKSTRUCT, MSG, WH_KEYBOARD_LL, WH_MOUSE_LL,
+        WM_KEYDOWN, WM_KEYUP, WM_QUIT, WM_SYSKEYDOWN, WM_SYSKEYUP,
+    };
+
+    static APP: OnceLock<AppHandle> = OnceLock::new();
+    static ACTIVE: AtomicBool = AtomicBool::new(false);
+    static THREAD_ID: AtomicU32 = AtomicU32::new(0);
+    static CTRL_DOWN: AtomicBool = AtomicBool::new(false);
+    static ALT_DOWN: AtomicBool = AtomicBool::new(false);
+
+    // Give the hook a way to clear the lock (for the emergency combo).
+    pub fn set_app(app: AppHandle) {
+        let _ = APP.set(app);
+    }
+
+    unsafe extern "system" fn keyboard_proc(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
+        if code == HC_ACTION as i32 {
+            let kbd = &*(lparam.0 as *const KBDLLHOOKSTRUCT);
+            let vk = kbd.vkCode;
+            let m = wparam.0 as u32;
+            let is_down = m == WM_KEYDOWN || m == WM_SYSKEYDOWN;
+            let is_up = m == WM_KEYUP || m == WM_SYSKEYUP;
+            match vk {
+                0x11 | 0xA2 | 0xA3 => {
+                    // Ctrl (VK_CONTROL / L / R)
+                    if is_down {
+                        CTRL_DOWN.store(true, Ordering::SeqCst);
+                    } else if is_up {
+                        CTRL_DOWN.store(false, Ordering::SeqCst);
+                    }
+                }
+                0x12 | 0xA4 | 0xA5 => {
+                    // Alt (VK_MENU / L / R)
+                    if is_down {
+                        ALT_DOWN.store(true, Ordering::SeqCst);
+                    } else if is_up {
+                        ALT_DOWN.store(false, Ordering::SeqCst);
+                    }
+                }
+                0x55 => {
+                    // 'U' — emergency unlock while input is blocked.
+                    if is_down
+                        && CTRL_DOWN.load(Ordering::SeqCst)
+                        && ALT_DOWN.load(Ordering::SeqCst)
+                    {
+                        if let Some(app) = APP.get() {
+                            crate::clear_lock_spawn(app);
+                        }
+                    }
+                }
+                _ => {}
+            }
+            return LRESULT(1); // swallow ALL keyboard input
+        }
+        CallNextHookEx(None, code, wparam, lparam)
+    }
+
+    unsafe extern "system" fn mouse_proc(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
+        if code == HC_ACTION as i32 {
+            return LRESULT(1); // swallow ALL mouse input (move, click, wheel)
+        }
+        CallNextHookEx(None, code, wparam, lparam)
+    }
+
+    pub fn start() {
+        if ACTIVE.swap(true, Ordering::SeqCst) {
+            return; // already running
+        }
+        std::thread::spawn(|| unsafe {
+            CTRL_DOWN.store(false, Ordering::SeqCst);
+            ALT_DOWN.store(false, Ordering::SeqCst);
+            THREAD_ID.store(GetCurrentThreadId(), Ordering::SeqCst);
+            let kb = SetWindowsHookExW(WH_KEYBOARD_LL, Some(keyboard_proc), None, 0);
+            let ms = SetWindowsHookExW(WH_MOUSE_LL, Some(mouse_proc), None, 0);
+            // Pump messages so the LL hooks fire; exits on WM_QUIT from stop().
+            let mut msg = MSG::default();
+            while GetMessageW(&mut msg, None, 0, 0).as_bool() {
+                DispatchMessageW(&msg);
+            }
+            if let Ok(k) = kb {
+                let _ = UnhookWindowsHookEx(k);
+            }
+            if let Ok(m) = ms {
+                let _ = UnhookWindowsHookEx(m);
+            }
+            THREAD_ID.store(0, Ordering::SeqCst);
+            ACTIVE.store(false, Ordering::SeqCst);
+        });
+    }
+
+    pub fn stop() {
+        let tid = THREAD_ID.load(Ordering::SeqCst);
+        if tid != 0 {
+            unsafe {
+                let _ = PostThreadMessageW(tid, WM_QUIT, WPARAM(0), LPARAM(0));
+            }
+        }
+    }
 }
 
 // --- Windows Core Audio: mute/unmute default speaker (eRender) + mic (eCapture).
@@ -411,24 +766,107 @@ mod audio {
     use windows::core::Result;
     use windows::Win32::Media::Audio::Endpoints::IAudioEndpointVolume;
     use windows::Win32::Media::Audio::{
-        eCapture, eMultimedia, eRender, IMMDeviceEnumerator, MMDeviceEnumerator,
+        eCapture, eRender, IMMDeviceEnumerator, MMDeviceEnumerator, DEVICE_STATE_ACTIVE,
     };
     use windows::Win32::System::Com::{
         CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_MULTITHREADED,
     };
 
+    // Mute EVERY active output (speakers, HDMI, Bluetooth headphones…) and every
+    // microphone — not just the current default endpoint. The user may be
+    // listening through a non-default device, so muting only the default would
+    // miss it; muting all active endpoints silences the machine regardless.
     pub fn set_mute(mute: bool) -> Result<()> {
         unsafe {
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
             let enumerator: IMMDeviceEnumerator =
                 CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
             for flow in [eRender, eCapture] {
-                if let Ok(device) = enumerator.GetDefaultAudioEndpoint(flow, eMultimedia) {
-                    let volume: IAudioEndpointVolume = device.Activate(CLSCTX_ALL, None)?;
-                    let _ = volume.SetMute(mute, std::ptr::null());
+                let Ok(collection) = enumerator.EnumAudioEndpoints(flow, DEVICE_STATE_ACTIVE) else {
+                    continue;
+                };
+                let count = collection.GetCount().unwrap_or(0);
+                for i in 0..count {
+                    if let Ok(device) = collection.Item(i) {
+                        if let Ok(volume) = device.Activate::<IAudioEndpointVolume>(CLSCTX_ALL, None)
+                        {
+                            let _ = volume.SetMute(mute, std::ptr::null());
+                        }
+                    }
                 }
             }
         }
         Ok(())
+    }
+}
+
+// --- Windows camera: block app camera access during a lock ------------------
+// Uses the per-user "let apps use my camera" consent toggle
+// (HKCU ...\ConsentStore\webcam\Value = "Deny"). Fully reversible, needs no
+// admin, and can never leave the camera hardware-disabled. We save the prior
+// value in a marker file so unlock — or, after a crash while locked, the next
+// launch (camera::recover) — restores exactly what the user had.
+#[cfg(windows)]
+mod camera {
+    use std::fs;
+    use std::path::PathBuf;
+    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::RegKey;
+
+    const SUBKEY: &str =
+        r"Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam";
+    const VALUE: &str = "Value";
+
+    fn marker_path() -> PathBuf {
+        std::env::temp_dir().join("prayer-cam-restore.txt")
+    }
+
+    fn read_value() -> String {
+        RegKey::predef(HKEY_CURRENT_USER)
+            .open_subkey(SUBKEY)
+            .and_then(|k| k.get_value::<String, _>(VALUE))
+            .unwrap_or_else(|_| "Allow".to_string())
+    }
+
+    fn write_value(v: &str) {
+        match RegKey::predef(HKEY_CURRENT_USER).create_subkey(SUBKEY) {
+            Ok((key, _)) => {
+                let _ = key.set_value(VALUE, &v.to_string());
+            }
+            Err(e) => crate::log_line(&format!("camera: write '{v}' FAILED: {e}")),
+        }
+    }
+
+    // Block camera access; remember the prior value so we can restore it. The
+    // marker is written only once per lock session so a re-lock can't overwrite
+    // the saved value with our own "Deny".
+    pub fn disable() {
+        let marker = marker_path();
+        if !marker.exists() {
+            let _ = fs::write(&marker, read_value());
+        }
+        write_value("Deny");
+        crate::log_line("camera: access set to Deny");
+    }
+
+    // Restore camera access to the saved prior value (default "Allow").
+    pub fn enable() {
+        let marker = marker_path();
+        let target = fs::read_to_string(&marker)
+            .ok()
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| "Allow".to_string());
+        let _ = fs::remove_file(&marker);
+        write_value(&target);
+        crate::log_line(&format!("camera: access restored to {target}"));
+    }
+
+    // On startup, undo a leftover "Deny" from a session that crashed while locked.
+    pub fn recover() {
+        if marker_path().exists() {
+            crate::log_line("camera: recovering leftover Deny from a previous session");
+            enable();
+        }
     }
 }

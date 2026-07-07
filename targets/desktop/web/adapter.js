@@ -87,10 +87,15 @@
     test: async () => {
       logJs("enforce.test clicked; buildLockConfig=" + typeof buildLockConfig);
       try {
-        const s = await store.get(["lang", "theme", "arabicDigits", "lockMinutes"]);
-        s.allowUnlock = true; // a test lock always shows an unlock button (X + Esc)
+        // Faithful dry-run of a real prayer lock: honor the user's ACTUAL
+        // "allow manual unlock" setting, so the ✕ shows only when they enabled
+        // it — exactly like prayer time. The test just runs for a few seconds
+        // (buildLockConfig test:true), and the emergency Ctrl+Alt+U global
+        // shortcut is always available, so no one is ever trapped even with
+        // manual unlock off.
+        const s = await store.get(["lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock"]);
         const config = buildLockConfig(s, { test: true });
-        logJs("built lock config ok");
+        logJs("built lock config ok; allowUnlock=" + config.allowUnlock);
         return enforce.start(config);
       } catch (e) {
         logJs("enforce.test ERROR: " + e);
@@ -144,5 +149,30 @@
     hasLockAccess: () => Promise.resolve(true),
   };
 
-  globalThis.__PTPlatform = { name: "tauri", store, enforce, dhikr, runtime, geo, permissions };
+  // Companion Chrome extension (browser tab lock): detect install on disk and
+  // open the Web Store listing. The settings UI shows an install button unless
+  // it's already present. Desktop-only capability (extension/mobile omit it).
+  const browserExt = {
+    installed: () => invoke("chrome_extension_installed").then((v) => v === true).catch(() => false),
+    install: () =>
+      invoke("open_chrome_store")
+        .then(() => ({ ok: true }))
+        .catch((e) => ({ ok: false, reason: String(e) })),
+  };
+
+  // Launch on Windows startup (Tauri autostart plugin), driven by Rust commands.
+  const autostart = {
+    get: () => invoke("get_autostart").then((v) => v === true).catch(() => false),
+    set: (enabled) =>
+      invoke("set_autostart", { enabled })
+        .then(() => ({ ok: true }))
+        .catch((e) => ({ ok: false, reason: String(e) })),
+  };
+
+  // Desktop app feel: no browser context menu on right-click.
+  if (typeof document !== "undefined") {
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
+
+  globalThis.__PTPlatform = { name: "tauri", store, enforce, dhikr, runtime, geo, permissions, browserExt, autostart };
 })();

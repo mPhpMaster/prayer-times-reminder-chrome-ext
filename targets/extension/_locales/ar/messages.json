@@ -1,0 +1,14 @@
+{
+  "appName": {
+    "message": "مواقيت الصلاة (استراحة الصلاة)",
+    "description": "Extension name shown in the Chrome Web Store and toolbar."
+  },
+  "appShortName": {
+    "message": "مواقيت الصلاة",
+    "description": "Short name for space-constrained UI (new tab, app launcher)."
+  },
+  "appDesc": {
+    "message": "استراحة الصلاة: يقفل تبويباتك عند دخول وقت الصلاة لتصلّي — مع التذكيرات، والجدول اليومي، والأذكار، والسمات، و٨ لغات.",
+    "description": "Chrome Web Store description."
+  }
+}

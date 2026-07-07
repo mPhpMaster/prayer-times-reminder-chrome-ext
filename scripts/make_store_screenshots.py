@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -26,8 +27,12 @@ from PIL import Image
 
 REPO = Path(__file__).resolve().parents[1]
 OUT = REPO / "screenshots"
-HARNESS = REPO / "_store_harness.html"  # transient; lives in repo root so the
-#                                         page's relative asset URLs still resolve
+# Post-restructure the runnable page (popup.html/welcome.html + its flat assets:
+# theme.css, i18n.js, vendor/, fonts/) lives in the assembled extension build,
+# not at the repo root. Source from there and drop the transient harness there
+# too so every same-dir relative asset URL still resolves.
+BUILD = REPO / "targets" / "extension" / "build"
+HARNESS = BUILD / "_store_harness.html"
 CANVAS = (1280, 800)
 DPR = 2
 
@@ -148,7 +153,7 @@ KINDS = {
 
 def build_harness(kind: str, lang: str) -> None:
     cfg = KINDS[kind]
-    html = (REPO / cfg["src"]).read_text(encoding="utf-8")
+    html = (BUILD / cfg["src"]).read_text(encoding="utf-8")
 
     mock = MOCK.replace("__LANG__", lang).replace(
         "__ARABIC__", "true" if lang in ARABIC_DIGIT_LANGS else "false"
@@ -186,6 +191,11 @@ def capture(chrome: str, profile: str, kind: str, lang: str) -> Image.Image:
 
 
 def main() -> None:
+    # Assemble a fresh extension build so the harness sources the current UI.
+    subprocess.run(
+        ["node", str(REPO / "tools" / "sync-core.mjs"), "extension"],
+        check=True, cwd=REPO, shell=(sys.platform == "win32"),
+    )
     chrome = find_chrome()
     OUT.mkdir(parents=True, exist_ok=True)
     profile = tempfile.mkdtemp(prefix="store-shot-profile-")

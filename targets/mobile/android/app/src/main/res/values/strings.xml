@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Prayer</string>
-    <string name="title_activity_main">Prayer</string>
-    <string name="package_name">com.example.prayer</string>
-    <string name="custom_url_scheme">com.example.prayer</string>
+    <string name="app_name">Prayer Times Reminder</string>
+    <string name="title_activity_main">Prayer Times Reminder</string>
+    <string name="package_name">com.mphpmaster.prayer</string>
+    <string name="custom_url_scheme">com.mphpmaster.prayer</string>
 </resources>

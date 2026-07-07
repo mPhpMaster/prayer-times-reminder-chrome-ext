@@ -50,6 +50,17 @@
             <button type="button" id="wizard-back" class="secondary">—</button>
             <button type="button" id="wizard-next" class="primary">—</button>
         </div>
+
+        <!-- Cross-promo: the companion Windows desktop app. The CTA link only
+             shows once a download URL is set (DESKTOP_APP_URL in welcome.js). -->
+        <div class="desktop-promo" id="desktop-promo" hidden>
+            <span class="desktop-promo-icon" aria-hidden="true">🖥️</span>
+            <span class="desktop-promo-text">
+                <strong id="desktop-promo-title">—</strong>
+                <span id="desktop-promo-sub">—</span>
+            </span>
+            <a class="desktop-promo-cta" id="desktop-promo-link" href="#" target="_blank" rel="noopener" hidden>—</a>
+        </div>
     </main>
 
     <script src="adapter.js"></script>

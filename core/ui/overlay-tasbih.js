@@ -38,6 +38,18 @@
     }
   }
 
+  // User dismissal / auto-dismiss: clear the card AND tell the host shell, so a
+  // native surface (Android's floating overlay window) can close with it. The
+  // extension and desktop set no hook — plain clear. Not fired by the defensive
+  // clear at the start of activateTasbih (that's a re-show, not a dismissal).
+  function dismissTasbih() {
+    clearTasbih();
+    const onClear = window.__prayerTasbihOnClear;
+    if (typeof onClear === "function") {
+      try { onClear(); } catch {}
+    }
+  }
+
   function lineFont(variant, uiTheme) {
     if (variant === "urdu") {
       return uiTheme === "classic"
@@ -228,17 +240,17 @@
     const card = shadow.querySelector(".tasbih-card");
     card.addEventListener("click", (e) => {
       e.stopPropagation();
-      clearTasbih();
+      dismissTasbih();
     });
     card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        clearTasbih();
+        dismissTasbih();
       }
     });
 
     document.documentElement.appendChild(host);
-    autoDismissTimer = setTimeout(clearTasbih, dismissMs);
+    autoDismissTimer = setTimeout(dismissTasbih, dismissMs);
   }
 
   // Driven by one-shot executeScript({func}) from the background worker; no

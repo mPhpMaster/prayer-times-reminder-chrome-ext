@@ -1,6 +1,6 @@
 {
-  "appId": "com.example.prayer",
-  "appName": "Prayer",
+  "appId": "com.mphpmaster.prayer",
+  "appName": "Prayer Times Reminder",
   "webDir": "www",
   "server": { "androidScheme": "https" },
   "plugins": {

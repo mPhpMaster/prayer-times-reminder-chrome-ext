@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="midnight-emerald">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="about.css" />
+    <title>Prayer Times Reminder</title>
+</head>
+
+<body>
+    <div class="orb orb-top" aria-hidden="true"></div>
+    <div class="orb orb-bottom" aria-hidden="true"></div>
+
+    <main class="card glass-card about">
+        <div class="logo">🕌</div>
+        <h1 id="about-app-name">—</h1>
+        <p class="about-version" id="about-version" hidden>—</p>
+        <p class="lead" id="about-desc">—</p>
+
+        <!-- Ongoing-charity (sadaqah jariyah) dedication. The heading is
+             localized; the names below stay in Arabic in every UI language. -->
+        <section class="sadaqah next-card" aria-labelledby="about-sadaqah-heading">
+            <h2 id="about-sadaqah-heading">—</h2>
+            <ul class="sadaqah-names" id="sadaqah-names"></ul>
+            <p class="sadaqah-all">
+                <span class="ded-ar" dir="rtl">وعن جميع المسلمين الاحياء منهم والاموات</span>
+                <span class="ded-translit" id="sadaqah-all-translit" hidden></span>
+            </p>
+        </section>
+
+        <button type="button" id="about-back" class="about-back">—</button>
+    </main>
+
+    <script src="adapter.js"></script>
+    <script src="platform.js"></script>
+    <script src="i18n.js"></script>
+    <script src="about.js"></script>
+</body>
+
+</html>

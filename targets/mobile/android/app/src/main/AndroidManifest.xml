@@ -53,6 +53,19 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="prayer_time_enforcement" />
         </service>
+
+        <!-- Periodic dhikr: silent floating balloon on an AlarmManager cadence. -->
+        <receiver android:name=".DhikrAlarmReceiver" android:exported="false" />
+        <!-- Exact prayer-time alarms that fire the full-screen lock. -->
+        <receiver android:name=".PrayerAlarmReceiver" android:exported="false" />
+        <!-- Watchdog that re-asserts the lock if the app is killed mid-prayer. -->
+        <receiver android:name=".LockWatchdogReceiver" android:exported="false" />
+        <receiver android:name=".BootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
     </application>
 
     <!-- Permissions -->
@@ -67,6 +80,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>

@@ -140,6 +140,16 @@
                 </div>
             </div>
 
+            <!-- Desktop-only: launch at Windows startup. Hidden on other shells;
+                 popup.js unhides it and reflects the OS autostart state. -->
+            <div class="field-group toggle-row" id="startup-group" data-group="startup" hidden>
+                <label class="toggle-label" for="startup-toggle">
+                    <input type="checkbox" id="startup-toggle" />
+                    <span id="label-startup">Launch on Windows startup</span>
+                </label>
+                <p class="field-hint" id="hint-startup">Start automatically when you sign in to Windows.</p>
+            </div>
+
             <div class="field-group toggle-row" data-group="lock">
                 <label class="toggle-label" for="tab-lock">
                     <input type="checkbox" id="tab-lock" />
@@ -152,6 +162,13 @@
                         <label for="lock-minutes" id="label-lock-minutes">Lock duration (minutes)</label>
                         <input type="number" id="lock-minutes" min="1" max="120" value="5" />
                     </div>
+                    <div id="silent-row" hidden>
+                        <label class="toggle-label nested" for="silent-prayer">
+                            <input type="checkbox" id="silent-prayer" />
+                            <span id="label-silent">Silent (Do Not Disturb) during prayer</span>
+                        </label>
+                        <p class="field-hint" id="hint-silent">Silences calls and notifications while the lock is active.</p>
+                    </div>
                     <label class="toggle-label nested" for="allow-unlock">
                         <input type="checkbox" id="allow-unlock" />
                         <span id="label-allow-unlock">Allow manual unlock</span>
@@ -160,6 +177,39 @@
                 </div>
 
                 <button type="button" id="test-lock-btn" class="secondary test-lock-btn">Test tab lock</button>
+            </div>
+
+            <!-- Desktop-only companion: the Chrome extension adds in-browser tab
+                 lock. Sits with the lock settings. popup.js unhides it on desktop
+                 and swaps the install button for the "installed" badge. -->
+            <div class="ext-card" id="ext-group" data-group="browser" hidden>
+                <div class="ext-card-head">
+                    <span class="ext-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.015 3.015 1 1 0 0 0-.475 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.475 2.5 2.5 0 1 0-3.015 3.015 1 1 0 0 1 .475 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68-.475 2.5 2.5 0 1 1-3.015-3.015 1 1 0 0 0 .475-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.475 2.5 2.5 0 1 0 3.015-3.015 1 1 0 0 1-.475-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>
+                    </span>
+                    <div class="ext-card-text">
+                        <span class="ext-card-title" id="label-ext-section">Browser tab lock (Chrome)</span>
+                        <p class="ext-card-hint" id="hint-ext">Also lock your browser tabs during prayer by adding the companion Chrome extension.</p>
+                    </div>
+                </div>
+                <button type="button" id="ext-install-btn" class="ext-install-btn">Get the Chrome extension</button>
+                <span class="ext-installed-note" id="ext-installed-note" hidden>✓ Chrome extension installed</span>
+            </div>
+
+            <!-- Extension-only: promote the companion WINDOWS app (full-screen prayer
+                 lock). popup.js unhides this only on the browser extension; the CTA
+                 link appears once WINDOWS_APP_URL is set. -->
+            <div class="ext-card" id="win-group" data-group="browser" hidden>
+                <div class="ext-card-head">
+                    <span class="ext-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    </span>
+                    <div class="ext-card-text">
+                        <span class="ext-card-title" id="label-win-section">Prayer Times for Windows</span>
+                        <p class="ext-card-hint" id="hint-win">A desktop app that locks your entire screen at prayer time.</p>
+                    </div>
+                </div>
+                <a class="ext-install-btn" id="win-link" href="#" target="_blank" rel="noopener" hidden>Learn more</a>
             </div>
 
             <div class="field-group toggle-row" data-group="dhikr">
@@ -212,6 +262,8 @@
             </div>
 
             <p class="error" id="error" hidden></p>
+
+            <a id="about-link" class="about-link" href="about.html" target="_blank" rel="noopener">About the app</a>
         </div>
     </div>
 

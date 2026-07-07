@@ -1,6 +1,6 @@
 [package]
 name = "prayer-desktop"
-version = "0.1.0"
+version = "1.0.0"
 description = "Prayer — desktop (Tauri)"
 edition = "2021"
 rust-version = "1.77"
@@ -23,9 +23,24 @@ windows = { version = "0.58", features = [
   "Win32_System_Com",
   "Win32_Media_Audio",
   "Win32_Media_Audio_Endpoints",
+  "Win32_UI_WindowsAndMessaging",
+  "Win32_System_Threading",
 ] }
+# WebView2 memory trimming (SetMemoryUsageTargetLevel / TrySuspend). Same 0.38
+# line Tauri's wry uses, so the interface types match tauri's controller handle.
+# webview2-com builds against windows 0.61; windows-core 0.61 provides the
+# matching Interface trait for `.cast()`. (The 0.58 `windows` above is only for
+# the audio-mute + input-hook code and coexists fine.)
+webview2-com = "0.38"
+windows-core = "0.61"
+# Camera consent toggle (HKCU ConsentStore\webcam) — reversible, needs no admin.
+winreg = "0.52"
 
 [profile.release]
 opt-level = "s"
 lto = true
 strip = true
+# One codegen unit + abort-on-panic: smaller binary, less resident code, and no
+# unwinding tables to keep around.
+codegen-units = 1
+panic = "abort"

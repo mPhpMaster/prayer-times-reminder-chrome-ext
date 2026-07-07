@@ -488,6 +488,96 @@ button.secondary {
 
 .error { color: var(--destructive); font-size: 12px; margin-top: 8px; }
 
+/* "About the app" — a quiet link at the foot of the settings panel that opens
+   the standalone about page. Hidden in the welcome wizard embed (no data-group,
+   so showWizardGroup() hides it along with the other non-active groups). */
+.about-link {
+  display: block;
+  margin-top: 14px;
+  padding: 6px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.about-link:hover { color: var(--teal); }
+
+/* Companion Chrome-extension card (desktop only; popup.js unhides it) */
+/* The `display` rules below beat the [hidden] UA rule, so restore it explicitly —
+   otherwise this desktop-only card leaks into the extension popup / welcome wizard. */
+.ext-card[hidden] { display: none !important; }
+.ext-installed-note[hidden] { display: none !important; }
+.ext-card {
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background:
+    radial-gradient(130% 150% at 0% 0%, color-mix(in oklch, var(--teal) 13%, transparent), transparent 58%),
+    var(--color-input);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ext-card-head { display: flex; align-items: flex-start; gap: 11px; }
+.ext-card-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--primary-foreground);
+  background: linear-gradient(145deg, color-mix(in oklch, var(--teal) 88%, white), var(--teal));
+  box-shadow: 0 5px 16px -7px var(--teal);
+}
+.ext-card-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ext-card-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--color-foreground);
+}
+.ext-card-hint {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+.ext-card .ext-install-btn {
+  flex: none;
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: calc(var(--radius) * 0.5);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: var(--primary-foreground);
+  background: linear-gradient(145deg, color-mix(in oklch, var(--teal) 90%, white), var(--teal));
+  box-shadow: 0 6px 18px -8px var(--teal);
+  cursor: pointer;
+}
+.ext-card .ext-install-btn[hidden] { display: none !important; }
+.ext-installed-note {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--teal);
+  background: color-mix(in oklch, var(--teal) 15%, transparent);
+  border: 1px solid color-mix(in oklch, var(--teal) 32%, transparent);
+}
+
 /* Footer */
 .app-footer {
   display: flex;

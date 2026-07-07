@@ -5,16 +5,18 @@
     <title>Dhikr</title>
     <link rel="stylesheet" href="theme.css" />
     <style>
-      /* Solid dark background so the small window always renders (no reliance on
-         window transparency). The card paints on top. */
-      html, body { margin: 0; height: 100%; background: #0c1c1c; overflow: hidden; }
+      /* Transparent full-monitor overlay: only the dhikr card paints, so the
+         window reads as a floating balloon (the Rust window is transparent +
+         click-through and covers the screen). */
+      html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
     </style>
   </head>
   <body>
-    <!-- Small always-on-top dhikr card window. Reuses the shared overlay-tasbih.js;
-         the phrase is picked here (i18n + tasbih-phrases) so the shared popup
-         needn't load the phrase bank. Rust emits "activate-dhikr" with the
-         current { lang, theme } and auto-closes the window. -->
+    <!-- Transparent, click-through, full-monitor dhikr overlay. Reuses the shared
+         overlay-tasbih.js, which anchors the card to the corner from Settings
+         (position). The phrase is picked here (i18n + tasbih-phrases) so the
+         shared popup needn't load the phrase bank. Rust stores the config; we
+         pull it via get_dhikr_config (and also listen for "activate-dhikr"). -->
     <script src="i18n.js"></script>
     <script src="tasbih-phrases.js"></script>
     <script src="overlay-tasbih.js"></script>
@@ -35,7 +37,7 @@
             dir: L.dir,
             lang,
             theme: normalizeTheme(cfg.theme),
-            position: "bottom-center",
+            position: cfg.position || "bottom-center",
           };
           if (window.__prayerTasbihActivate) window.__prayerTasbihActivate(payload);
         }

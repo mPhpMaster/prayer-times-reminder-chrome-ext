@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Prayer",
-  "version": "0.1.0",
-  "identifier": "com.example.prayer",
+  "productName": "Prayer Times Reminder",
+  "version": "1.0.0",
+  "identifier": "com.mphpmaster.prayer",
   "build": {
     "frontendDist": "../src",
     "beforeDevCommand": "node ../../tools/sync-core.mjs desktop",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "settings",
-        "title": "Prayer",
+        "title": "Prayer Times Reminder",
         "url": "popup.html",
         "width": 360,
         "height": 600,
@@ -21,6 +21,7 @@
         "decorations": false,
         "shadow": true,
         "skipTaskbar": true,
+        "alwaysOnTop": true,
         "visible": false
       },
       {
@@ -37,7 +38,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": ["nsis", "msi"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

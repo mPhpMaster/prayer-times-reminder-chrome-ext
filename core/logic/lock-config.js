@@ -7,7 +7,7 @@
 
 const TEST_LOCK_SECONDS = 5;
 
-// settings: { lang, theme, arabicDigits, lockMinutes, allowUnlock }
+// settings: { lang, theme, arabicDigits, lockMinutes, allowUnlock, silentDuringPrayer }
 // opts:     { test?, prayerName? }  — prayerName is the already-localized name.
 function buildLockConfig(settings, opts) {
   opts = opts || {};
@@ -33,6 +33,9 @@ function buildLockConfig(settings, opts) {
     lang,
     arabicDigits: usesArabicDigits(lang, settings.arabicDigits !== false),
     allowUnlock: settings.allowUnlock === true,
+    // Silence the device (OS DND on mobile, audio mute on desktop) for the lock
+    // duration. Defaults on; the browser extension ignores it (no capability).
+    silent: settings.silentDuringPrayer !== false,
     theme: normalizeTheme(settings.theme),
     // Shared unlock moment (absolute) for the countdown, plus a duration the
     // native side uses for its own auto-unlock fallback timer.

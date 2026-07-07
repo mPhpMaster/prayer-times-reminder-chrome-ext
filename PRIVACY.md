@@ -1,6 +1,6 @@
 # Privacy Policy — Prayer Times Reminder
 
-_Last updated: 30 June 2026_
+_Last updated: 2 July 2026_
 
 **Prayer Times Reminder** ("the extension") is designed to respect your privacy.
 This policy explains what data the extension uses and how.
@@ -48,7 +48,7 @@ identifiers, accounts, or contact details are transmitted.
 ## Tab lock and page access
 
 If you enable **Lock tab during prayer**, the extension injects a script
-(`content-lock.js`) into **every open tab** when a prayer alarm fires
+(`overlay-lock.js`) into **every open tab** when a prayer alarm fires
 (or, when you click **Test tab lock**, into the tab you are testing). This
 requires the `scripting` permission plus access to your open tabs. That tab
 access is an **optional** host permission (`<all_urls>`) that is **not** granted
@@ -71,7 +71,7 @@ Tab lock cannot run on restricted Chrome pages (e.g. `chrome://` or
 ## Periodic dhikr and page access
 
 If you enable **Periodic dhikr**, the extension injects a script
-(`content-tasbih.js`) into your **open tabs** on a timer (or when you click
+(`overlay-tasbih.js`) into your **open tabs** on a timer (or when you click
 **Test dhikr**). This uses the same `scripting` permission and optional tab
 access (`<all_urls>`) as tab lock so the floating card can appear on regular
 websites.
@@ -104,10 +104,13 @@ Dhikr reminders cannot run on restricted Chrome pages (e.g. `chrome://` or
 | `storage` | Save your location, language, preferences, and cached times locally. |
 | `geolocation` | Optional; only used if you click **Use my location**. |
 | `scripting` | Inject the lock overlay and dhikr card scripts into your open tabs. |
-| `https://api.aladhan.com/*` | Fetch prayer times for your location. |
-| `https://countriesnow.space/*` | Fetch city lists for the country dropdown. |
-| `https://nominatim.openstreetmap.org/*` | Reverse-geocode coordinates when you use **Use my location**. |
-| `<all_urls>` (optional) | Inject the tab-lock overlay and the dhikr card on your open website tabs. Requested at runtime when you first enable tab lock or dhikr — not granted at install, and you can decline. |
+| `<all_urls>` (optional) | Inject the tab-lock overlay and the dhikr card on your open website tabs. Requested at runtime when you first enable tab lock or dhikr — **not** granted at install, and you can decline. |
+
+The extension declares **no** host permissions for the AlAdhan, CountriesNow, or
+Nominatim APIs — it reaches them as ordinary cross-origin network requests (see
+**Data sent to third parties** above), not through granted access to those sites.
+`<all_urls>` is the extension's only host permission, it is **optional**, and it
+is used solely to place the lock/dhikr overlay on your tabs — never to read them.
 
 ## Contact
 

@@ -9,6 +9,10 @@
 
 // pane: which panel to show. group: the popup field group for settings panes.
 // titleKey: i18n key for the step heading (reused from existing strings).
+// Companion Windows desktop app promo. Set this to the download/landing URL to
+// turn the promo's call-to-action into a clickable link; empty = info only.
+const DESKTOP_APP_URL = "";
+
 const STEPS = [
   { pane: "language", titleKey: "settingsLangLabel" },
   { pane: "pin", titleKey: "welcomePinTitle" },
@@ -61,6 +65,22 @@ function applyLanguage() {
   document.getElementById("welcome-step-2").textContent = L.welcomePinStep2;
   document.getElementById("welcome-step-3").textContent = L.welcomePinStep3;
   document.getElementById("welcome-note").textContent = L.welcomeNotifBody;
+
+  // Desktop-app cross-promo (info always; CTA link only if a URL is configured).
+  document.getElementById("desktop-promo-title").textContent = L.desktopPromoTitle;
+  document.getElementById("desktop-promo-sub").textContent = L.desktopPromoSub;
+  const promoLink = document.getElementById("desktop-promo-link");
+  promoLink.textContent = L.desktopPromoLink;
+  // Only promote the Windows app in the browser extension — never inside the
+  // desktop app itself (or mobile).
+  const isExtension = Platform.name === "chrome";
+  document.getElementById("desktop-promo").hidden = !isExtension;
+  if (isExtension && DESKTOP_APP_URL) {
+    promoLink.href = DESKTOP_APP_URL;
+    promoLink.hidden = false;
+  } else {
+    promoLink.hidden = true;
+  }
 
   el.langSelect.value = lang;
   updateChrome();

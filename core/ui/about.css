@@ -1,0 +1,134 @@
+/* About page — standalone full page, modeled on welcome.css. Loads theme.css for
+   the design tokens; everything here is self-contained (popup.css is not loaded). */
+
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Center the card when it fits; when the content is taller than the window
+     (the fixed 360×600 desktop tray window, or a short phone) fall back to
+     top-aligned and let the page scroll. `safe` keeps the top of the card from
+     being clipped and unreachable — the bug that broke the desktop/mobile view. */
+  justify-content: safe center;
+  min-height: 100dvh;
+  padding: 24px;
+  /* Respect notches / rounded corners on phones. */
+  padding-top: max(24px, env(safe-area-inset-top));
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  overflow-x: hidden;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  width: 100%;
+  padding: 26px 22px;
+  margin: 0;
+}
+
+.card.about {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo { font-size: 40px; line-height: 1; margin-bottom: 12px; }
+
+h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+[dir="rtl"] h1 { font-family: var(--font-arabic); }
+
+.about-version {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin-bottom: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.about-version[hidden] { display: none; }
+
+.lead {
+  color: var(--muted-foreground);
+  line-height: 1.7;
+  margin-bottom: 22px;
+}
+
+/* ---- Sadaqah (ongoing-charity) dedication --------------------------------- */
+
+.sadaqah {
+  padding: 20px;
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.sadaqah h2 {
+  font-size: 14px;
+  color: var(--teal);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.sadaqah-names {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sadaqah-names li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Names are always shown in Arabic (prominent); a transliteration sits on a
+   quieter line below in non-Arabic-script UIs. */
+.ded-ar {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.7;
+  color: var(--color-foreground);
+}
+
+.ded-translit {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+.ded-translit[hidden] { display: none; }
+
+.sadaqah-all {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sadaqah-all .ded-ar { font-size: 16px; font-weight: 600; }
+
+/* ---- Back button ---------------------------------------------------------- */
+
+.about-back {
+  margin-top: 4px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #04211c;
+  background: var(--teal);
+  transition: filter 0.15s;
+}
+.about-back:hover { filter: brightness(1.1); }

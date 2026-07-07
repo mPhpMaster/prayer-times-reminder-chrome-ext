@@ -311,6 +311,13 @@
       const remaining = unlockAt - Date.now();
       if (remaining <= 0) {
         clearLock();
+        // Tell the host shell the lock ran out. In the extension the page just
+        // resumes (no hook set), but on Android the native lock Activity must
+        // be finished or the user is left on an empty black screen.
+        const expired = window.__prayerLockOnExpire;
+        if (typeof expired === "function") {
+          try { expired(); } catch {}
+        }
         return;
       }
       countdownEl.textContent = formatCountdown(remaining, lang, arabicDigits);

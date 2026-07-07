@@ -1,0 +1,14 @@
+{
+  "appName": {
+    "message": "Prayer Times Reminder (Prayer Times Break)",
+    "description": "Extension name shown in the Chrome Web Store and toolbar."
+  },
+  "appShortName": {
+    "message": "Prayer Times",
+    "description": "Short name for space-constrained UI (new tab, app launcher)."
+  },
+  "appDesc": {
+    "message": "Prayer Times Break: locks your tabs at prayer time so you can pray — plus reminders, daily schedule, dhikr, themes, and 8 languages.",
+    "description": "Chrome Web Store description."
+  }
+}

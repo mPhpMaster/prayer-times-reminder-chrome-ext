@@ -158,3 +158,59 @@ h1 {
   background: var(--color-input);
   color: var(--color-foreground);
 }
+
+/* ---- Companion desktop-app cross-promo ------------------------------------- */
+
+.desktop-promo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background:
+    radial-gradient(120% 160% at 0% 0%, color-mix(in oklch, var(--teal) 12%, transparent), transparent 60%),
+    var(--color-input);
+  text-align: start;
+}
+
+.desktop-promo-icon {
+  flex: none;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.desktop-promo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.desktop-promo-text strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+
+.desktop-promo-sub {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+}
+
+.desktop-promo-cta {
+  flex: none;
+  margin-inline-start: auto;
+  padding: 7px 12px;
+  border-radius: calc(var(--radius) * 0.7);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  color: #04211c;
+  background: var(--teal);
+}
+
+.desktop-promo-cta:hover { filter: brightness(1.08); }

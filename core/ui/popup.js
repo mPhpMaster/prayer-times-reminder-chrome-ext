@@ -76,6 +76,10 @@ const el = {
   allowUnlock: document.getElementById("allow-unlock"),
   labelAllowUnlock: document.getElementById("label-allow-unlock"),
   hintAllowUnlock: document.getElementById("hint-allow-unlock"),
+  silentRow: document.getElementById("silent-row"),
+  silentPrayer: document.getElementById("silent-prayer"),
+  labelSilent: document.getElementById("label-silent"),
+  hintSilent: document.getElementById("hint-silent"),
   labelTabLock: document.getElementById("label-tab-lock"),
   hintTabLock: document.getElementById("hint-tab-lock"),
   testLockBtn: document.getElementById("test-lock-btn"),
@@ -101,7 +105,21 @@ const el = {
   error: document.getElementById("error"),
   settingsBody: document.getElementById("settings-body"),
   gregorianDate: document.getElementById("gregorian-date"),
-  footerSource: document.getElementById("footer-source")
+  footerSource: document.getElementById("footer-source"),
+  extGroup: document.getElementById("ext-group"),
+  labelExtSection: document.getElementById("label-ext-section"),
+  hintExt: document.getElementById("hint-ext"),
+  extInstallBtn: document.getElementById("ext-install-btn"),
+  extInstalledNote: document.getElementById("ext-installed-note"),
+  winGroup: document.getElementById("win-group"),
+  labelWinSection: document.getElementById("label-win-section"),
+  hintWin: document.getElementById("hint-win"),
+  winLink: document.getElementById("win-link"),
+  startupGroup: document.getElementById("startup-group"),
+  startupToggle: document.getElementById("startup-toggle"),
+  labelStartup: document.getElementById("label-startup"),
+  hintStartup: document.getElementById("hint-startup"),
+  aboutLink: document.getElementById("about-link")
 };
 
 let lang = "ar";
@@ -792,11 +810,20 @@ function applyLanguage() {
   el.saveBtn.textContent = t.save;
   el.geoBtn.textContent = t.useLocation;
   el.footerSource.textContent = t.dataSource;
-  el.labelTabLock.textContent = t.tabLockLabel;
-  el.hintTabLock.textContent = t.tabLockHint;
+  // On non-browser shells (desktop/mobile) the lock covers the whole screen, not
+  // a browser tab — so use screen-lock wording there. Extension keeps "tab".
+  const browserShell = Platform.name === "chrome";
+  el.labelTabLock.textContent = browserShell ? t.tabLockLabel : t.screenLockLabel;
+  el.hintTabLock.textContent = browserShell ? t.tabLockHint : t.screenLockHint;
   el.labelLockMinutes.textContent = t.lockMinutesLabel;
   el.labelAllowUnlock.textContent = t.allowUnlockLabel;
   el.hintAllowUnlock.textContent = t.allowUnlockHint;
+  el.labelSilent.textContent = t.silentLabel;
+  el.hintSilent.textContent = t.silentHint;
+  // Silent = OS-level Do Not Disturb / audio mute. The browser extension can't
+  // silence the device, so the option only appears on the desktop and mobile
+  // shells (where the lock covers the whole screen).
+  el.silentRow.hidden = browserShell;
   el.testLockBtn.textContent = t.testLockBtn;
   el.labelTasbih.textContent = t.tasbihLabel;
   el.hintTasbih.textContent = t.tasbihHint;
@@ -807,6 +834,16 @@ function applyLanguage() {
   el.labelTasbihRandomMax.textContent = t.tasbihMaxLabel;
   el.labelTasbihPosition.textContent = t.tasbihPositionLabel;
   el.testTasbihBtn.textContent = t.testTasbihBtn;
+  el.labelExtSection.textContent = t.extSectionLabel;
+  el.hintExt.textContent = t.extHint;
+  el.extInstallBtn.textContent = t.extInstallBtn;
+  el.extInstalledNote.textContent = t.extInstalledNote;
+  el.labelWinSection.textContent = t.desktopPromoTitle;
+  el.hintWin.textContent = t.desktopPromoSub;
+  el.winLink.textContent = t.desktopPromoLink;
+  el.labelStartup.textContent = t.startupLabel;
+  el.hintStartup.textContent = t.startupHint;
+  el.aboutLink.textContent = t.aboutBtn;
 
   updateLockOptionsVisibility();
   updateTasbihOptionsVisibility();
@@ -849,18 +886,62 @@ async function setLanguage(next) {
 
 // ---- Init -------------------------------------------------------------------
 
+// Desktop-only: surface the companion Chrome extension (browser tab lock) and
+// reflect whether it's already installed. Hidden entirely on the extension and
+// mobile shells (they don't expose Platform.browserExt).
+// Cross-promote the companion app, mirror-image per platform: the browser
+// extension promotes the Windows app; the Windows app promotes the extension
+// (plus its own startup toggle). Neither ever promotes itself.
+const WINDOWS_APP_URL = ""; // set to the download/landing URL to show a CTA link
+
+async function setupCrossPromo() {
+  if (Platform.name === "chrome") {
+    // Browser extension → promote the companion WINDOWS app.
+    el.winGroup.hidden = false;
+    if (WINDOWS_APP_URL) {
+      el.winLink.href = WINDOWS_APP_URL;
+      el.winLink.hidden = false;
+    } else {
+      el.winLink.hidden = true;
+    }
+    return;
+  }
+  if (Platform.name !== "tauri") return; // mobile: no cross-promo
+
+  // Windows app → startup toggle + promote the companion CHROME extension.
+  if (Platform.autostart) {
+    el.startupGroup.hidden = false;
+    try {
+      el.startupToggle.checked = await Platform.autostart.get();
+    } catch {
+      el.startupToggle.checked = false;
+    }
+  }
+  if (Platform.browserExt) {
+    el.extGroup.hidden = false;
+    try {
+      const installed = await Platform.browserExt.installed();
+      el.extInstalledNote.hidden = installed !== true;
+      el.extInstallBtn.hidden = installed === true;
+    } catch {
+      el.extInstalledNote.hidden = true;
+      el.extInstallBtn.hidden = false;
+    }
+  }
+}
+
 async function init() {
   // Let CSS adapt the layout per shell (browser popup vs. full desktop/mobile window).
   document.documentElement.dataset.platform = Platform.name || "chrome";
 
   const {
     location: savedLocation, cache, lang: savedLang, theme: savedTheme, tabLockEnabled, arabicDigits: savedDigits,
-    lockMinutes, allowUnlock, dateFormat: savedDateFormat,
+    lockMinutes, allowUnlock, silentDuringPrayer, dateFormat: savedDateFormat,
     tasbihEnabled, tasbihIntervalMode, tasbihIntervalMinutes,
     tasbihRandomMin, tasbihRandomMax, tasbihPosition: savedTasbihPosition
   } = await Platform.store.get([
     "location", "cache", "lang", "theme", "tabLockEnabled", "arabicDigits", "lockMinutes",
-    "allowUnlock", "dateFormat", "tasbihEnabled", "tasbihIntervalMode",
+    "allowUnlock", "silentDuringPrayer", "dateFormat", "tasbihEnabled", "tasbihIntervalMode",
     "tasbihIntervalMinutes", "tasbihRandomMin", "tasbihRandomMax", "tasbihPosition"
   ]);
 
@@ -886,6 +967,9 @@ async function init() {
   el.allowUnlock.checked = allowUnlock !== undefined
     ? Boolean(allowUnlock)
     : DEFAULT_SETTINGS.allowUnlock;
+  el.silentPrayer.checked = silentDuringPrayer !== undefined
+    ? Boolean(silentDuringPrayer)
+    : DEFAULT_SETTINGS.silentDuringPrayer;
   el.tasbihEnabled.checked = tasbihEnabled !== undefined
     ? Boolean(tasbihEnabled)
     : DEFAULT_SETTINGS.tasbihEnabled;
@@ -916,6 +1000,7 @@ async function init() {
   populateDateFormatSelect();
   renderTasbihPositionGrid();
   applyLanguage();
+  await setupCrossPromo();
 
   if (location) {
     el.locationLabel.textContent = labelFor(location);
@@ -948,12 +1033,33 @@ el.openSettingsBtn.addEventListener("click", () => {
   showSettingsView();
 });
 
+// Desktop: open the Chrome Web Store listing for the companion extension.
+el.extInstallBtn.addEventListener("click", () => {
+  if (Platform.browserExt) Platform.browserExt.install();
+});
+
+// Desktop: toggle launch-on-Windows-startup; revert the checkbox if it fails.
+el.startupToggle.addEventListener("change", async () => {
+  if (!Platform.autostart) return;
+  const res = await Platform.autostart.set(el.startupToggle.checked);
+  if (!res || res.ok !== true) el.startupToggle.checked = !el.startupToggle.checked;
+});
+
 el.headerSettingsBtn.addEventListener("click", () => {
   showSettingsView();
 });
 
 el.backBtn.addEventListener("click", () => {
   showMainView();
+});
+
+// "About the app" opens the standalone about page. In the browser extension the
+// popup is a transient window, so the anchor's target=_blank opens a new tab; on
+// the desktop/mobile shells (full windows) we navigate to it in place instead.
+el.aboutLink.addEventListener("click", (e) => {
+  if (Platform.name === "chrome") return; // let the anchor open a new tab
+  e.preventDefault();
+  window.location.href = "about.html";
 });
 
 el.langSelect.addEventListener("change", () => {
@@ -1101,6 +1207,11 @@ el.lockMinutes.addEventListener("change", async () => {
 
 el.allowUnlock.addEventListener("change", async () => {
   await Platform.store.set({ allowUnlock: el.allowUnlock.checked });
+  showError("");
+});
+
+el.silentPrayer.addEventListener("change", async () => {
+  await Platform.store.set({ silentDuringPrayer: el.silentPrayer.checked });
   showError("");
 });
 
@@ -1256,6 +1367,27 @@ function startWizardEmbed() {
   // Tell the parent we're ready for the initial language + group.
   parent.postMessage({ type: "PTW_READY" }, location.origin);
 }
+
+// The desktop shell keeps this popup window alive between opens (hidden +
+// suspended, not destroyed), so a dismissal while on Settings would otherwise
+// reopen straight into Settings. The shell calls this hook every time it
+// re-shows the window. (visibilitychange can't do this: the handler runs after
+// resume, when visibilityState already reads "visible" again.) The extension
+// popup is torn down on close (never calls this); the wizard embed (#settings)
+// must stay on its settings surface.
+window.__ptPopupReset = () => {
+  if (window.location.hash !== "#settings") showMainView();
+};
+
+// Android hardware back: step out of Settings back to the main view. Returns
+// true when handled; false means we're already home (or in the wizard embed,
+// which owns its own navigation) and the shell should close the app instead.
+window.__ptPopupBack = () => {
+  if (window.location.hash === "#settings") return false;
+  if (el.settingsView.hidden) return false;
+  showMainView();
+  return true;
+};
 
 init().then(() => {
   if (window.location.hash === "#settings") startWizardEmbed();

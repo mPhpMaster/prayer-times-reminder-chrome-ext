@@ -64,3 +64,16 @@ targets/mobile/android/build/
 targets/mobile/android/app/build/
 targets/mobile/android/capacitor-cordova-android-plugins/
 targets/mobile/android/local.properties
+
+# ---- Local agent + tooling ----
+.claude/
+pnpm-lock.yaml
+
+# ---- Signing material — NEVER commit (keystores, archives) ----
+*.rar
+*.jks
+*.keystore
+
+# ---- Desktop MSIX packaging build outputs (the .exe copy + packed .msix) ----
+targets/desktop/msix/*.msix
+targets/desktop/msix/layout/*.exe

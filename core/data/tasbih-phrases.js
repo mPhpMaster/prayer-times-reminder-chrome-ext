@@ -1,4 +1,4 @@
-// 139 unique dhikr phrases — { ar, en, ur, fr, es, id, de }
+// 154 unique dhikr phrases — { ar, en, ur, fr, es, id, de }
 
 const TASBIH_PHRASES = [
     // Basic tasbih (15)
@@ -1274,5 +1274,141 @@ const TASBIH_PHRASES = [
         id: "Ya Allah, aku memohon kepada-Mu surga Firdaus yang tertinggi",
         de: "O Allah, ich bitte Dich um das höchste Paradies Firdaus",
         es: "Oh Allah, te pido el Firdaus más elevado"
+    },
+    // Hisn al-Muslim additions (15)
+    {
+        ar: "حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ",
+        en: "Hasbiyallahu la ilaha illa huwa",
+        ur: "حسبی اللہ لا الہ الا ہو",
+        fr: "Allah me suffit, il n'y a de divinité que Lui",
+        id: "Cukuplah Allah bagiku, tiada tuhan selain Dia",
+        de: "Allah genügt mir, es gibt keinen Gott außer Ihm",
+        es: "Allah me basta, no hay más dios que Él"
+    },
+    {
+        ar: "رَضِيتُ بِاللَّهِ رَبًّا وَبِالْإِسْلَامِ دِينًا وَبِمُحَمَّدٍ رَسُولًا",
+        en: "Raditu billahi rabban wa bil-islami dinan wa bi-Muhammadin rasula",
+        ur: "رضیت باللہ رباً وبالاسلام دیناً وبمحمد رسولاً",
+        fr: "J'agrée Allah comme Seigneur, l'islam comme religion et Muhammad comme Messager",
+        id: "Aku ridha Allah sebagai Tuhan, Islam sebagai agama, dan Muhammad sebagai Rasul",
+        de: "Ich bin zufrieden mit Allah als Herrn, dem Islam als Religion und Muhammad als Gesandtem",
+        es: "Acepto a Allah como Señor, al Islam como religión y a Muhammad como Mensajero"
+    },
+    {
+        ar: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ",
+        en: "Bismillahilladhi la yadurru ma'asmihi shay'un fil ardi wa la fis sama'",
+        ur: "بسم اللہ الذی لا یضر مع اسمہ شیء فی الارض ولا فی السماء",
+        fr: "Au nom d'Allah, avec le nom de Qui rien ne peut nuire sur terre ni au ciel",
+        id: "Dengan nama Allah yang bersama nama-Nya tidak ada sesuatu pun di bumi dan langit yang membahayakan",
+        de: "Im Namen Allahs, mit dessen Namen nichts auf Erden und im Himmel schaden kann",
+        es: "En el nombre de Allah, con cuyo nombre nada puede dañar en la tierra ni en el cielo"
+    },
+    {
+        ar: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+        en: "A'udhu bikalimatillahit-tammati min sharri ma khalaq",
+        ur: "اعوذ بکلمات اللہ التامات من شر ما خلق",
+        fr: "Je cherche refuge dans les paroles parfaites d'Allah contre le mal de ce qu'Il a créé",
+        id: "Aku berlindung dengan kalimat-kalimat Allah yang sempurna dari kejahatan makhluk-Nya",
+        de: "Ich suche Zuflucht in den vollkommenen Worten Allahs vor dem Übel dessen, was Er erschuf",
+        es: "Me refugio en las palabras perfectas de Allah del mal de lo que ha creado"
+    },
+    {
+        ar: "اللَّهُمَّ لَا مَانِعَ لِمَا أَعْطَيْتَ وَلَا مُعْطِيَ لِمَا مَنَعْتَ",
+        en: "Allahumma la mani'a lima a'tayta wa la mu'tiya lima mana'ta",
+        ur: "اللہم لا مانع لما اعطیت ولا معطی لما منعت",
+        fr: "Ô Allah, nul ne peut empêcher ce que Tu donnes ni donner ce que Tu refuses",
+        id: "Ya Allah, tiada yang mampu menghalangi apa yang Engkau beri dan tiada yang memberi apa yang Engkau tahan",
+        de: "O Allah, niemand kann verwehren, was Du gibst, noch geben, was Du verwehrst",
+        es: "Oh Allah, nadie puede impedir lo que Tú das ni dar lo que Tú niegas"
+    },
+    {
+        ar: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ",
+        en: "Ya muqalliba al-qulubi thabbit qalbi ala dinik",
+        ur: "یا مقلب القلوب ثبت قلبی علیٰ دینک",
+        fr: "Ô Toi qui fais tourner les cœurs, affermis mon cœur sur Ta religion",
+        id: "Wahai Zat yang membolak-balikkan hati, teguhkanlah hatiku pada agama-Mu",
+        de: "O Wender der Herzen, festige mein Herz in Deiner Religion",
+        es: "Oh Tú que trastocas los corazones, afirma mi corazón en Tu religión"
+    },
+    {
+        ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ",
+        en: "Allahumma inni a'udhu bika minal kufri wal faqr",
+        ur: "اللہم انی اعوذ بک من الکفر والفقر",
+        fr: "Ô Allah, je cherche refuge auprès de Toi contre la mécréance et la pauvreté",
+        id: "Ya Allah, aku berlindung kepada-Mu dari kekufuran dan kefakiran",
+        de: "O Allah, ich suche Zuflucht bei Dir vor Unglauben und Armut",
+        es: "Oh Allah, me refugio en Ti de la incredulidad y la pobreza"
+    },
+    {
+        ar: "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ",
+        en: "Allahumma barik lana fima razaqtana wa qina adhaban-nar",
+        ur: "اللہم بارک لنا فیما رزقتنا وقنا عذاب النار",
+        fr: "Ô Allah, bénis-nous dans ce que Tu nous accordes et préserve-nous du châtiment du Feu",
+        id: "Ya Allah, berkahilah rezeki yang Engkau berikan kepada kami dan lindungilah kami dari azab neraka",
+        de: "O Allah, segne für uns, was Du uns beschert hast, und bewahre uns vor der Strafe des Feuers",
+        es: "Oh Allah, bendice lo que nos has provisto y presérvanos del castigo del Fuego"
+    },
+    {
+        ar: "اللَّهُمَّ عَافِنِي فِي بَدَنِي",
+        en: "Allahumma afini fi badani",
+        ur: "اللہم عافنی فی بدنی",
+        fr: "Ô Allah, accorde la santé à mon corps",
+        id: "Ya Allah, sehatkanlah tubuhku",
+        de: "O Allah, schenke meinem Körper Gesundheit",
+        es: "Oh Allah, concede salud a mi cuerpo"
+    },
+    {
+        ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ",
+        en: "Allahumma inni a'udhu bika min adhabil qabr",
+        ur: "اللہم انی اعوذ بک من عذاب القبر",
+        fr: "Ô Allah, je cherche refuge auprès de Toi contre le châtiment de la tombe",
+        id: "Ya Allah, aku berlindung kepada-Mu dari azab kubur",
+        de: "O Allah, ich suche Zuflucht bei Dir vor der Strafe des Grabes",
+        es: "Oh Allah, me refugio en Ti del castigo de la tumba"
+    },
+    {
+        ar: "اللَّهُمَّ أَصْلِحْ لِي دِينِيَ الَّذِي هُوَ عِصْمَةُ أَمْرِي",
+        en: "Allahumma aslih li diniyalladhi huwa ismatu amri",
+        ur: "اللہم اصلح لی دینی الذی ہو عصمۃ امری",
+        fr: "Ô Allah, réforme pour moi ma religion qui est la sauvegarde de mon affaire",
+        id: "Ya Allah, perbaikilah agamaku yang menjadi penjaga urusanku",
+        de: "O Allah, bessere für mich meine Religion, die der Schutz meiner Angelegenheit ist",
+        es: "Oh Allah, corrige para mí mi religión, que es la salvaguarda de mi asunto"
+    },
+    {
+        ar: "اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ",
+        en: "Allahumma antas-salamu wa minkas-salam, tabarakta ya dhal-jalali wal-ikram",
+        ur: "اللہم انت السلام ومنک السلام تبارکت یا ذا الجلال والاکرام",
+        fr: "Ô Allah, Tu es la Paix et de Toi vient la paix, béni sois-Tu, ô Détenteur de la majesté et de la générosité",
+        id: "Ya Allah, Engkau Mahasejahtera dan dari-Mu kesejahteraan, Mahaberkah Engkau wahai Pemilik keagungan dan kemuliaan",
+        de: "O Allah, Du bist der Friede und von Dir kommt der Friede, gesegnet bist Du, o Besitzer der Majestät und Ehre",
+        es: "Oh Allah, Tú eres la Paz y de Ti viene la paz, bendito seas, oh Poseedor de la majestad y la generosidad"
+    },
+    {
+        ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَأَعُوذُ بِكَ مِنَ النَّارِ",
+        en: "Allahumma inni as'alukal-jannata wa a'udhu bika minan-nar",
+        ur: "اللہم انی اسألک الجنۃ واعوذ بک من النار",
+        fr: "Ô Allah, je Te demande le Paradis et cherche refuge auprès de Toi contre le Feu",
+        id: "Ya Allah, aku memohon surga kepada-Mu dan berlindung kepada-Mu dari neraka",
+        de: "O Allah, ich bitte Dich um das Paradies und suche Zuflucht bei Dir vor dem Feuer",
+        es: "Oh Allah, te pido el Paraíso y me refugio en Ti del Fuego"
+    },
+    {
+        ar: "اللَّهُمَّ ارْزُقْنِي حُبَّكَ وَحُبَّ مَنْ يَنْفَعُنِي حُبُّهُ عِنْدَكَ",
+        en: "Allahummarzuqni hubbaka wa hubba man yanfa'uni hubbuhu indak",
+        ur: "اللہم ارزقنی حبک وحب من ینفعنی حبہ عندک",
+        fr: "Ô Allah, accorde-moi Ton amour et l'amour de celui dont l'amour me profite auprès de Toi",
+        id: "Ya Allah, karuniakanlah aku cinta-Mu dan cinta orang yang cintanya bermanfaat bagiku di sisi-Mu",
+        de: "O Allah, gewähre mir Deine Liebe und die Liebe dessen, dessen Liebe mir bei Dir nützt",
+        es: "Oh Allah, concédeme Tu amor y el amor de quien su amor me beneficie ante Ti"
+    },
+    {
+        ar: "اللَّهُمَّ أَعِنِّي وَلَا تُعِنْ عَلَيَّ",
+        en: "Allahumma a'inni wa la tu'in alayy",
+        ur: "اللہم اعنی ولا تعن علیّ",
+        fr: "Ô Allah, aide-moi et ne fais pas qu'on m'accable",
+        id: "Ya Allah, tolonglah aku dan jangan jadikan (orang) menang atasku",
+        de: "O Allah, hilf mir und lass nicht zu, dass man mich überwältigt",
+        es: "Oh Allah, ayúdame y no dejes que nadie prevalezca contra mí"
     }
 ];

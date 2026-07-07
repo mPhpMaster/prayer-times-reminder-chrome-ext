@@ -57,6 +57,8 @@ C’est tout — l’extension récupère les horaires d’aujourd’hui, les af
 | Theme | Choisissez **Midnight Emerald** (par défaut) ou **Classic**. |
 | Language | Choisissez la langue de l’interface (disponible aussi dans le popup). |
 
+<a id="supported-languages"></a>
+
 ## Langues prises en charge
 
 L’interface, les notifications, l’overlay de verrouillage, la carte dhikr et la page de bienvenue sont localisés. Changez de langue depuis le menu du popup ou **Settings → Language**.

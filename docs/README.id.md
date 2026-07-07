@@ -57,6 +57,8 @@ Selesai — ekstensi akan mengambil waktu hari ini, menampilkannya, dan menjadwa
 | Theme | Pilih **Midnight Emerald** (default) atau **Classic**. |
 | Language | Pilih bahasa UI (juga tersedia di header popup). |
 
+<a id="supported-languages"></a>
+
 ## Bahasa yang didukung
 
 UI, notifikasi, overlay kunci, kartu dzikir, dan halaman selamat datang dilokalkan. Ganti bahasa dari dropdown header popup atau **Settings → Language**.

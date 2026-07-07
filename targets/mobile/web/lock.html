@@ -20,6 +20,9 @@
         window.__prayerLockOnUnlock = function () {
           if (window.AndroidLock && window.AndroidLock.unlock) window.AndroidLock.unlock();
         };
+        // Countdown ran out => same thing: finish the native lock Activity,
+        // otherwise it lingers as an empty black screen.
+        window.__prayerLockOnExpire = window.__prayerLockOnUnlock;
         // Native entry point: called with the lock config JSON after page load.
         window.__ptActivate = function (config) {
           if (typeof config === "string") {

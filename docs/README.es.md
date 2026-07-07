@@ -57,6 +57,8 @@ Listo — la extensión obtendrá los horarios de hoy, los mostrará y programar
 | Theme | Elige **Midnight Emerald** (por defecto) o **Classic**. |
 | Language | Elige el idioma de la interfaz (también disponible en el encabezado del popup). |
 
+<a id="supported-languages"></a>
+
 ## Idiomas admitidos
 
 La interfaz de usuario, las notificaciones, la capa de bloqueo, la tarjeta de dhikr y la página de bienvenida están localizadas. Cambia el idioma desde el desplegable del encabezado del popup o **Settings → Language**.
