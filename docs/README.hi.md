@@ -110,3 +110,16 @@ See [PRIVACY.md](../PRIVACY.md) for what data is stored locally and which third-
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+## सतत दान (सदक़ा जारिया) इनकी ओर से:
+* ओम बिलाल - बाशिया हेजाज़ी
+* अब्दुल्लाह अल-शामी
+* ओम अब्दो स्रामिजो
+* ओम फज्र जुनिर्ती
+* सुहेरमन
+
+<p align="center">
+<sub>और सभी जीवित और दिवंगत मुसलमानों की ओर से।</sub>
+</p>

@@ -110,3 +110,16 @@ See [PRIVACY.md](../PRIVACY.md) for what data is stored locally and which third-
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+## Ongoing Charity (Sadaqah Jariyah) on behalf of:
+* Om Bilal - Bashia Hegazi
+* Abdullah Al-Shami
+* Om Abdo Sramijo
+* Om Fajr Junirti
+* Suherman
+
+<p align="center">
+<sub>And on behalf of all Muslims, both the living and the deceased.</sub>
+</p>

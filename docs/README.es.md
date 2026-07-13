@@ -112,4 +112,15 @@ Consulta [PRIVACY.md](../PRIVACY.md) para saber qué datos se almacenan localmen
 
 MIT — ver [LICENSE](LICENSE).
 
-<p align="center"><sub>Por la faz de Allah el Altísimo, en nombre de todos los musulmanes.</sub></p>
+---
+
+## Caridad Continua (Sadaqah Jariyah) en nombre de:
+* Om Bilal - Bashia Hegazi
+* Abdullah Al-Shami
+* Om Abdo Sramijo
+* Om Fajr Junirti
+* Suherman
+
+<p align="center">
+<sub>Y en nombre de todos los musulmanes, tanto los vivos como los fallecidos.</sub>
+</p>

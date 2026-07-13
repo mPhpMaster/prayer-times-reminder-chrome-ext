@@ -111,4 +111,15 @@ Siehe [PRIVACY.md](../PRIVACY.md) für lokal gespeicherte Daten und kontaktierte
 
 MIT — siehe [LICENSE](LICENSE).
 
-<p align="center"><sub>Um des Angesichts Allahs des Erhabenen willen, im Namen aller Muslime.</sub></p>
+---
+
+## Laufende Spende (Sadaqah Jariyah) im Namen von:
+* Om Bilal - Bashia Hegazi
+* Abdullah Al-Shami
+* Om Abdo Sramijo
+* Om Fajr Junirti
+* Suherman
+
+<p align="center">
+<sub>Und im Namen aller Muslime, sowohl der Lebenden als auch der Verstorbenen.</sub>
+</p>

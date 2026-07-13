@@ -77,3 +77,8 @@ pnpm-lock.yaml
 # ---- Desktop MSIX packaging build outputs (the .exe copy + packed .msix) ----
 targets/desktop/msix/*.msix
 targets/desktop/msix/layout/*.exe
+
+# Build releases and packaged runtimes
+store-release/
+**/WebView2Runtime/
+*.msix

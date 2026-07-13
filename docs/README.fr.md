@@ -112,4 +112,15 @@ Voir [PRIVACY.md](../PRIVACY.md) pour savoir quelles données sont stockées loc
 
 MIT — voir [LICENSE](LICENSE).
 
-<p align="center"><sub>Pour la face d'Allah le Très-Haut, au nom de tous les musulmans.</sub></p>
+---
+
+## Aumône Continue (Sadaqah Jariyah) au nom de :
+* Om Bilal - Bashia Hegazi
+* Abdullah Al-Shami
+* Om Abdo Sramijo
+* Om Fajr Junirti
+* Suherman
+
+<p align="center">
+<sub>Et au nom de tous les musulmans, les vivants comme les morts.</sub>
+</p>

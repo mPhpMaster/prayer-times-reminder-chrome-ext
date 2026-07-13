@@ -113,4 +113,15 @@ Lihat [PRIVACY.md](../PRIVACY.md) untuk data yang disimpan secara lokal dan API 
 
 MIT — lihat [LICENSE](LICENSE).
 
-<p align="center"><sub>Demi mengharap wajah Allah Ta'ala, atas nama seluruh kaum Muslimin.</sub></p>
+---
+
+## Amal Jariyah (Sadaqah Jariyah) atas nama:
+* Om Bilal - Bashia Hegazi
+* Abdullah Al-Shami
+* Om Abdo Sramijo
+* Om Fajr Junirti
+* Suherman
+
+<p align="center">
+<sub>Dan atas nama seluruh umat Muslim, baik yang masih hidup maupun yang telah wafat.</sub>
+</p>

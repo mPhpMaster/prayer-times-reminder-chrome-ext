@@ -507,7 +507,43 @@ fn open_chrome_store() -> Result<(), String> {
     Ok(())
 }
 
+// Prefer a WebView2 runtime bundled next to the exe. The MSIX/Store build ships a
+// fixed-version runtime under `WebView2Runtime\`; pointing the WebView2 loader at
+// it (via WEBVIEW2_BROWSER_EXECUTABLE_FOLDER, which the loader honors even when the
+// app passes a null browser folder) means the app never depends on the machine
+// having the Evergreen runtime installed — the cause of the Store-cert launch
+// crash. Absent (dev / NSIS build) => falls back to the Evergreen runtime.
+#[cfg(windows)]
+fn use_bundled_webview2() {
+    if std::env::var_os("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER").is_some() {
+        return; // respect an explicit override (e.g. remote-debugging sessions)
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            let rt = dir.join("WebView2Runtime");
+            if rt.join("msedgewebview2.exe").exists() {
+                std::env::set_var("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", &rt);
+                let msg = format!("webview2: using bundled runtime at {}", rt.display());
+                log_line(&msg);
+                crashlog::write(&msg);
+            } else {
+                crashlog::write("webview2: no bundled runtime, using Evergreen");
+            }
+        }
+    }
+}
+
 fn main() {
+    // Install crash logging FIRST so any startup failure (a Rust panic or a native
+    // COM/WebView2 exception) is written to a retrievable file before the process
+    // dies — this is what makes a Store-cert launch failure diagnosable.
+    #[cfg(windows)]
+    crashlog::install();
+    // Force the bundled WebView2 runtime when present (MSIX/Store build).
+    #[cfg(windows)]
+    use_bundled_webview2();
+    log_line("main: starting");
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             show_popup(app);
@@ -643,6 +679,73 @@ fn main() {
         })
         .run(tauri::generate_context!())
         .expect("error while running prayer-desktop");
+}
+
+// --- Crash logging -------------------------------------------------------------
+// Writes startup breadcrumbs and any fatal error to
+// %LOCALAPPDATA%\PrayerTimesReminder\startup.log — a stable, user-retrievable path
+// (unlike %TEMP%). Catches both Rust panics (via the panic hook, which still runs
+// under panic=abort) and native structured exceptions such as a COM/WebView2
+// failure (via SetUnhandledExceptionFilter). Purpose: if a Store-cert launch
+// crash recurs, this file names the exact cause instead of leaving us guessing.
+#[cfg(windows)]
+mod crashlog {
+    use std::io::Write;
+    use std::path::PathBuf;
+
+    pub fn log_path() -> PathBuf {
+        let base = std::env::var_os("LOCALAPPDATA")
+            .map(PathBuf::from)
+            .unwrap_or_else(std::env::temp_dir);
+        let dir = base.join("PrayerTimesReminder");
+        let _ = std::fs::create_dir_all(&dir);
+        dir.join("startup.log")
+    }
+
+    pub fn write(msg: &str) {
+        let ts = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        if let Ok(mut f) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(log_path())
+        {
+            let _ = writeln!(f, "[{ts}] {msg}");
+        }
+    }
+
+    pub fn install() {
+        let prev = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |info| {
+            write(&format!("PANIC: {info}"));
+            prev(info);
+        }));
+        unsafe {
+            windows::Win32::System::Diagnostics::Debug::SetUnhandledExceptionFilter(Some(
+                seh_filter,
+            ));
+        }
+        write("---- launch ----");
+    }
+
+    unsafe extern "system" fn seh_filter(
+        info: *const windows::Win32::System::Diagnostics::Debug::EXCEPTION_POINTERS,
+    ) -> i32 {
+        let (mut code, mut addr) = (0u32, 0usize);
+        if !info.is_null() {
+            let rec = (*info).ExceptionRecord;
+            if !rec.is_null() {
+                code = (*rec).ExceptionCode.0 as u32;
+                addr = (*rec).ExceptionAddress as usize;
+            }
+        }
+        write(&format!(
+            "UNHANDLED EXCEPTION: code=0x{code:08X} addr=0x{addr:016X}"
+        ));
+        0 // EXCEPTION_CONTINUE_SEARCH — let default (WER/terminate) proceed
+    }
 }
 
 // --- Windows input lockdown: block all keyboard + mouse during a STRICT lock ---
