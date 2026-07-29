@@ -80,7 +80,6 @@ const el = {
   silentPrayer: document.getElementById("silent-prayer"),
   labelSilent: document.getElementById("label-silent"),
   hintSilent: document.getElementById("hint-silent"),
-  soundRow: document.getElementById("sound-row"),
   prayerSound: document.getElementById("prayer-sound"),
   labelSound: document.getElementById("label-sound"),
   hintSound: document.getElementById("hint-sound"),
@@ -831,14 +830,14 @@ function applyLanguage() {
   // silence the device, so the option only appears on the desktop and mobile
   // shells (where the lock covers the whole screen).
   el.silentRow.hidden = browserShell;
-  // Prayer-time announcement sound. Reliable on the desktop and mobile lock
-  // windows; the browser tab can't autoplay without a gesture, so hide it there.
+  // Prayer-time announcement sound. Offered on every shell: desktop and mobile
+  // play it from their lock window, and the extension plays it from an offscreen
+  // document (a web page couldn't — no autoplay without a gesture).
   el.labelSound.textContent = t.soundLabel;
   el.hintSound.textContent = t.soundHint;
   el.optSoundBeep.textContent = t.soundBeep;
   el.optSoundAdhan.textContent = t.soundAdhan;
   el.optSoundNone.textContent = t.soundNone;
-  el.soundRow.hidden = browserShell;
   el.testLockBtn.textContent = t.testLockBtn;
   el.labelTasbih.textContent = t.tasbihLabel;
   el.hintTasbih.textContent = t.tasbihHint;
