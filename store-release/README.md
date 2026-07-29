@@ -6,7 +6,20 @@ App name: **Prayer Times Reminder (Prayer Times Break)** / **مواقيت الص
 Listing text (EN + AR): `listings/`. Privacy page to host: `../docs/privacy.html`.
 
 ## Chrome Web Store
-Upload `packages/prayer-times-reminder-chrome-v2.2.0.zip` · screenshots `assets/chrome/`.
+Upload `packages/prayer-times-reminder-chrome-v2.2.3.zip` · screenshots `assets/chrome/`.
+
+### Permission justification — `offscreen`
+The dashboard blocks publishing until this is filled in (Privacy practices tab). Paste:
+
+> The extension plays the call to prayer (adhan) or a short chime at prayer time, while the
+> prayer-time lock screen is shown. A service worker cannot play audio, and playing it from a
+> content script in the user's open tabs does not work: Chrome's autoplay policy blocks audio
+> without a user gesture, and the lock screen is shown on every open tab, so the adhan would play
+> once per tab at the same time. An offscreen document with the AUDIO_PLAYBACK reason lets the
+> extension play the sound exactly once, reliably. The document is created only when a prayer lock
+> with sound begins, and it is closed as soon as the audio finishes or the lock ends. It plays only
+> an audio file bundled in the extension package, makes no network requests, and does not access or
+> handle any user data.
 
 ## Google Play
 Upload `packages/prayer-times-reminder-android-v2.1.2-215.aab` · feature graphic + icon in `assets/play/` · phone screenshots: **recapture** (`assets/play/screenshots/` is empty — the earlier device captures were lost when dist/ was wiped).
