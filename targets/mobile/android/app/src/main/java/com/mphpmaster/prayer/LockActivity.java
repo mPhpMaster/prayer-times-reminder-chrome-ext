@@ -108,6 +108,9 @@ public class LockActivity extends Activity {
         web.setBackgroundColor(0xFF0C1C1C); // no white flash before overlay-lock paints
         web.getSettings().setJavaScriptEnabled(true);
         web.getSettings().setDomStorageEnabled(true);
+        // Let overlay-lock autoplay the prayer-time announcement (chime/adhan)
+        // without a user gesture — the alarm, not a tap, opens this screen.
+        web.getSettings().setMediaPlaybackRequiresUserGesture(false);
         web.addJavascriptInterface(new Bridge(), "AndroidLock");
         web.setWebViewClient(new WebViewClient() {
             @Override

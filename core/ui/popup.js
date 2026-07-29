@@ -80,6 +80,13 @@ const el = {
   silentPrayer: document.getElementById("silent-prayer"),
   labelSilent: document.getElementById("label-silent"),
   hintSilent: document.getElementById("hint-silent"),
+  soundRow: document.getElementById("sound-row"),
+  prayerSound: document.getElementById("prayer-sound"),
+  labelSound: document.getElementById("label-sound"),
+  hintSound: document.getElementById("hint-sound"),
+  optSoundBeep: document.getElementById("opt-sound-beep"),
+  optSoundAdhan: document.getElementById("opt-sound-adhan"),
+  optSoundNone: document.getElementById("opt-sound-none"),
   labelTabLock: document.getElementById("label-tab-lock"),
   hintTabLock: document.getElementById("hint-tab-lock"),
   testLockBtn: document.getElementById("test-lock-btn"),
@@ -824,6 +831,14 @@ function applyLanguage() {
   // silence the device, so the option only appears on the desktop and mobile
   // shells (where the lock covers the whole screen).
   el.silentRow.hidden = browserShell;
+  // Prayer-time announcement sound. Reliable on the desktop and mobile lock
+  // windows; the browser tab can't autoplay without a gesture, so hide it there.
+  el.labelSound.textContent = t.soundLabel;
+  el.hintSound.textContent = t.soundHint;
+  el.optSoundBeep.textContent = t.soundBeep;
+  el.optSoundAdhan.textContent = t.soundAdhan;
+  el.optSoundNone.textContent = t.soundNone;
+  el.soundRow.hidden = browserShell;
   el.testLockBtn.textContent = t.testLockBtn;
   el.labelTasbih.textContent = t.tasbihLabel;
   el.hintTasbih.textContent = t.tasbihHint;
@@ -936,12 +951,12 @@ async function init() {
 
   const {
     location: savedLocation, cache, lang: savedLang, theme: savedTheme, tabLockEnabled, arabicDigits: savedDigits,
-    lockMinutes, allowUnlock, silentDuringPrayer, dateFormat: savedDateFormat,
+    lockMinutes, allowUnlock, silentDuringPrayer, prayerSound, dateFormat: savedDateFormat,
     tasbihEnabled, tasbihIntervalMode, tasbihIntervalMinutes,
     tasbihRandomMin, tasbihRandomMax, tasbihPosition: savedTasbihPosition
   } = await Platform.store.get([
     "location", "cache", "lang", "theme", "tabLockEnabled", "arabicDigits", "lockMinutes",
-    "allowUnlock", "silentDuringPrayer", "dateFormat", "tasbihEnabled", "tasbihIntervalMode",
+    "allowUnlock", "silentDuringPrayer", "prayerSound", "dateFormat", "tasbihEnabled", "tasbihIntervalMode",
     "tasbihIntervalMinutes", "tasbihRandomMin", "tasbihRandomMax", "tasbihPosition"
   ]);
 
@@ -970,6 +985,9 @@ async function init() {
   el.silentPrayer.checked = silentDuringPrayer !== undefined
     ? Boolean(silentDuringPrayer)
     : DEFAULT_SETTINGS.silentDuringPrayer;
+  el.prayerSound.value = ["beep", "adhan", "none"].includes(prayerSound)
+    ? prayerSound
+    : DEFAULT_SETTINGS.prayerSound;
   el.tasbihEnabled.checked = tasbihEnabled !== undefined
     ? Boolean(tasbihEnabled)
     : DEFAULT_SETTINGS.tasbihEnabled;
@@ -1212,6 +1230,11 @@ el.allowUnlock.addEventListener("change", async () => {
 
 el.silentPrayer.addEventListener("change", async () => {
   await Platform.store.set({ silentDuringPrayer: el.silentPrayer.checked });
+  showError("");
+});
+
+el.prayerSound.addEventListener("change", async () => {
+  await Platform.store.set({ prayerSound: el.prayerSound.value });
   showError("");
 });
 

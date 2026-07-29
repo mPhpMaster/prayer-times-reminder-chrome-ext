@@ -93,7 +93,10 @@
         // (buildLockConfig test:true), and the emergency Ctrl+Alt+U global
         // shortcut is always available, so no one is ever trapped even with
         // manual unlock off.
-        const s = await store.get(["lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock"]);
+        const s = await store.get([
+          "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock",
+          "silentDuringPrayer", "prayerSound",
+        ]);
         const config = buildLockConfig(s, { test: true });
         logJs("built lock config ok; allowUnlock=" + config.allowUnlock);
         return enforce.start(config);

@@ -1,6 +1,6 @@
 [package]
 name = "prayer-desktop"
-version = "1.0.1"
+version = "1.0.7"
 description = "Prayer — desktop (Tauri)"
 edition = "2021"
 rust-version = "1.77"
@@ -26,6 +26,7 @@ windows = { version = "0.58", features = [
   "Win32_UI_WindowsAndMessaging",
   "Win32_System_Threading",
   "Win32_System_Diagnostics_Debug",
+  "Win32_System_Diagnostics_ToolHelp",
   "Win32_System_Kernel",
 ] }
 # WebView2 memory trimming (SetMemoryUsageTargetLevel / TrySuspend). Same 0.38

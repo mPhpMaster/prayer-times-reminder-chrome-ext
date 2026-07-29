@@ -61,7 +61,7 @@
       catch (e) { return { ok: false, reason: String(e) }; }
     },
     test: async ({ allowUnlock } = {}) => {
-      const s = await readSettings(["lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer"]);
+      const s = await readSettings(["lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer", "prayerSound"]);
       if (allowUnlock !== undefined) s.allowUnlock = allowUnlock === true;
       const config = buildLockConfig(s, { test: true });
       return enforce.start(config);
@@ -307,7 +307,7 @@
 
   async function startLockForPrayer(prayer) {
     const s = await readSettings([
-      "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer", "tabLockEnabled",
+      "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer", "tabLockEnabled", "prayerSound",
     ]);
     if (s.tabLockEnabled === false) return;
     const L = tr(s.lang || "en");

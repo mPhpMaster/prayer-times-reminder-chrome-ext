@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Prayer sound</title>
+    </head>
+    <body>
+        <!-- Never shown. Exists only so the prayer-time sound has an extension
+             page to play in: a service worker has no Audio/AudioContext, and a
+             content script in a web page is blocked by Chrome's autoplay policy
+             and would play once per locked tab. -->
+        <script src="offscreen.js"></script>
+    </body>
+</html>

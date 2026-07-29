@@ -19,7 +19,11 @@ function buildLockConfig(settings, opts) {
   const minutes = clampLockMinutes(
     settings.lockMinutes != null ? settings.lockMinutes : DEFAULT_LOCK_MINUTES
   );
-  const durationMs = test ? TEST_LOCK_SECONDS * 1000 : minutes * 60 * 1000;
+  // The test lock is short (just to preview), but the adhan needs time to be
+  // heard — a 5s test cuts it off before you hear anything. Give the adhan test
+  // 30s (the ✕ is always available on a test lock to stop it sooner).
+  const testSecs = settings.prayerSound === "adhan" ? 30 : TEST_LOCK_SECONDS;
+  const durationMs = test ? testSecs * 1000 : minutes * 60 * 1000;
 
   return {
     type: "ACTIVATE_LOCK",
@@ -36,6 +40,10 @@ function buildLockConfig(settings, opts) {
     // Silence the device (OS DND on mobile, audio mute on desktop) for the lock
     // duration. Defaults on; the browser extension ignores it (no capability).
     silent: settings.silentDuringPrayer !== false,
+    // Sound to play when prayer time arrives: "beep" (synth chime), "adhan"
+    // (bundled audio), or "none". The test lock previews it too, so the user can
+    // hear their choice (the test allows manual unlock to stop it early).
+    sound: settings.prayerSound || "beep",
     theme: normalizeTheme(settings.theme),
     // Shared unlock moment (absolute) for the countdown, plus a duration the
     // native side uses for its own auto-unlock fallback timer.

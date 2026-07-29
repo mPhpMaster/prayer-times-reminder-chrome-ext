@@ -44,6 +44,7 @@ const CORE_MAP = [
   ["ui", "."], // popup.*, welcome.*, theme.css, overlay-*.js
   ["assets/fonts", "fonts"],
   ["assets/icons", "icons"],
+  ["assets/audio", "audio"], // adhan.ogg for the prayer-time sound option
 ];
 
 function copyTree(src, dst) {

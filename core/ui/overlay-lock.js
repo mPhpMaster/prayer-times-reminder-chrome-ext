@@ -15,6 +15,95 @@
   let tickTimer = null;
   let blockers = [];
   let lastFocused = null;
+  let activeSound = null;
+
+  // --- Prayer-time announcement sound -------------------------------------
+  // "beep" = a short synthesized chime (no asset). "adhan" = a bundled audio
+  // file (config.soundUrl, or window.__prayerAdhanUrl for the extension, else a
+  // relative "adhan.mp3" next to the lock page). "none" = silent. Each returns a
+  // { stop() } handle so the lock teardown can cut it off.
+  function playBeep() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      const ctx = new Ctx();
+      if (ctx.state === "suspended" && ctx.resume) { try { ctx.resume(); } catch {} }
+      const now = ctx.currentTime;
+      // Two gentle rising chimes (a perfect fifth), each with a soft decay.
+      const notes = [
+        { f: 880, t: 0.0 }, { f: 1318.51, t: 0.18 },
+        { f: 880, t: 0.7 }, { f: 1318.51, t: 0.88 },
+      ];
+      for (const n of notes) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = n.f;
+        const start = now + n.t;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.25, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.4);
+      }
+      return { stop() { try { ctx.close(); } catch {} } };
+    } catch { return null; }
+  }
+
+  // Optional host diagnostics hook (desktop wires it to the Rust debug log). No-op
+  // everywhere else. Lets us see, on a real device, which sound branch ran and
+  // whether the adhan failed — without a debugger attached.
+  function soundLog(msg) {
+    try { if (typeof window.__prayerSoundLog === "function") window.__prayerSoundLog(msg); } catch {}
+  }
+
+  function playAdhan(url) {
+    try {
+      const audio = new Audio(url);
+      audio.preload = "auto";
+      let done = false; // set once we've fallen back OR intentionally stopped
+      soundLog("adhan: play " + url);
+      // Only a genuine load/decode failure should fall back to the chime. We must
+      // NOT let our own teardown trigger this (clearing src fires "error") — that
+      // was playing a spurious chime after/instead of the adhan.
+      audio.addEventListener("error", () => {
+        if (done) return;
+        done = true;
+        soundLog("adhan: ERROR code=" + (audio.error && audio.error.code) + " -> chime fallback");
+        activeSound = playBeep();
+      });
+      audio.addEventListener("playing", () => soundLog("adhan: playing"));
+      const p = audio.play();
+      if (p && p.catch) p.catch((e) => soundLog("adhan: play() rejected " + (e && e.name))); // blocked autoplay is non-fatal
+      return {
+        stop() {
+          done = true; // suppress the error our pause/reset would otherwise raise
+          try { audio.pause(); } catch {}
+        }
+      };
+    } catch (e) { soundLog("adhan: threw " + e); return null; }
+  }
+
+  function stopSound() {
+    if (activeSound && typeof activeSound.stop === "function") {
+      try { activeSound.stop(); } catch {}
+    }
+    activeSound = null;
+  }
+
+  function playSound(config) {
+    stopSound();
+    const kind = config.sound || "beep";
+    soundLog("playSound kind=" + kind);
+    if (kind === "none") return;
+    if (kind === "adhan") {
+      const url = config.soundUrl || window.__prayerAdhanUrl || "audio/adhan.ogg";
+      activeSound = playAdhan(url) || playBeep();
+      return;
+    }
+    activeSound = playBeep();
+  }
 
   function pad(n) {
     return String(n).padStart(2, "0");
@@ -39,6 +128,7 @@
   }
 
   function clearLock() {
+    stopSound();
     if (tickTimer) {
       clearInterval(tickTimer);
       tickTimer = null;
@@ -325,6 +415,9 @@
 
     tick();
     tickTimer = setInterval(tick, 1000);
+
+    // Announce prayer time with the chosen sound (chime / adhan / none).
+    playSound(config);
   }
 
   // Exposed for the host shell to drive (one-shot calls; no resident listener).

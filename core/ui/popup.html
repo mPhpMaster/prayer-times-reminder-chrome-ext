@@ -169,6 +169,15 @@
                         </label>
                         <p class="field-hint" id="hint-silent">Silences calls and notifications while the lock is active.</p>
                     </div>
+                    <div class="field-group nested" id="sound-row">
+                        <label for="prayer-sound" id="label-sound">Prayer time sound</label>
+                        <select id="prayer-sound">
+                            <option value="beep" id="opt-sound-beep">Chime</option>
+                            <option value="adhan" id="opt-sound-adhan">Adhan</option>
+                            <option value="none" id="opt-sound-none">None</option>
+                        </select>
+                        <p class="field-hint" id="hint-sound">Play a sound when prayer time arrives.</p>
+                    </div>
                     <label class="toggle-label nested" for="allow-unlock">
                         <input type="checkbox" id="allow-unlock" />
                         <span id="label-allow-unlock">Allow manual unlock</span>
