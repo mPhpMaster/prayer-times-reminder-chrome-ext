@@ -12,6 +12,7 @@
   window.__prayerTabLockInjected = true;
 
   const ROOT_ID = "prayer-times-lock-root";
+  const UNLOCK_GRACE_MS = 2000;
   let tickTimer = null;
   let blockers = [];
   let lastFocused = null;
@@ -175,6 +176,7 @@
       arabicDigits = true,
       allowUnlock = false,
       unlockLabel = "Unlock tab",
+      unlockHint = "",
       theme = "midnight-emerald",
       onUnlock
     } = config;
@@ -267,30 +269,10 @@
           font-variant-numeric: tabular-nums;
           color: var(--gold);
         }
-        .close-btn {
-          position: absolute;
-          top: 16px;
-          inset-inline-end: 16px;
-          width: 40px;
-          height: 40px;
-          border: 1px solid var(--border);
-          border-radius: 0.625rem;
-          background: oklch(0.23 0.035 185 / 0.9);
-          color: var(--foreground);
-          font-size: 24px;
-          line-height: 1;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          box-shadow: var(--shadow-card);
-        }
-        .close-btn:hover {
-          background: var(--input);
-          border-color: oklch(0.78 0.14 170 / 0.35);
+        .unlock-hint {
+          margin-top: 20px;
+          font-size: 13px;
+          color: var(--muted-foreground);
         }
         :host([data-theme="classic"]) .lock {
           background: rgba(0, 0, 0, 0.9);
@@ -305,20 +287,11 @@
         }
         :host([data-theme="classic"]) .prayer { color: #2dd4a7; }
         :host([data-theme="classic"]) .subtitle,
-        :host([data-theme="classic"]) .countdown-label { color: #9fb3b0; }
+        :host([data-theme="classic"]) .countdown-label,
+        :host([data-theme="classic"]) .unlock-hint { color: #9fb3b0; }
         :host([data-theme="classic"]) .countdown { color: #f4c95d; }
-        :host([data-theme="classic"]) .close-btn {
-          border: 1px solid rgba(255, 255, 255, 0.25);
-          background: rgba(15, 32, 39, 0.9);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-        }
-        :host([data-theme="classic"]) .close-btn:hover {
-          background: rgba(255, 255, 255, 0.12);
-          border-color: rgba(255, 255, 255, 0.35);
-        }
       </style>
       <div class="lock" role="dialog" aria-modal="true" aria-labelledby="pt-lock-title">
-        <button type="button" class="close-btn" id="pt-lock-close" hidden aria-label="">×</button>
         <div class="card">
           <div class="icon">🕌</div>
           <div class="prayer" id="pt-lock-prayer"></div>
@@ -326,6 +299,7 @@
           <div class="subtitle" id="pt-lock-subtitle"></div>
           <div class="countdown-label" id="pt-lock-countdown-label"></div>
           <div class="countdown" id="pt-lock-countdown">05:00</div>
+          <div class="unlock-hint" id="pt-lock-unlock-hint" hidden></div>
         </div>
       </div>
     `;
@@ -335,7 +309,6 @@
     shadow.getElementById("pt-lock-subtitle").textContent = subtitle;
     shadow.getElementById("pt-lock-countdown-label").textContent = countdownPrefix;
     const countdownEl = shadow.getElementById("pt-lock-countdown");
-    const closeBtn = shadow.getElementById("pt-lock-close");
 
     function doUnlock() {
       clearLock();
@@ -344,19 +317,10 @@
       // per-config callback or the global hook.
       const action = typeof onUnlock === "function" ? onUnlock : window.__prayerLockOnUnlock;
       if (typeof action === "function") {
-        try { action(); } catch {}
+        try { action(); } catch (e) { soundLog("unlock action threw: " + e); }
+      } else {
+        soundLog("unlock: no action wired (no onUnlock, no __prayerLockOnUnlock)");
       }
-    }
-
-    if (allowUnlock === true) {
-      closeBtn.hidden = false;
-      closeBtn.setAttribute("aria-label", unlockLabel);
-      closeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        doUnlock();
-      });
-    } else {
-      closeBtn.remove();
     }
 
     document.documentElement.appendChild(host);
@@ -364,21 +328,41 @@
     if (document.body) document.body.style.overflow = "hidden";
 
     const overlay = shadow.querySelector(".lock");
+    // Manual unlock only arms after a short grace period, so a click or key
+    // press the user was already making when the lock appeared can't dismiss
+    // it before they've even seen it. The visible hint appears once armed.
+    const unlockArmedAt = Date.now() + UNLOCK_GRACE_MS;
+    const unlockArmed = () => allowUnlock === true && Date.now() >= unlockArmedAt;
+    if (allowUnlock === true) {
+      const hintEl = shadow.getElementById("pt-lock-unlock-hint");
+      hintEl.textContent = unlockHint || unlockLabel;
+      // Described (not labelled) by the hint, so screen readers still announce
+      // the prayer title from aria-labelledby.
+      overlay.setAttribute("aria-describedby", "pt-lock-unlock-hint");
+      setTimeout(() => {
+        hintEl.hidden = false;
+        overlay.style.cursor = "pointer";
+      }, UNLOCK_GRACE_MS);
+    }
+    // Manual unlock, when allowed, is a tap ANYWHERE on the lock — no small
+    // button to find or miss. mousedown/mouseup/dblclick/contextmenu stay
+    // blocked either way (text selection, long-press menus, etc.); the actual
+    // unlock happens on a completed "click".
     for (const type of ["mousedown", "mouseup", "dblclick", "contextmenu"]) {
-      overlay.addEventListener(type, (e) => {
-        if (allowUnlock === true && e.composedPath().includes(closeBtn)) return;
-        blockEvent(e);
-      }, true);
+      overlay.addEventListener(type, blockEvent, true);
     }
     overlay.addEventListener("click", (e) => {
-      if (allowUnlock === true && e.composedPath().includes(closeBtn)) return;
+      if (unlockArmed()) {
+        soundLog("lock tapped, unlocking");
+        doUnlock();
+        return;
+      }
       blockEvent(e);
     }, true);
     // Block page interaction. When manual unlock is allowed, let Escape/Enter
-    // through as the unlock shortcut — keyboard users otherwise can't reach the
-    // close button (it lives in a closed shadow root).
+    // through as the unlock shortcut too (after the same grace period).
     function onKeyDown(e) {
-      if (allowUnlock === true && (e.key === "Escape" || e.key === "Enter")) {
+      if (unlockArmed() && (e.key === "Escape" || e.key === "Enter")) {
         e.preventDefault();
         e.stopPropagation();
         doUnlock();
@@ -392,10 +376,11 @@
     addBlocker("wheel", blockEvent, { capture: true, passive: false });
     addBlocker("touchmove", blockEvent, { capture: true, passive: false });
 
-    // Move focus into the dialog so the unlock control is reachable by keyboard.
-    if (allowUnlock === true) {
-      try { closeBtn.focus(); } catch {}
-    }
+    // Move focus into the dialog (Escape/Enter unlock via the window-level
+    // keydown blocker above regardless of focus, but this keeps screen readers
+    // oriented to the modal that just took over).
+    overlay.setAttribute("tabindex", "-1");
+    try { overlay.focus(); } catch {}
 
     function tick() {
       const remaining = unlockAt - Date.now();

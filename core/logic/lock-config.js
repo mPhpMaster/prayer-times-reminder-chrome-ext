@@ -21,7 +21,7 @@ function buildLockConfig(settings, opts) {
   );
   // The test lock is short (just to preview), but the adhan needs time to be
   // heard — a 5s test cuts it off before you hear anything. Give the adhan test
-  // 30s (the ✕ is always available on a test lock to stop it sooner).
+  // 30s (tap the lock to stop it sooner when manual unlock is allowed).
   const testSecs = settings.prayerSound === "adhan" ? 30 : TEST_LOCK_SECONDS;
   const durationMs = test ? testSecs * 1000 : minutes * 60 * 1000;
 
@@ -33,6 +33,7 @@ function buildLockConfig(settings, opts) {
     subtitle: L.lockSubtitle,
     countdownPrefix: L.lockCountdown,
     unlockLabel: L.unlockTab,
+    unlockHint: L.lockTapHint,
     dir: L.dir,
     lang,
     arabicDigits: usesArabicDigits(lang, settings.arabicDigits !== false),

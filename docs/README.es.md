@@ -7,7 +7,7 @@
 Una extensión de Chrome (Manifest V3) que:
 
 - 🔔 **Te notifica a la hora de cada oración** (Fajr, Dhuhr, Asr, Maghrib, Isha) — en el idioma que hayas elegido.
-- 🔒 **Bloqueo opcional de pestañas** — cuando llega la hora, bloquea TODAS las pestañas abiertas del navegador durante una duración configurable (1–120 minutos, por defecto 5) con una cuenta atrás; las pestañas que abras o a las que navegues durante el bloqueo también quedan cubiertas; opción de desbloqueo manual mediante el botón de cerrar.
+- 🔒 **Bloqueo opcional de pestañas** — cuando llega la hora, bloquea TODAS las pestañas abiertas del navegador durante una duración configurable (1–120 minutos, por defecto 5) con una cuenta atrás; las pestañas que abras o a las que navegues durante el bloqueo también quedan cubiertas; opción de desbloqueo manual tocando la pantalla de bloqueo.
 - 🕌 **Muestra el horario diario completo** para tu ciudad/país, con una cuenta atrás en tiempo real hacia la siguiente oración.
 - 🌍 **Menús desplegables de país y ciudad** — elige un país y la lista de ciudades se cargará automáticamente.
 - 🌐 **8 idiomas** — cambia desde el encabezado del popup o **Settings → Language** (ver [Supported languages](#supported-languages)).
@@ -49,7 +49,7 @@ Listo — la extensión obtendrá los horarios de hoy, los mostrará y programar
 | Number style | Cuando están activos árabe o urdu: dígitos Arabic-Indic (٠١٢٣) o Western (0123) para horarios y cuenta atrás. |
 | Lock tab during prayer | Inyecta una capa de página completa en todas las pestañas abiertas en la hora de la oración. |
 | Lock duration | Cuánto tiempo permanece bloqueada la pestaña (1–120 minutos). |
-| Allow manual unlock | Muestra un botón de cerrar (×) para descartar la pantalla de bloqueo antes. |
+| Allow manual unlock | Permite quitar la pantalla de bloqueo antes tocándola en cualquier lugar (o pulsando Esc). |
 | Test tab lock | Vista previa de la capa de bloqueo en la pestaña actual (funciona en sitios normales, no en páginas `chrome://`). |
 | Periodic dhikr | Muestra un dhikr aleatorio en tus pestañas abiertas a un intervalo fijo o aleatorio (1–120 minutos). |
 | Dhikr position | Esquina o centro de la página (arriba/abajo × izquierda/derecha/centro). |
@@ -95,7 +95,7 @@ Las traducciones viven en `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Las frases de 
 ## Cómo funciona
 
 - **Programación:** en instalación/inicio y cada vez que cambia tu ubicación, el service worker obtiene los horarios del día y crea entradas one-shot de `chrome.alarms` en el momento exacto de cada oración próxima, además de un alarm de actualización justo después de medianoche.
-- **Bloqueo de pestañas:** si está activado en Configuración, cuando suena una alarma de oración la extensión inyecta `overlay-lock.js` en todas las pestañas abiertas y muestra una cuenta atrás durante la duración configurada. Las pestañas que abras o a las que navegues durante el periodo de bloqueo también se bloquean automáticamente. La capa bloquea teclado, desplazamiento y la entrada del puntero. Activa **Allow manual unlock** para mostrar el botón de cerrar (×). Usa **Test tab lock** en Configuración para previsualizar en la pestaña actual.
+- **Bloqueo de pestañas:** si está activado en Configuración, cuando suena una alarma de oración la extensión inyecta `overlay-lock.js` en todas las pestañas abiertas y muestra una cuenta atrás durante la duración configurada. Las pestañas que abras o a las que navegues durante el periodo de bloqueo también se bloquean automáticamente. La capa bloquea teclado, desplazamiento y la entrada del puntero. Activa **Allow manual unlock** para quitarla antes tocándola en cualquier lugar (o pulsando Esc/Enter) — tras un margen de 2 segundos, para que un clic ya en curso no la cierre sin que la veas. Usa **Test tab lock** en Configuración para previsualizar en la pestaña actual.
 - **Recordatorio de dhikr:** si está activado, un temporizador `chrome.alarms` muestra una frase aleatoria de `tasbih-phrases.js` en tus pestañas abiertas en un intervalo fijo o aleatorio dentro del rango min/max. La tarjeta no bloquea la página; haz clic para descartar o espera 10 segundos.
 - **Notificaciones:** cuando llega la hora de una oración, aparece una notificación del sistema localizada.
 - **Popup:** renderiza el horario en caché al instante y luego se refresca desde la red; la siguiente oración se resalta con una cuenta atrás segundo a segundo.

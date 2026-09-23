@@ -7,7 +7,7 @@
 Eine Chrome-Erweiterung (Manifest V3), die:
 
 - 🔔 **Benachrichtigt Sie zu jeder Gebetszeit** (Fajr, Dhuhr, Asr, Maghrib, Isha) — in der von Ihnen gewählten Sprache.
-- 🔒 **Optionale Tab-Sperre** — wenn die Gebetszeit erreicht ist, blockiert ALLE geöffneten Browser-Tabs für eine einstellbare Dauer (1–120 Minuten, Standard 5) mit einem Countdown-Overlay; Tabs, die Sie während der Sperre öffnen oder zu denen Sie navigieren, werden ebenfalls erfasst; optional manuelles Entsperren über die Schließen-Schaltfläche.
+- 🔒 **Optionale Tab-Sperre** — wenn die Gebetszeit erreicht ist, blockiert ALLE geöffneten Browser-Tabs für eine einstellbare Dauer (1–120 Minuten, Standard 5) mit einem Countdown-Overlay; Tabs, die Sie während der Sperre öffnen oder zu denen Sie navigieren, werden ebenfalls erfasst; optional manuelles Entsperren durch Antippen des Sperrbildschirms.
 - 🕌 **Den vollständigen täglichen Gebetsplan** für Ihre Stadt/Ihr Land anzeigt, mit einem Live-Countdown zum nächsten Gebet.
 - 🌍 **Länder- und Stadt-Dropdowns** — wählen Sie ein Land, die Städteliste wird automatisch geladen.
 - 🌐 **8 Sprachen** — wechseln Sie über den Popup-Header oder **Settings → Language** (siehe [Unterstützte Sprachen](#unterstützte-sprachen)).
@@ -49,7 +49,7 @@ Das war's — die Erweiterung lädt die heutigen Zeiten, zeigt sie an und plant 
 | Number style | Wenn Arabisch oder Urdu aktiv: Arabic-Indic (٠١٢٣) oder westliche (0123) Ziffern. |
 | Lock tab during prayer | Legt bei Gebetszeit ein Vollbild-Overlay auf alle geöffneten Tabs. |
 | Lock duration | Wie lange der Tab gesperrt bleibt (1–120 Minuten). |
-| Allow manual unlock | Zeigt eine Schließen-Schaltfläche (×) zum frühen Beenden der Sperre. |
+| Allow manual unlock | Ermöglicht das vorzeitige Beenden der Sperre durch Antippen an beliebiger Stelle (oder mit Esc). |
 | Test tab lock | Vorschau des Sperr-Overlays auf dem aktuellen Tab (funktioniert auf normalen Websites, nicht auf `chrome://`-Seiten). |
 | Periodic dhikr | Zeigt einen zufälligen Dhikr auf Ihren geöffneten Tabs in festem oder zufälligem Intervall (1–120 Minuten). |
 | Dhikr position | Ecke oder Mitte der Seite (oben/unten × links/rechts/Mitte). |
@@ -94,7 +94,7 @@ UI, Benachrichtigungen, Sperr-Overlay, Dhikr-Karte und Willkommensseite sind lok
 ## Funktionsweise
 
 - **Planung:** Bei Installation/Start und bei Standortänderung lädt der Service Worker die heutigen Zeiten und erstellt einmalige `chrome.alarms`-Einträge zu jeder bevorstehenden Gebetszeit, plus einen Refresh-Alarm kurz nach Mitternacht.
-- **Tab-Sperre:** Wenn in den Einstellungen aktiviert, injiziert die Erweiterung bei einem Gebetsalarm `overlay-lock.js` in jeden geöffneten Tab und zeigt ein Countdown-Overlay für die konfigurierte Dauer. Das Overlay blockiert Tastatur, Scrollen und Zeigereingaben. Tabs, die Sie während des Sperrzeitfensters öffnen oder zu denen Sie navigieren, werden ebenfalls automatisch gesperrt. Aktivieren Sie **Allow manual unlock** für eine Schließen-Schaltfläche (×). Nutzen Sie **Test tab lock** für eine Vorschau auf dem aktuellen Tab.
+- **Tab-Sperre:** Wenn in den Einstellungen aktiviert, injiziert die Erweiterung bei einem Gebetsalarm `overlay-lock.js` in jeden geöffneten Tab und zeigt ein Countdown-Overlay für die konfigurierte Dauer. Das Overlay blockiert Tastatur, Scrollen und Zeigereingaben. Tabs, die Sie während des Sperrzeitfensters öffnen oder zu denen Sie navigieren, werden ebenfalls automatisch gesperrt. Aktivieren Sie **Allow manual unlock**, um die Sperre durch Antippen an beliebiger Stelle (oder mit Esc/Enter) vorzeitig zu beenden — nach einer Schonfrist von 2 Sekunden, damit ein laufender Klick sie nicht ungesehen schließt. Nutzen Sie **Test tab lock** für eine Vorschau auf dem aktuellen Tab.
 - **Dhikr-Erinnerung:** Wenn aktiviert, zeigt ein `chrome.alarms`-Timer in festem oder zufälligem Intervall (min/max) eine zufällige Formulierung aus `tasbih-phrases.js` auf Ihren geöffneten Tabs. Die Karte blockiert die Seite nicht; tippen zum Schließen oder 10 Sekunden warten.
 - **Benachrichtigungen:** Wenn eine Gebetszeit erreicht ist, erscheint eine lokalisierte Systembenachrichtigung.
 - **Popup:** Zeigt den gecachten Plan sofort und aktualisiert dann aus dem Netzwerk; das nächste Gebet wird mit sekündlichem Countdown hervorgehoben.

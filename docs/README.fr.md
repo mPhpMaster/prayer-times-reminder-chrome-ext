@@ -7,7 +7,7 @@
 Une extension Chrome (Manifest V3) qui :
 
 - 🔔 **Vous notifie à l’heure de chaque prière** (Fajr, Dhuhr, Asr, Maghrib, Isha) — dans la langue que vous choisissez.
-- 🔒 **Verrouillage optionnel des onglets** — à l’heure de la prière, bloque tous les onglets de navigateur ouverts pendant une durée configurable (1–120 minutes, par défaut 5) avec un compte à rebours ; les onglets que vous ouvrez ou vers lesquels vous naviguez pendant le verrouillage sont également couverts ; option de déverrouillage manuel via le bouton de fermeture.
+- 🔒 **Verrouillage optionnel des onglets** — à l’heure de la prière, bloque tous les onglets de navigateur ouverts pendant une durée configurable (1–120 minutes, par défaut 5) avec un compte à rebours ; les onglets que vous ouvrez ou vers lesquels vous naviguez pendant le verrouillage sont également couverts ; option de déverrouillage manuel en touchant l’écran de verrouillage.
 - 🕌 **Affiche le programme complet des prières** pour votre ville/pays, avec un compte à rebours en temps réel vers la prochaine prière.
 - 🌍 **Sélecteurs pays & ville** — choisissez un pays, et la liste des villes se charge automatiquement.
 - 🌐 **8 langues** — basculez depuis le menu du popup ou **Settings → Language** (voir [Supported languages](#supported-languages)).
@@ -49,7 +49,7 @@ C’est tout — l’extension récupère les horaires d’aujourd’hui, les af
 | Number style | Quand l’arabe ou l’ourdou est actif : chiffres Arabic-Indic (٠١٢٣) ou occidentaux (0123) pour les horaires et le compte à rebours. |
 | Lock tab during prayer | Injecte un overlay plein écran sur tous les onglets ouverts à l’heure de prière. |
 | Lock duration | Durée pendant laquelle l’onglet reste verrouillé (1–120 minutes). |
-| Allow manual unlock | Affiche un bouton de fermeture (×) pour masquer l’écran de verrouillage plus tôt. |
+| Allow manual unlock | Permet de fermer l’écran de verrouillage plus tôt en le touchant n’importe où (ou avec Échap). |
 | Test tab lock | Aperçu de l’overlay de verrouillage sur l’onglet actuel (fonctionne sur des sites normaux, pas sur les pages `chrome://`). |
 | Periodic dhikr | Affiche un dhikr aléatoire sur vos onglets ouverts à intervalle fixe ou aléatoire (1–120 minutes). |
 | Dhikr position | Coin ou centre de la page (haut/bas × gauche/droite/centre). |
@@ -95,7 +95,7 @@ Les traductions vivent dans `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Les phrases 
 ## Fonctionnement
 
 - **Planification :** à l’installation/démarrage et à chaque changement de localisation, le service worker récupère les horaires du jour et crée des entrées `chrome.alarms` one-shot à l’heure de chaque prière à venir, plus une alarme de rafraîchissement juste après minuit.
-- **Verrouillage des onglets :** si activé dans les paramètres, quand une alarme de prière se déclenche l’extension injecte `overlay-lock.js` dans tous les onglets ouverts et affiche un compte à rebours pour la durée configurée. Les onglets que vous ouvrez ou vers lesquels vous naviguez pendant la fenêtre de verrouillage sont également verrouillés automatiquement. L’overlay bloque le clavier, le défilement et l’entrée du pointeur. Activez **Allow manual unlock** pour afficher un bouton de fermeture (×). Utilisez **Test tab lock** pour prévisualiser sur l’onglet actuel.
+- **Verrouillage des onglets :** si activé dans les paramètres, quand une alarme de prière se déclenche l’extension injecte `overlay-lock.js` dans tous les onglets ouverts et affiche un compte à rebours pour la durée configurée. Les onglets que vous ouvrez ou vers lesquels vous naviguez pendant la fenêtre de verrouillage sont également verrouillés automatiquement. L’overlay bloque le clavier, le défilement et l’entrée du pointeur. Activez **Allow manual unlock** pour le fermer plus tôt en le touchant n’importe où (ou avec Échap/Entrée) — après un délai de 2 secondes, pour qu’un clic déjà en cours ne le ferme pas sans que vous le voyiez. Utilisez **Test tab lock** pour prévisualiser sur l’onglet actuel.
 - **Rappel dhikr :** si activé, un minuteur `chrome.alarms` affiche une phrase aléatoire de `tasbih-phrases.js` sur vos onglets ouverts à intervalle fixe ou aléatoire dans votre plage min/max. La carte ne bloque pas la page : cliquez dessus pour fermer ou attendez 10 secondes.
 - **Notifications :** lorsque l’heure d’une prière arrive, une notification système localisée apparaît.
 - **Popup :** rend instantanément le programme mis en cache, puis se rafraîchit depuis le réseau ; la prochaine prière est mise en avant avec un compte à rebours seconde par seconde.

@@ -1266,19 +1266,42 @@ el.testLockBtn.addEventListener("click", async () => {
     if (!granted) { showError(T().tabLockPermDenied); return; }
   }
   el.testLockBtn.disabled = true;
-  // The test lock auto-unlocks after TEST_LOCK_SECONDS (5s), or the user closes
-  // it early with the X. Re-enable the button in step with that lifetime — a
-  // flat timer decoupled from the platform call, so it can never get stuck.
-  setTimeout(() => { el.testLockBtn.disabled = false; }, TEST_LOCK_SECONDS * 1000);
+  // The test lock auto-unlocks after TEST_LOCK_SECONDS (5s) — or 30s for the
+  // adhan preview, since buildLockConfig extends it so the adhan is actually
+  // audible (see lock-config.js) — or the user taps it to unlock early.
+  // Re-enable the button as soon as the user is back here after the lock took
+  // over (mobile/desktop: the lock covered this page, so hidden/blur -> visible/
+  // focus means it's gone, even if unlocked early), or right away if the test
+  // failed to start, with a flat timer
+  // over the lock's lifetime as the fallback, so it can never get stuck.
+  const testSecs = el.prayerSound.value === "adhan" ? 30 : TEST_LOCK_SECONDS;
+  let leftPage = false;
+  const onLeave = () => { if (document.visibilityState === "hidden" || !document.hasFocus()) leftPage = true; };
+  const onBack = () => { if (leftPage && document.visibilityState === "visible") reenable(); };
+  const reenable = () => {
+    el.testLockBtn.disabled = false;
+    clearTimeout(fallback);
+    document.removeEventListener("visibilitychange", onLeave);
+    document.removeEventListener("visibilitychange", onBack);
+    window.removeEventListener("blur", onLeave);
+    window.removeEventListener("focus", onBack);
+  };
+  const fallback = setTimeout(reenable, testSecs * 1000);
+  document.addEventListener("visibilitychange", onLeave);
+  document.addEventListener("visibilitychange", onBack);
+  window.addEventListener("blur", onLeave);
+  window.addEventListener("focus", onBack);
   try {
     const result = await Platform.enforce.test({
       allowUnlock: el.allowUnlock.checked
     });
     if (!result?.ok) {
       showError(T().errLockTab);
+      reenable();
     }
   } catch {
     showError(T().errLockTab);
+    reenable();
   }
 });
 
