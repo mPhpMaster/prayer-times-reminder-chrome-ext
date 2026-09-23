@@ -7,7 +7,7 @@
 A Manifest V3 Chrome extension that:
 
 - 🔔 **हर नमाज़ के समय** (Fajr, Dhuhr, Asr, Maghrib, Isha) — आपकी चुनी हुई भाषा में नोटिफाई करता है।
-- 🔒 **ऐच्छिक टैब लॉक** — समय आने पर सभी खुले ब्राउज़र टैब्स को (1–120 मिनट, डिफ़ॉल्ट 5) तक लॉक करता है, काउंटडाउन ओवरले के साथ; लॉक के दौरान आप जो टैब खोलते या नेविगेट करते हैं वे भी अपने-आप लॉक हो जाते हैं; जल्दी अनलॉक के लिए क्लोज़ बटन भी उपलब्ध।
+- 🔒 **ऐच्छिक टैब लॉक** — समय आने पर सभी खुले ब्राउज़र टैब्स को (1–120 मिनट, डिफ़ॉल्ट 5) तक लॉक करता है, काउंटडाउन ओवरले के साथ; लॉक के दौरान आप जो टैब खोलते या नेविगेट करते हैं वे भी अपने-आप लॉक हो जाते हैं; लॉक स्क्रीन पर टैप करके जल्दी अनलॉक का विकल्प भी उपलब्ध।
 - 🕌 **आपके शहर/देश के लिए पूरा दैनिक नमाज़ शेड्यूल** — अगली नमाज़ तक लाइव काउंटडाउन के साथ।
 - 🌍 **Country & city dropdowns** — देश चुनें, फिर शहर की लिस्ट अपने-आप लोड हो जाएगी।
 - 🌐 **8 भाषाएँ** — popup हेडर से या **Settings → Language** से स्विच करें (नीचे [Supported languages](#supported-languages))।
@@ -49,7 +49,7 @@ Prayer times are calculated offline on your device with [adhan-js](https://githu
 | Number style | When Arabic or Urdu is active: Arabic-Indic (٠١٢٣) or Western (0123) digits for times and countdowns. |
 | Lock tab during prayer | सभी खुले tabs पर prayer time के समय full-page overlay inject करता है। |
 | Lock duration | Tab कितनी देर locked रहता है (1–120 minutes). |
-| Allow manual unlock | Lock screen early dismiss करने के लिए close (×) बटन दिखाता है। |
+| Allow manual unlock | Lock screen पर कहीं भी टैप करके (या Esc दबाकर) उसे जल्दी हटाने देता है। |
 | Test tab lock | Current tab पर lock overlay preview (normal websites पर काम करता है, `chrome://` pages पर नहीं)। |
 | Periodic dhikr | खुले टैब पर fixed या random interval (1–120 minutes) पर dhikr दिखाता है। |
 | Dhikr position | Page का corner या center (top/bottom × left/right/center). |
@@ -94,7 +94,7 @@ Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `t
 ## How it works
 
 - **Scheduling:** on install/startup and whenever your location changes, the service worker fetches today's timings and creates one-shot `chrome.alarms` entries at each upcoming prayer time, plus a refresh alarm just after midnight.
-- **Tab lock:** if enabled in settings, when a prayer alarm fires the extension injects `overlay-lock.js` into every open tab and shows a countdown overlay for the configured duration. The overlay blocks keyboard, scroll, and pointer input on the page. Tabs you open or navigate to during the lock window are locked automatically too. Enable **Allow manual unlock** to show a close (×) button. Use **Test tab lock** in settings to preview it on the current tab.
+- **Tab lock:** if enabled in settings, when a prayer alarm fires the extension injects `overlay-lock.js` into every open tab and shows a countdown overlay for the configured duration. The overlay blocks keyboard, scroll, and pointer input on the page. Tabs you open or navigate to during the lock window are locked automatically too. Enable **Allow manual unlock** to dismiss it early by tapping anywhere on it (or pressing Esc/Enter) — after a 2-second grace period, so a click already in progress can't dismiss it unseen. Use **Test tab lock** in settings to preview it on the current tab.
 - **Dhikr reminder:** if enabled, a `chrome.alarms` timer shows a random phrase from `tasbih-phrases.js` on your open tabs at a fixed interval or a random interval within your min/max range. The card does not block the page; click it to dismiss or wait 10 seconds.
 - **Notifications:** when a prayer time arrives, a localized system notification appears.
 - **Popup:** renders the cached schedule instantly, then refreshes from the network; the next prayer is highlighted with a second-by-second countdown.
