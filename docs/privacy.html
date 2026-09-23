@@ -58,9 +58,9 @@
   <p>To calculate times and fill the city list, the app may contact these free public services,
   sending only the minimum needed — never any account or personal identifier:</p>
   <ul>
-    <li><strong>AlAdhan API</strong> (<code>api.aladhan.com</code>) — your city/country or coordinates and the calculation method, to return prayer times. (The Windows and Android apps compute times offline by default and only fall back to this when needed.)</li>
+    <li><strong>AlAdhan API</strong> (<code>api.aladhan.com</code>) — your city/country or coordinates and the calculation method, to return prayer times. (All apps, including the browser extension, compute times offline by default and only fall back to this when needed.)</li>
     <li><strong>CountriesNow API</strong> (<code>countriesnow.space</code>) — a country name, to return its list of cities.</li>
-    <li><strong>Nominatim / OpenStreetMap</strong> (<code>nominatim.openstreetmap.org</code>) — only when the interface language is Arabic, the <em>name</em> of the city you select, to show its Arabic label. Your coordinates are not sent.</li>
+    <li><strong>Nominatim / OpenStreetMap</strong> (<code>nominatim.openstreetmap.org</code>) — the <em>name</em> of the city you select (with its country), to find its coordinates for the offline calculation and, when the interface language is Arabic, to show its Arabic label. Your device coordinates are not sent.</li>
   </ul>
 
   <h2>Permissions</h2>

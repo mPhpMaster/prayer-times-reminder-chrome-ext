@@ -237,8 +237,11 @@ fn start_lock(
         let _ = open_lock_windows(&app_win, &cfg);
     });
 
-    // Silence the speaker + mic only when the "silent during prayer" setting is
-    // on (config.silent, default true). Off → leave audio untouched.
+    // Silence the machine for the prayer, EXCEPT our own prayer-time announcement
+    // (chime/adhan). Only when "silent during prayer" is on (config.silent,
+    // default true); off → leave audio untouched. The mute spares our process
+    // tree (audio::set_mute), so the sound plays even in silent mode — no timing
+    // hack needed. Every other app is muted immediately.
     let silent = config.get("silent").and_then(|v| v.as_bool()).unwrap_or(true);
     #[cfg(windows)]
     if silent {
@@ -533,6 +536,25 @@ fn use_bundled_webview2() {
     }
 }
 
+// Let the lock window autoplay the prayer-time announcement (chime/adhan) without
+// a user gesture — WebView2 otherwise blocks programmatic audio. Appends to any
+// existing args so a debugging --remote-debugging-port isn't clobbered.
+#[cfg(windows)]
+fn enable_webview_autoplay() {
+    const KEY: &str = "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS";
+    const ARG: &str = "--autoplay-policy=no-user-gesture-required";
+    let existing = std::env::var(KEY).unwrap_or_default();
+    if existing.contains("autoplay-policy") {
+        return;
+    }
+    let combined = if existing.trim().is_empty() {
+        ARG.to_string()
+    } else {
+        format!("{existing} {ARG}")
+    };
+    std::env::set_var(KEY, combined);
+}
+
 fn main() {
     // Install crash logging FIRST so any startup failure (a Rust panic or a native
     // COM/WebView2 exception) is written to a retrievable file before the process
@@ -542,6 +564,9 @@ fn main() {
     // Force the bundled WebView2 runtime when present (MSIX/Store build).
     #[cfg(windows)]
     use_bundled_webview2();
+    // Allow the lock window to autoplay the prayer-time sound.
+    #[cfg(windows)]
+    enable_webview_autoplay();
     log_line("main: starting");
 
     tauri::Builder::default()
@@ -863,31 +888,113 @@ mod input_block {
     }
 }
 
-// --- Windows Core Audio: mute/unmute default speaker (eRender) + mic (eCapture).
+// --- Windows Core Audio: "silent during prayer" without silencing the prayer ---
+// The speaker mute is PER-SESSION and spares our own process tree, so the
+// prayer-time announcement (chime/adhan) is still heard while every OTHER app is
+// silenced — silent mode must not mute the prayer sound itself. The mic is muted
+// at the endpoint (we never play through it, so that can't affect our sound).
 #[cfg(windows)]
 mod audio {
-    use windows::core::Result;
+    use std::collections::HashSet;
+    use windows::core::{Interface, Result};
+    use windows::Win32::Foundation::CloseHandle;
     use windows::Win32::Media::Audio::Endpoints::IAudioEndpointVolume;
     use windows::Win32::Media::Audio::{
-        eCapture, eRender, IMMDeviceEnumerator, MMDeviceEnumerator, DEVICE_STATE_ACTIVE,
+        eCapture, eRender, IAudioSessionControl2, IAudioSessionManager2, IMMDeviceEnumerator,
+        ISimpleAudioVolume, MMDeviceEnumerator, DEVICE_STATE_ACTIVE,
     };
     use windows::Win32::System::Com::{
         CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_MULTITHREADED,
     };
+    use windows::Win32::System::Diagnostics::ToolHelp::{
+        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
+        TH32CS_SNAPPROCESS,
+    };
 
-    // Mute EVERY active output (speakers, HDMI, Bluetooth headphones…) and every
-    // microphone — not just the current default endpoint. The user may be
-    // listening through a non-default device, so muting only the default would
-    // miss it; muting all active endpoints silences the machine regardless.
+    // Every PID in our own process tree (this process + all descendants). WebView2
+    // plays the adhan/chime from a CHILD process (msedgewebview2.exe), so sparing
+    // only our own PID would still mute our sound — we must spare the whole subtree.
+    fn our_process_tree() -> HashSet<u32> {
+        let mut tree = HashSet::new();
+        tree.insert(std::process::id());
+        let mut pairs: Vec<(u32, u32)> = Vec::new(); // (pid, parent pid)
+        unsafe {
+            if let Ok(snap) = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) {
+                let mut e = PROCESSENTRY32W {
+                    dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
+                    ..Default::default()
+                };
+                if Process32FirstW(snap, &mut e).is_ok() {
+                    loop {
+                        pairs.push((e.th32ProcessID, e.th32ParentProcessID));
+                        if Process32NextW(snap, &mut e).is_err() {
+                            break;
+                        }
+                    }
+                }
+                let _ = CloseHandle(snap);
+            }
+        }
+        // Grow the set with children of known members until it stops changing.
+        loop {
+            let mut added = false;
+            for (pid, ppid) in &pairs {
+                if tree.contains(ppid) && tree.insert(*pid) {
+                    added = true;
+                }
+            }
+            if !added {
+                break;
+            }
+        }
+        tree
+    }
+
     pub fn set_mute(mute: bool) -> Result<()> {
         unsafe {
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
             let enumerator: IMMDeviceEnumerator =
                 CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
-            for flow in [eRender, eCapture] {
-                let Ok(collection) = enumerator.EnumAudioEndpoints(flow, DEVICE_STATE_ACTIVE) else {
-                    continue;
-                };
+
+            let spare = our_process_tree();
+
+            // Speakers (every active render endpoint): walk each device's audio
+            // sessions and mute all but our own subtree's. The user may be on a
+            // non-default device, so we cover every active endpoint.
+            if let Ok(collection) = enumerator.EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE) {
+                let count = collection.GetCount().unwrap_or(0);
+                for i in 0..count {
+                    let Ok(device) = collection.Item(i) else {
+                        continue;
+                    };
+                    let Ok(mgr) = device.Activate::<IAudioSessionManager2>(CLSCTX_ALL, None) else {
+                        continue;
+                    };
+                    let Ok(sessions) = mgr.GetSessionEnumerator() else {
+                        continue;
+                    };
+                    let n = sessions.GetCount().unwrap_or(0);
+                    for s in 0..n {
+                        let Ok(ctrl) = sessions.GetSession(s) else {
+                            continue;
+                        };
+                        let Ok(ctrl2) = ctrl.cast::<IAudioSessionControl2>() else {
+                            continue;
+                        };
+                        let pid = ctrl2.GetProcessId().unwrap_or(0);
+                        if pid != 0 && spare.contains(&pid) {
+                            continue; // never mute our own prayer sound
+                        }
+                        if let Ok(vol) = ctrl2.cast::<ISimpleAudioVolume>() {
+                            let _ = vol.SetMute(mute, std::ptr::null());
+                        }
+                    }
+                }
+            }
+
+            // Microphone (every active capture endpoint): endpoint-level mute is
+            // fine — we never play through the mic, so this can't touch our sound.
+            if let Ok(collection) = enumerator.EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE) {
                 let count = collection.GetCount().unwrap_or(0);
                 for i in 0..count {
                     if let Ok(device) = collection.Item(i) {

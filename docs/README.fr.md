@@ -14,11 +14,11 @@ Une extension Chrome (Manifest V3) qui :
 - 🌗 **Thème** — Midnight Emerald (par défaut) ou Classic — sélectionnable dans les paramètres.
 - 📅 **Format de date** — choisissez comment les dates Hijri et grégorienne sont affichées (par ex. `10-04-2026`, `10 April 2026`, texte long).
 - 🌙 **Date Hijri** affichée à côté de la date grégorienne.
-- 📿 **Dhikr périodique** — rappel flottant optionnel avec 139 phrases uniques sur l’onglet actif ; cliquez pour fermer ou masquez automatiquement après 10 secondes.
+- 📿 **Dhikr périodique** — rappel flottant optionnel avec 151 phrases uniques sur vos onglets ouverts ; cliquez pour fermer ou masquez automatiquement après 10 secondes.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
-Les heures de prière proviennent de l’API gratuite [AlAdhan API](https://aladhan.com/prayer-times-api) ; la liste des villes provient de l’API gratuite [CountriesNow API](https://countriesnow.space). Aucune clé API requise.
+Les heures de prière sont calculées hors ligne sur votre appareil avec [adhan-js](https://github.com/batoulapps/adhan-js) (l’API gratuite [AlAdhan API](https://aladhan.com/prayer-times-api) ne sert que de secours pour les anciens emplacements enregistrés sans coordonnées) ; la liste des villes provient de l’API gratuite [CountriesNow API](https://countriesnow.space). Aucune clé API requise.
 
 ## Installation
 
@@ -51,7 +51,7 @@ C’est tout — l’extension récupère les horaires d’aujourd’hui, les af
 | Lock duration | Durée pendant laquelle l’onglet reste verrouillé (1–120 minutes). |
 | Allow manual unlock | Affiche un bouton de fermeture (×) pour masquer l’écran de verrouillage plus tôt. |
 | Test tab lock | Aperçu de l’overlay de verrouillage sur l’onglet actuel (fonctionne sur des sites normaux, pas sur les pages `chrome://`). |
-| Periodic dhikr | Affiche un dhikr aléatoire sur l’onglet actif à intervalle fixe ou aléatoire (1–120 minutes). |
+| Periodic dhikr | Affiche un dhikr aléatoire sur vos onglets ouverts à intervalle fixe ou aléatoire (1–120 minutes). |
 | Dhikr position | Coin ou centre de la page (haut/bas × gauche/droite/centre). |
 | Test dhikr | Aperçu de la carte dhikr sur l’onglet actuel. |
 | Theme | Choisissez **Midnight Emerald** (par défaut) ou **Classic**. |
@@ -82,9 +82,9 @@ Les traductions vivent dans `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Les phrases 
 |------|---------|
 | `manifest.json` | Manifest MV3 (permissions : alarms, notifications, storage, geolocation, tabs, scripting). |
 | `background.js` | Service worker — récupère les horaires, planifie `chrome.alarms`, envoie des notifications localisées, et verrouille tous les onglets ouverts à l’heure de prière. |
-| `content-lock.js` | Overlay injecté (shadow DOM) qui bloque l’interaction de la page jusqu’à la fin du minuteur ou le déverrouillage manuel. |
-| `content-tasbih.js` | Carte dhikr flottante injectée ; disparaît au clic ou après 10 secondes. |
-| `tasbih-phrases.js` | 139 phrases dhikr uniques. |
+| `overlay-lock.js` | Overlay injecté (shadow DOM) qui bloque l’interaction de la page jusqu’à la fin du minuteur ou le déverrouillage manuel. |
+| `overlay-tasbih.js` | Carte dhikr flottante injectée ; disparaît au clic ou après 10 secondes. |
+| `tasbih-phrases.js` | 151 phrases dhikr uniques. |
 | `welcome.html` / `welcome.css` | Page de bienvenue lors de la première installation avec instructions d’épinglage (localisées). |
 | `i18n.js` | Traductions partagées (EN/DE/AR/UR/HI/ID/FR/ES), noms des prières, liste des pays, méthodes de calcul, formats de date, aide pour les chiffres. |
 | `popup.html` / `popup.css` / `popup.js` | L’interface du popup (programme, compte à rebours, sélecteur de langue, paramètres). |
@@ -95,8 +95,8 @@ Les traductions vivent dans `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Les phrases 
 ## Fonctionnement
 
 - **Planification :** à l’installation/démarrage et à chaque changement de localisation, le service worker récupère les horaires du jour et crée des entrées `chrome.alarms` one-shot à l’heure de chaque prière à venir, plus une alarme de rafraîchissement juste après minuit.
-- **Verrouillage des onglets :** si activé dans les paramètres, quand une alarme de prière se déclenche l’extension injecte `content-lock.js` dans tous les onglets ouverts et affiche un compte à rebours pour la durée configurée. Les onglets que vous ouvrez ou vers lesquels vous naviguez pendant la fenêtre de verrouillage sont également verrouillés automatiquement. L’overlay bloque le clavier, le défilement et l’entrée du pointeur. Activez **Allow manual unlock** pour afficher un bouton de fermeture (×). Utilisez **Test tab lock** pour prévisualiser sur l’onglet actuel.
-- **Rappel dhikr :** si activé, un minuteur `chrome.alarms` affiche une phrase aléatoire de `tasbih-phrases.js` sur l’onglet actif à intervalle fixe ou aléatoire dans votre plage min/max. La carte ne bloque pas la page : cliquez dessus pour fermer ou attendez 10 secondes.
+- **Verrouillage des onglets :** si activé dans les paramètres, quand une alarme de prière se déclenche l’extension injecte `overlay-lock.js` dans tous les onglets ouverts et affiche un compte à rebours pour la durée configurée. Les onglets que vous ouvrez ou vers lesquels vous naviguez pendant la fenêtre de verrouillage sont également verrouillés automatiquement. L’overlay bloque le clavier, le défilement et l’entrée du pointeur. Activez **Allow manual unlock** pour afficher un bouton de fermeture (×). Utilisez **Test tab lock** pour prévisualiser sur l’onglet actuel.
+- **Rappel dhikr :** si activé, un minuteur `chrome.alarms` affiche une phrase aléatoire de `tasbih-phrases.js` sur vos onglets ouverts à intervalle fixe ou aléatoire dans votre plage min/max. La carte ne bloque pas la page : cliquez dessus pour fermer ou attendez 10 secondes.
 - **Notifications :** lorsque l’heure d’une prière arrive, une notification système localisée apparaît.
 - **Popup :** rend instantanément le programme mis en cache, puis se rafraîchit depuis le réseau ; la prochaine prière est mise en avant avec un compte à rebours seconde par seconde.
 

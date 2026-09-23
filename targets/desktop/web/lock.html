@@ -23,8 +23,24 @@
         // windows, unmute, re-enable camera).
         window.__prayerLockOnUnlock = () => { if (invoke) invoke("clear_lock"); };
 
+        // Route overlay-lock's sound diagnostics into the Rust debug log so a
+        // real device shows which branch ran (adhan vs chime) and any failure.
+        window.__prayerSoundLog = (m) => { if (invoke) invoke("log_js", { msg: "sound: " + m }); };
+
+        // This page opens once PER MONITOR. Only the primary window (lock-0)
+        // plays the prayer sound — otherwise a multi-monitor setup plays the
+        // adhan N times at once (echo). Non-primary windows show the overlay
+        // silently.
+        let myLabel = "";
+        try {
+          const w = TAURI.window && TAURI.window.getCurrentWindow && TAURI.window.getCurrentWindow();
+          myLabel = (w && w.label) || "";
+        } catch (e) {}
+        const playsSound = myLabel === "" || myLabel === "lock-0";
+
         function activate(config) {
-          if (window.__prayerTabLockActivate) window.__prayerTabLockActivate(config);
+          const cfg = playsSound ? config : Object.assign({}, config, { sound: "none" });
+          if (window.__prayerTabLockActivate) window.__prayerTabLockActivate(cfg);
         }
 
         // Rust emits "activate-lock" with the full config when the window opens.

@@ -16,6 +16,7 @@ function clearTimers() {
 async function firePrayer(prayer) {
   const s = await Platform.store.get([
     "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "tabLockEnabled",
+    "silentDuringPrayer", "prayerSound",
   ]);
   if (s.tabLockEnabled === false) return; // lock disabled in settings
   const L = tr(s.lang || "en");

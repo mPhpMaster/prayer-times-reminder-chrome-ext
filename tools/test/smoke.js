@@ -41,8 +41,10 @@ function chromeStub() {
     },
     runtime: {
       sendMessage: () => Promise.resolve({}), getURL: (x) => x,
+      getContexts: () => Promise.resolve([]),
       onMessage: listener, onInstalled: listener, onStartup: listener
     },
+    offscreen: { createDocument: () => Promise.resolve(), closeDocument: () => Promise.resolve() },
     tabs: {
       query: () => Promise.resolve([]), create: noop, remove: noop,
       sendMessage: () => Promise.resolve({}), getCurrent: (cb) => cb && cb(null), onUpdated: listener
@@ -114,6 +116,45 @@ try {
   console.log("  ok: service-worker realm (background.js) booted");
 } catch (e) {
   console.error("  FAIL: background realm — " + e.message);
+  failures++;
+}
+
+// ---- Offscreen realm: offscreen.js (the prayer-time sound player) ------------
+// Also exercises the two branches that matter: "adhan" must load the bundled
+// file, and "none" must tear the document down instead of playing anything.
+try {
+  let played = null;
+  let closed = false;
+  let onMessage = null;
+  const ctx = Object.assign(baseCtx(), {
+    window: { close: () => { closed = true; } },
+    Audio: function (url) {
+      played = url;
+      this.addEventListener = noop;
+      this.play = () => Promise.resolve();
+      this.pause = noop;
+    },
+    AudioContext: function () {
+      this.currentTime = 0;
+      this.createOscillator = () => ({ connect: () => ({ connect: noop }), start: noop, stop: noop, frequency: {} });
+      this.createGain = () => ({ connect: () => ({ connect: noop }), gain: { setValueAtTime: noop, exponentialRampToValueAtTime: noop } });
+      this.close = noop;
+    }
+  });
+  ctx.self = ctx;
+  ctx.globalThis = ctx;
+  ctx.chrome.runtime.onMessage = { addListener: (fn) => { onMessage = fn; }, removeListener: noop };
+  vm.createContext(ctx);
+  vm.runInContext(read("offscreen.js"), ctx, { filename: "offscreen.js" });
+
+  if (!onMessage) throw new Error("no onMessage listener registered");
+  onMessage({ target: "offscreen", type: "PLAY_SOUND", kind: "adhan" }, null, noop);
+  if (played !== "audio/adhan.ogg") throw new Error(`adhan url was ${played}`);
+  onMessage({ target: "offscreen", type: "PLAY_SOUND", kind: "none" }, null, noop);
+  if (!closed) throw new Error('"none" did not close the document');
+  console.log("  ok: offscreen realm (offscreen.js) booted and played");
+} catch (e) {
+  console.error("  FAIL: offscreen realm — " + e.message);
   failures++;
 }
 

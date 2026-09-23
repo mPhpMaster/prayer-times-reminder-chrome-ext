@@ -188,6 +188,63 @@ async function mapLimit(items, limit, fn) {
 
 const INJECT_CONCURRENCY = 8;
 
+// ---- Prayer-time sound ------------------------------------------------------
+//
+// The injected overlays are muted (see lockAllTabs) and the sound is played once
+// here instead, in an offscreen document — a service worker has no audio, and a
+// content script would be silenced by the page's autoplay policy and would play
+// once per locked tab. offscreen.js does the actual playback.
+
+const OFFSCREEN_URL = "offscreen.html";
+
+async function hasOffscreenDocument() {
+    if (chrome.runtime.getContexts) {
+        const contexts = await chrome.runtime.getContexts({
+            contextTypes: ["OFFSCREEN_DOCUMENT"]
+        });
+        return contexts.length > 0;
+    }
+    // getContexts landed in Chrome 116; we still support 111. Fall back to the
+    // worker's own client list, where the offscreen page shows up as a window.
+    const clients = await self.clients.matchAll();
+    return clients.some((c) => c.url.endsWith(OFFSCREEN_URL));
+}
+
+async function startLockSound(kind, stopAt) {
+    if (!kind || kind === "none") return;
+    try {
+        // createDocument throws if one already exists (e.g. back-to-back locks).
+        if (!(await hasOffscreenDocument())) {
+            await chrome.offscreen.createDocument({
+                url: OFFSCREEN_URL,
+                reasons: ["AUDIO_PLAYBACK"],
+                justification: "Play the call to prayer when prayer time arrives."
+            });
+        }
+        await chrome.runtime.sendMessage({
+            target: "offscreen",
+            type: "PLAY_SOUND",
+            kind,
+            stopAt
+        });
+    } catch {
+        /* no sound is better than a broken lock */
+    }
+}
+
+async function stopLockSound() {
+    try {
+        if (!(await hasOffscreenDocument())) return;
+        await chrome.runtime.sendMessage({
+            target: "offscreen",
+            type: "STOP_SOUND"
+        }).catch(() => {});
+        await chrome.offscreen.closeDocument();
+    } catch {
+        /* already gone */
+    }
+}
+
 async function lockOneTab(tabId, payload) {
     try {
         // Define the overlay helpers once (idempotent guard makes re-injection
@@ -224,10 +281,12 @@ async function lockAllTabs(prayer, {
         arabicDigits,
         lockMinutes,
         allowUnlock: storedAllowUnlock,
-        theme
+        theme,
+        prayerSound
     } =
     await chrome.storage.local.get([
-        "tabLockEnabled", "lang", "arabicDigits", "lockMinutes", "allowUnlock", "theme"
+        "tabLockEnabled", "lang", "arabicDigits", "lockMinutes", "allowUnlock", "theme",
+        "prayerSound"
     ]);
     if (!tabLockEnabled && !test) return {
         ok: false,
@@ -251,22 +310,29 @@ async function lockAllTabs(prayer, {
     const L = tr(lang || "en");
     const prayerName = test ? L.testLockPrayer : prayerLabel(L, prayer);
     const payload = buildLockConfig(
-        { lang, theme, arabicDigits, lockMinutes, allowUnlock },
+        { lang, theme, arabicDigits, lockMinutes, allowUnlock, prayerSound },
         { test, prayerName }
     );
     const unlockAt = payload.unlockAt;
+
+    // Every tab gets a muted copy — the sound plays once, centrally, from the
+    // offscreen document. Tabs opened mid-lock re-inject from the stored copy,
+    // so that one must be muted too.
+    const tabPayload = { ...payload, sound: "none" };
 
     // Remember the lock window so tabs opened or navigated before unlock time
     // also get locked (the service worker may restart, so persist to storage).
     await chrome.storage.local.set({
         activeLock: {
             unlockAt,
-            payload
+            payload: tabPayload
         }
     });
     activeLockActive = true;
 
-    const results = await mapLimit(lockable, INJECT_CONCURRENCY, (tab) => lockOneTab(tab.id, payload));
+    startLockSound(payload.sound, unlockAt);
+
+    const results = await mapLimit(lockable, INJECT_CONCURRENCY, (tab) => lockOneTab(tab.id, tabPayload));
     return results.some(Boolean) ? {
         ok: true
     } : {
@@ -295,6 +361,7 @@ async function getActiveLock() {
 async function clearAllLocks() {
     await chrome.storage.local.remove("activeLock");
     activeLockActive = false;
+    await stopLockSound();
     const tabs = await chrome.tabs.query({});
     await Promise.all(
         tabs.filter(isInjectableNow).map((tab) =>

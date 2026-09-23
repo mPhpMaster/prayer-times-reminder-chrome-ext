@@ -76,7 +76,7 @@
                 </span>
                 <span id="location-label" class="location-label">No location set</span>
             </span>
-            <span class="powered" id="footer-source">Data: AlAdhan API</span>
+            <span class="powered" id="footer-source">Data: adhan (offline)</span>
         </footer>
     </div>
 
@@ -169,6 +169,15 @@
                         </label>
                         <p class="field-hint" id="hint-silent">Silences calls and notifications while the lock is active.</p>
                     </div>
+                    <div class="field-group nested" id="sound-row">
+                        <label for="prayer-sound" id="label-sound">Prayer time sound</label>
+                        <select id="prayer-sound">
+                            <option value="beep" id="opt-sound-beep">Chime</option>
+                            <option value="adhan" id="opt-sound-adhan">Adhan</option>
+                            <option value="none" id="opt-sound-none">None</option>
+                        </select>
+                        <p class="field-hint" id="hint-sound">Play a sound when prayer time arrives.</p>
+                    </div>
                     <label class="toggle-label nested" for="allow-unlock">
                         <input type="checkbox" id="allow-unlock" />
                         <span id="label-allow-unlock">Allow manual unlock</span>
@@ -217,7 +226,7 @@
                     <input type="checkbox" id="tasbih-enabled" checked />
                     <span id="label-tasbih">Periodic dhikr reminder</span>
                 </label>
-                <p class="field-hint" id="hint-tasbih">Shows a random dhikr on the active tab while you browse.</p>
+                <p class="field-hint" id="hint-tasbih">Shows a random dhikr on your open tabs while you browse. Tap to dismiss.</p>
 
                 <div id="tasbih-options" class="tasbih-options" hidden>
                     <div class="radio-row tasbih-mode-row" role="radiogroup" aria-labelledby="label-tasbih">

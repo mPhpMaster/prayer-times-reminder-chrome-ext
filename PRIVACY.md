@@ -29,18 +29,22 @@ has **no access** to it.
 
 ## Data sent to third parties
 
-To calculate prayer times and populate the city dropdown, the extension sends
-requests to two free public APIs:
+Prayer times are calculated **offline, on your device**. To populate the city
+dropdown and locate the city you pick, the extension sends requests to these
+free public APIs:
 
-- **AlAdhan API** (`api.aladhan.com`) — receives your city/country or
-  coordinates and the calculation method in order to return prayer times.
 - **CountriesNow API** (`countriesnow.space`) — receives a country name in order
   to return its list of cities.
-- **Nominatim API** (`nominatim.openstreetmap.org`) — only when the interface
-  language is set to **Arabic**, receives the **name of the city you select**
-  (as text, with its country) in order to look up that city's Arabic-script
-  label for display. Your coordinates are **not** sent to Nominatim, and it is
-  not contacted in other languages.
+- **Nominatim API** (`nominatim.openstreetmap.org`) — receives the **name of the
+  city you select** (as text, with its country) when you save it, in order to
+  look up that city's coordinates for the offline calculation; when the
+  interface language is **Arabic**, it is also used to look up the city's
+  Arabic-script label for display. Your own device coordinates are **not** sent
+  to Nominatim.
+- **AlAdhan API** (`api.aladhan.com`) — only as a fallback, for a location saved
+  without coordinates (e.g. by an older version, or if the city lookup above
+  failed): receives your city/country and the calculation method in order to
+  return prayer times.
 
 Only the minimum information needed to fulfill the request is sent. No personal
 identifiers, accounts, or contact details are transmitted.
