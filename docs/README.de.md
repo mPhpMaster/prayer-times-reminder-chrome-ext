@@ -14,11 +14,11 @@ Eine Chrome-Erweiterung (Manifest V3), die:
 - 🌗 **Design** — Midnight Emerald (Standard) oder Classic — in den Einstellungen wählbar.
 - 📅 **Datumsformat** — wählen Sie, wie das Hidschri- und das gregorianische Datum angezeigt werden.
 - 🌙 **Hidschri-Datum** wird neben dem gregorianischen Datum angezeigt.
-- 📿 **Periodischer Dhikr** — optionaler schwebender Hinweis mit 139 einzigartigen Formulierungen auf dem aktiven Tab; antippen zum Schließen oder automatisches Ausblenden nach 10 Sekunden.
+- 📿 **Periodischer Dhikr** — optionaler schwebender Hinweis mit 151 einzigartigen Formulierungen auf Ihren geöffneten Tabs; antippen zum Schließen oder automatisches Ausblenden nach 10 Sekunden.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
-Gebetszeiten stammen von der kostenlosen [AlAdhan API](https://aladhan.com/prayer-times-api); die Städteliste von der kostenlosen [CountriesNow API](https://countriesnow.space). Keine API-Schlüssel erforderlich.
+Gebetszeiten werden offline auf Ihrem Gerät mit [adhan-js](https://github.com/batoulapps/adhan-js) berechnet (die kostenlose [AlAdhan API](https://aladhan.com/prayer-times-api) dient nur als Fallback für ältere gespeicherte Orte ohne Koordinaten); die Städteliste von der kostenlosen [CountriesNow API](https://countriesnow.space). Keine API-Schlüssel erforderlich.
 
 ## Installation
 
@@ -51,7 +51,7 @@ Das war's — die Erweiterung lädt die heutigen Zeiten, zeigt sie an und plant 
 | Lock duration | Wie lange der Tab gesperrt bleibt (1–120 Minuten). |
 | Allow manual unlock | Zeigt eine Schließen-Schaltfläche (×) zum frühen Beenden der Sperre. |
 | Test tab lock | Vorschau des Sperr-Overlays auf dem aktuellen Tab (funktioniert auf normalen Websites, nicht auf `chrome://`-Seiten). |
-| Periodic dhikr | Zeigt einen zufälligen Dhikr auf dem aktiven Tab in festem oder zufälligem Intervall (1–120 Minuten). |
+| Periodic dhikr | Zeigt einen zufälligen Dhikr auf Ihren geöffneten Tabs in festem oder zufälligem Intervall (1–120 Minuten). |
 | Dhikr position | Ecke oder Mitte der Seite (oben/unten × links/rechts/Mitte). |
 | Test dhikr | Vorschau der Dhikr-Karte auf dem aktuellen Tab. |
 | Theme | **Midnight Emerald** (Standard) oder **Classic** wählen. |
@@ -80,9 +80,9 @@ UI, Benachrichtigungen, Sperr-Overlay, Dhikr-Karte und Willkommensseite sind lok
 |------|---------|
 | `manifest.json` | MV3-Manifest (Berechtigungen: alarms, notifications, storage, geolocation, tabs, scripting). |
 | `background.js` | Service Worker — lädt Zeiten, plant `chrome.alarms`, sendet lokalisierte Benachrichtigungen, sperrt alle geöffneten Tabs zur Gebetszeit. |
-| `content-lock.js` | Injected Overlay (Shadow DOM), das Seiteninteraktion blockiert, bis der Timer endet oder Sie manuell entsperren. |
-| `content-tasbih.js` | Injected schwebende Dhikr-Karte; schließen per Tippen oder nach 10 Sekunden. |
-| `tasbih-phrases.js` | 139 einzigartige Dhikr-Formulierungen. |
+| `overlay-lock.js` | Injected Overlay (Shadow DOM), das Seiteninteraktion blockiert, bis der Timer endet oder Sie manuell entsperren. |
+| `overlay-tasbih.js` | Injected schwebende Dhikr-Karte; schließen per Tippen oder nach 10 Sekunden. |
+| `tasbih-phrases.js` | 151 einzigartige Dhikr-Formulierungen. |
 | `welcome.html` / `welcome.css` | Willkommensseite bei Erstinstallation mit Anheft-Anleitung (lokalisiert). |
 | `i18n.js` | Gemeinsame Übersetzungen (EN/DE/AR/UR/HI/ID/FR/ES), Gebetsnamen, Länderliste, Berechnungsmethoden, Datumsformate, Ziffern-Helfer. |
 | `popup.html` / `popup.css` / `popup.js` | Popup-Oberfläche (Plan, Countdown, Sprachauswahl, Einstellungen). |
@@ -94,8 +94,8 @@ UI, Benachrichtigungen, Sperr-Overlay, Dhikr-Karte und Willkommensseite sind lok
 ## Funktionsweise
 
 - **Planung:** Bei Installation/Start und bei Standortänderung lädt der Service Worker die heutigen Zeiten und erstellt einmalige `chrome.alarms`-Einträge zu jeder bevorstehenden Gebetszeit, plus einen Refresh-Alarm kurz nach Mitternacht.
-- **Tab-Sperre:** Wenn in den Einstellungen aktiviert, injiziert die Erweiterung bei einem Gebetsalarm `content-lock.js` in jeden geöffneten Tab und zeigt ein Countdown-Overlay für die konfigurierte Dauer. Das Overlay blockiert Tastatur, Scrollen und Zeigereingaben. Tabs, die Sie während des Sperrzeitfensters öffnen oder zu denen Sie navigieren, werden ebenfalls automatisch gesperrt. Aktivieren Sie **Allow manual unlock** für eine Schließen-Schaltfläche (×). Nutzen Sie **Test tab lock** für eine Vorschau auf dem aktuellen Tab.
-- **Dhikr-Erinnerung:** Wenn aktiviert, zeigt ein `chrome.alarms`-Timer in festem oder zufälligem Intervall (min/max) eine zufällige Formulierung aus `tasbih-phrases.js` auf dem aktiven Tab. Die Karte blockiert die Seite nicht; tippen zum Schließen oder 10 Sekunden warten.
+- **Tab-Sperre:** Wenn in den Einstellungen aktiviert, injiziert die Erweiterung bei einem Gebetsalarm `overlay-lock.js` in jeden geöffneten Tab und zeigt ein Countdown-Overlay für die konfigurierte Dauer. Das Overlay blockiert Tastatur, Scrollen und Zeigereingaben. Tabs, die Sie während des Sperrzeitfensters öffnen oder zu denen Sie navigieren, werden ebenfalls automatisch gesperrt. Aktivieren Sie **Allow manual unlock** für eine Schließen-Schaltfläche (×). Nutzen Sie **Test tab lock** für eine Vorschau auf dem aktuellen Tab.
+- **Dhikr-Erinnerung:** Wenn aktiviert, zeigt ein `chrome.alarms`-Timer in festem oder zufälligem Intervall (min/max) eine zufällige Formulierung aus `tasbih-phrases.js` auf Ihren geöffneten Tabs. Die Karte blockiert die Seite nicht; tippen zum Schließen oder 10 Sekunden warten.
 - **Benachrichtigungen:** Wenn eine Gebetszeit erreicht ist, erscheint eine lokalisierte Systembenachrichtigung.
 - **Popup:** Zeigt den gecachten Plan sofort und aktualisiert dann aus dem Netzwerk; das nächste Gebet wird mit sekündlichem Countdown hervorgehoben.
 

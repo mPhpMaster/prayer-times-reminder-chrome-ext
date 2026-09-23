@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Core
 
-- **Prayer Times Reminder** — Manifest V3 Chrome extension. Fetches daily prayer times (AlAdhan API), shows the schedule with a live countdown to the next prayer, and notifies at each prayer time.
+- **Prayer Times Reminder** — Manifest V3 Chrome extension. Computes daily prayer times offline (adhan-js in `prayer-engine.js`; AlAdhan API only as a fallback for coord-less legacy locations), shows the schedule with a live countdown to the next prayer, and notifies at each prayer time.
 - **Languages: 8** — en, de, ar, ur, hi, id, fr, es. Default is **Arabic** (`DEFAULT_SETTINGS.lang = "ar"`). RTL for `ar` and `ur`. All strings/data live in `i18n.js` (`I18N`, `SUPPORTED_LANGS`, `COUNTRIES`, `METHODS`, `DATE_FORMATS`, `TASBIH_POSITIONS`, `DEFAULT_SETTINGS`).
 - **Themes: Midnight Emerald** (default) or **Classic**. User picks in Settings; stored as `theme` in `chrome.storage.local`. Midnight Emerald = oklch palette, glassmorphism, teal glow (see `theme.css` / `docs/midnight-emerald-theme.md`); Classic falls back to system tokens.
 - **Fonts:** Plus Jakarta Sans (display) + Amiri (Arabic, via `--font-arabic`) in Midnight Emerald; system fonts in Classic.
@@ -15,11 +15,11 @@ alwaysApply: true
 
 ## Features
 
-- **Prayer Times Break** (the tab-lock feature, `prayerBreak` string, localized per language): at prayer time, locks **all open tabs** with a countdown overlay for a configurable duration (1–120 min, default 5); optional manual unlock. Injected via `content-lock.js`.
-- **Periodic dhikr** — floating reminder card (`content-tasbih.js`, 100 phrases in `tasbih-phrases.js`), fixed or random interval, positionable; tap or auto-hide to dismiss.
+- **Prayer Times Break** (the tab-lock feature, `prayerBreak` string, localized per language): at prayer time, locks **all open tabs** with a countdown overlay for a configurable duration (1–120 min, default 5); optional manual unlock. Injected via `overlay-lock.js`.
+- **Periodic dhikr** — floating reminder card (`overlay-tasbih.js`, 151 unique phrases in `tasbih-phrases.js`) shown on **all open tabs** by design, fixed or random interval, positionable; tap or auto-hide to dismiss.
 - **Dates** — Hijri date in the header (softened muted-gold style) + Gregorian footer date; one selectable format applies to both.
 - **Onboarding** — first-install welcome wizard (`welcome.html/css/js`) that embeds `popup.html#settings` in a self-sizing iframe and walks through language → pin → appearance → location → lock → dhikr.
-- **Data sources:** AlAdhan API (times), CountriesNow (city lists), Nominatim (reverse geocode for "use my location"). No API keys.
+- **Data sources:** adhan-js offline (times; AlAdhan API fallback), CountriesNow (city lists), Nominatim (geocodes the chosen city to coordinates on save; Arabic city labels). No API keys.
 
 ## Architecture
 

@@ -14,11 +14,11 @@ Una extensión de Chrome (Manifest V3) que:
 - 🌗 **Tema** — Midnight Emerald (por defecto) o Classic — seleccionable en Configuración.
 - 📅 **Formato de fecha** — elige cómo se muestran las fechas Hijri y gregoriana (por ejemplo `10-04-2026`, `10 April 2026`, texto largo).
 - 🌙 **Fecha Hijri** mostrada junto con la fecha gregoriana.
-- 📿 **Dhikr periódico** — recordatorio flotante opcional con 139 frases únicas en la pestaña activa; tócalo para cerrar o se ocultará automáticamente después de 10 segundos.
+- 📿 **Dhikr periódico** — recordatorio flotante opcional con 151 frases únicas en tus pestañas abiertas; tócalo para cerrar o se ocultará automáticamente después de 10 segundos.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
-Los horarios de oración provienen de la API gratuita [AlAdhan API](https://aladhan.com/prayer-times-api); la lista de ciudades proviene de la API gratuita [CountriesNow API](https://countriesnow.space). No se requieren claves API.
+Los horarios de oración se calculan sin conexión en tu dispositivo con [adhan-js](https://github.com/batoulapps/adhan-js) (la API gratuita [AlAdhan API](https://aladhan.com/prayer-times-api) solo se usa como respaldo para ubicaciones antiguas guardadas sin coordenadas); la lista de ciudades proviene de la API gratuita [CountriesNow API](https://countriesnow.space). No se requieren claves API.
 
 ## Instalación
 
@@ -51,7 +51,7 @@ Listo — la extensión obtendrá los horarios de hoy, los mostrará y programar
 | Lock duration | Cuánto tiempo permanece bloqueada la pestaña (1–120 minutos). |
 | Allow manual unlock | Muestra un botón de cerrar (×) para descartar la pantalla de bloqueo antes. |
 | Test tab lock | Vista previa de la capa de bloqueo en la pestaña actual (funciona en sitios normales, no en páginas `chrome://`). |
-| Periodic dhikr | Muestra un dhikr aleatorio en la pestaña activa a un intervalo fijo o aleatorio (1–120 minutos). |
+| Periodic dhikr | Muestra un dhikr aleatorio en tus pestañas abiertas a un intervalo fijo o aleatorio (1–120 minutos). |
 | Dhikr position | Esquina o centro de la página (arriba/abajo × izquierda/derecha/centro). |
 | Test dhikr | Vista previa de la tarjeta de dhikr en la pestaña actual. |
 | Theme | Elige **Midnight Emerald** (por defecto) o **Classic**. |
@@ -82,9 +82,9 @@ Las traducciones viven en `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Las frases de 
 |------|---------|
 | `manifest.json` | Manifest MV3 (permissions: alarms, notifications, storage, geolocation, tabs, scripting). |
 | `background.js` | Service worker — obtiene los horarios, agenda `chrome.alarms`, muestra notificaciones localizadas y bloquea todas las pestañas abiertas en la hora de oración. |
-| `content-lock.js` | Capa inyectada (shadow DOM) que bloquea la interacción con la página hasta que termine el temporizador o el usuario desbloquee manualmente. |
-| `content-tasbih.js` | Tarjeta flotante de dhikr inyectada; se descarta al tocarla o después de 10 segundos. |
-| `tasbih-phrases.js` | 139 frases únicas de dhikr. |
+| `overlay-lock.js` | Capa inyectada (shadow DOM) que bloquea la interacción con la página hasta que termine el temporizador o el usuario desbloquee manualmente. |
+| `overlay-tasbih.js` | Tarjeta flotante de dhikr inyectada; se descarta al tocarla o después de 10 segundos. |
+| `tasbih-phrases.js` | 151 frases únicas de dhikr. |
 | `welcome.html` / `welcome.css` | Página de bienvenida al instalar (instrucciones para fijar en la barra) (localizada). |
 | `i18n.js` | Traducciones compartidas (EN/DE/AR/UR/HI/ID/FR/ES), nombres de oraciones, lista de países, métodos de cálculo, formatos de fecha y ayuda de dígitos. |
 | `popup.html` / `popup.css` / `popup.js` | UI del popup (horarios, cuenta atrás, selector de idioma y configuración). |
@@ -95,8 +95,8 @@ Las traducciones viven en `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Las frases de 
 ## Cómo funciona
 
 - **Programación:** en instalación/inicio y cada vez que cambia tu ubicación, el service worker obtiene los horarios del día y crea entradas one-shot de `chrome.alarms` en el momento exacto de cada oración próxima, además de un alarm de actualización justo después de medianoche.
-- **Bloqueo de pestañas:** si está activado en Configuración, cuando suena una alarma de oración la extensión inyecta `content-lock.js` en todas las pestañas abiertas y muestra una cuenta atrás durante la duración configurada. Las pestañas que abras o a las que navegues durante el periodo de bloqueo también se bloquean automáticamente. La capa bloquea teclado, desplazamiento y la entrada del puntero. Activa **Allow manual unlock** para mostrar el botón de cerrar (×). Usa **Test tab lock** en Configuración para previsualizar en la pestaña actual.
-- **Recordatorio de dhikr:** si está activado, un temporizador `chrome.alarms` muestra una frase aleatoria de `tasbih-phrases.js` en la pestaña activa en un intervalo fijo o aleatorio dentro del rango min/max. La tarjeta no bloquea la página; haz clic para descartar o espera 10 segundos.
+- **Bloqueo de pestañas:** si está activado en Configuración, cuando suena una alarma de oración la extensión inyecta `overlay-lock.js` en todas las pestañas abiertas y muestra una cuenta atrás durante la duración configurada. Las pestañas que abras o a las que navegues durante el periodo de bloqueo también se bloquean automáticamente. La capa bloquea teclado, desplazamiento y la entrada del puntero. Activa **Allow manual unlock** para mostrar el botón de cerrar (×). Usa **Test tab lock** en Configuración para previsualizar en la pestaña actual.
+- **Recordatorio de dhikr:** si está activado, un temporizador `chrome.alarms` muestra una frase aleatoria de `tasbih-phrases.js` en tus pestañas abiertas en un intervalo fijo o aleatorio dentro del rango min/max. La tarjeta no bloquea la página; haz clic para descartar o espera 10 segundos.
 - **Notificaciones:** cuando llega la hora de una oración, aparece una notificación del sistema localizada.
 - **Popup:** renderiza el horario en caché al instante y luego se refresca desde la red; la siguiente oración se resalta con una cuenta atrás segundo a segundo.
 

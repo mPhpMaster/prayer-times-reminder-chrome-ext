@@ -1,4 +1,4 @@
-// 154 unique dhikr phrases — { ar, en, ur, fr, es, id, de }
+// 151 unique dhikr phrases — { ar, en, ur, fr, es, id, de }
 
 const TASBIH_PHRASES = [
     // Basic tasbih (15)
@@ -677,7 +677,7 @@ const TASBIH_PHRASES = [
         es: "Oh Allah, bendícelo y concédele una paz completa"
     },
 
-    // Quranic dhikr (15)
+    // Quranic dhikr (14)
     {
         ar: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً",
         en: "Rabbana atina fid dunya hasanatan wa fil akhirati hasanatan",
@@ -804,15 +804,9 @@ const TASBIH_PHRASES = [
         de: "Mein Erfolg kommt nur von Allah",
         es: "Mi éxito solo proviene de Allah"
     },
-    {
-        ar: "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
-        en: "Inna lillahi wa inna ilayhi raji'oon",
-        ur: "انا للہ وانا الیہ راجعون",
-        fr: "Nous appartenons à Allah et c'est à Lui que nous retournons",
-        id: "Inna lillahi wa inna ilayhi raji'un",
-        de: "Wir gehören Allah und zu Ihm kehren wir zurück",
-        es: "Ciertamente pertenecemos a Allah y a Él retornamos"
-    },
+    // (Istirja' — "Inna lillahi wa inna ilayhi raji'un" — deliberately left
+    // out: it is said upon a calamity, so a random reminder showing it reads
+    // as announcing one.)
 
     // Sunnah dhikr (10)
     {
@@ -1275,7 +1269,7 @@ const TASBIH_PHRASES = [
         de: "O Allah, ich bitte Dich um das höchste Paradies Firdaus",
         es: "Oh Allah, te pido el Firdaus más elevado"
     },
-    // Hisn al-Muslim additions (15)
+    // Hisn al-Muslim additions (13)
     {
         ar: "حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ",
         en: "Hasbiyallahu la ilaha illa huwa",
@@ -1302,15 +1296,6 @@ const TASBIH_PHRASES = [
         id: "Dengan nama Allah yang bersama nama-Nya tidak ada sesuatu pun di bumi dan langit yang membahayakan",
         de: "Im Namen Allahs, mit dessen Namen nichts auf Erden und im Himmel schaden kann",
         es: "En el nombre de Allah, con cuyo nombre nada puede dañar en la tierra ni en el cielo"
-    },
-    {
-        ar: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
-        en: "A'udhu bikalimatillahit-tammati min sharri ma khalaq",
-        ur: "اعوذ بکلمات اللہ التامات من شر ما خلق",
-        fr: "Je cherche refuge dans les paroles parfaites d'Allah contre le mal de ce qu'Il a créé",
-        id: "Aku berlindung dengan kalimat-kalimat Allah yang sempurna dari kejahatan makhluk-Nya",
-        de: "Ich suche Zuflucht in den vollkommenen Worten Allahs vor dem Übel dessen, was Er erschuf",
-        es: "Me refugio en las palabras perfectas de Allah del mal de lo que ha creado"
     },
     {
         ar: "اللَّهُمَّ لَا مَانِعَ لِمَا أَعْطَيْتَ وَلَا مُعْطِيَ لِمَا مَنَعْتَ",
@@ -1356,15 +1341,6 @@ const TASBIH_PHRASES = [
         id: "Ya Allah, sehatkanlah tubuhku",
         de: "O Allah, schenke meinem Körper Gesundheit",
         es: "Oh Allah, concede salud a mi cuerpo"
-    },
-    {
-        ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ",
-        en: "Allahumma inni a'udhu bika min adhabil qabr",
-        ur: "اللہم انی اعوذ بک من عذاب القبر",
-        fr: "Ô Allah, je cherche refuge auprès de Toi contre le châtiment de la tombe",
-        id: "Ya Allah, aku berlindung kepada-Mu dari azab kubur",
-        de: "O Allah, ich suche Zuflucht bei Dir vor der Strafe des Grabes",
-        es: "Oh Allah, me refugio en Ti del castigo de la tumba"
     },
     {
         ar: "اللَّهُمَّ أَصْلِحْ لِي دِينِيَ الَّذِي هُوَ عِصْمَةُ أَمْرِي",

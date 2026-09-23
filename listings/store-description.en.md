@@ -14,7 +14,7 @@ When prayer time arrives, the extension can lock all your open tabs with a full-
 • 20 calculation methods (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Diyanet, and more)
 
 📿 PERIODIC DHIKR
-Optional floating reminder with 154 unique dhikr phrases on the active tab. Tap to dismiss or it auto-hides after 10 seconds. Choose a fixed or random interval and screen position.
+Optional floating reminder with 151 unique dhikr phrases on your open tabs. Tap to dismiss or it auto-hides after 10 seconds. Choose a fixed or random interval and screen position.
 
 🌐 8 LANGUAGES
 English, العربية (Arabic), اردو (Urdu), Deutsch, Français, Español, हिन्दी (Hindi), and Bahasa Indonesia — with full right-to-left layout, Arabic prayer names, and optional Arabic-Indic numerals.
@@ -23,7 +23,7 @@ English, العربية (Arabic), اردو (Urdu), Deutsch, Français, Español,
 Choose Midnight Emerald (default) or Classic.
 
 🔐 PRIVATE BY DESIGN
-No account, no ads, no tracking, no analytics. Your preferences stay on your device. Prayer times come from the free AlAdhan API.
+No account, no ads, no tracking, no analytics. Your preferences stay on your device. Prayer times are calculated offline on your device.
 
 🤲 ONGOING CHARITY
 This app is an ongoing charity (sadaqah jariyah) on behalf of:

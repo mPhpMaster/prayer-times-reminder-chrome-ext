@@ -14,11 +14,11 @@ Ekstensi Chrome (Manifest V3) yang:
 - 🌗 **Tema** — Midnight Emerald (default) atau Classic — dapat dipilih di Pengaturan.
 - 📅 **Format tanggal** — pilih cara tanggal Hijriah dan Gregorian ditampilkan.
 - 🌙 **Tanggal Hijriah** ditampilkan bersama tanggal Gregorian.
-- 📿 **Dzikir berkala** — pengingat mengambang opsional dengan 139 frasa unik di tab aktif; ketuk untuk menutup atau hilang otomatis setelah 10 detik.
+- 📿 **Dzikir berkala** — pengingat mengambang opsional dengan 151 frasa unik di tab-tab yang terbuka; ketuk untuk menutup atau hilang otomatis setelah 10 detik.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
-Waktu shalat berasal dari [AlAdhan API](https://aladhan.com/prayer-times-api) gratis; daftar kota dari [CountriesNow API](https://countriesnow.space) gratis. Tidak perlu kunci API.
+Waktu shalat dihitung secara offline di perangkat Anda dengan [adhan-js](https://github.com/batoulapps/adhan-js) ([AlAdhan API](https://aladhan.com/prayer-times-api) gratis hanya menjadi cadangan untuk lokasi lama yang tersimpan tanpa koordinat); daftar kota dari [CountriesNow API](https://countriesnow.space) gratis. Tidak perlu kunci API.
 
 ## Instalasi
 
@@ -51,7 +51,7 @@ Selesai — ekstensi akan mengambil waktu hari ini, menampilkannya, dan menjadwa
 | Lock duration | Berapa lama tab tetap terkunci (1–120 menit). |
 | Allow manual unlock | Menampilkan tombol tutup (×) untuk menutup layar kunci lebih awal. |
 | Test tab lock | Pratinjau overlay kunci di tab saat ini (berfungsi di situs normal, bukan halaman `chrome://`). |
-| Periodic dhikr | Menampilkan dzikir acak di tab aktif pada interval tetap atau acak (1–120 menit). |
+| Periodic dhikr | Menampilkan dzikir acak di tab-tab yang terbuka pada interval tetap atau acak (1–120 menit). |
 | Dhikr position | Sudut atau tengah halaman (atas/bawah × kiri/kanan/tengah). |
 | Test dhikr | Pratinjau kartu dzikir di tab saat ini. |
 | Theme | Pilih **Midnight Emerald** (default) atau **Classic**. |
@@ -82,9 +82,9 @@ Terjemahan ada di `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Frasa dzikir di `tasbi
 |------|---------|
 | `manifest.json` | Manifest MV3 (izin: alarms, notifications, storage, geolocation, tabs, scripting). |
 | `background.js` | Service worker — mengambil waktu, menjadwalkan `chrome.alarms`, mengirim notifikasi lokal, mengunci semua tab yang terbuka saat waktu shalat. |
-| `content-lock.js` | Overlay disuntikkan (shadow DOM) yang memblokir interaksi halaman sampai timer selesai atau Anda buka kunci manual. |
-| `content-tasbih.js` | Kartu dzikir mengambang disuntikkan; tutup dengan ketuk atau setelah 10 detik. |
-| `tasbih-phrases.js` | 139 frasa dzikir unik. |
+| `overlay-lock.js` | Overlay disuntikkan (shadow DOM) yang memblokir interaksi halaman sampai timer selesai atau Anda buka kunci manual. |
+| `overlay-tasbih.js` | Kartu dzikir mengambang disuntikkan; tutup dengan ketuk atau setelah 10 detik. |
+| `tasbih-phrases.js` | 151 frasa dzikir unik. |
 | `welcome.html` / `welcome.css` | Halaman selamat datang instalasi pertama dengan instruksi sematkan ke toolbar (lokal). |
 | `i18n.js` | Terjemahan bersama (EN/DE/AR/UR/HI/ID/FR/ES), nama shalat, daftar negara, metode perhitungan, format tanggal, helper digit. |
 | `popup.html` / `popup.css` / `popup.js` | UI popup (jadwal, hitung mundur, pemilih bahasa, pengaturan). |
@@ -96,8 +96,8 @@ Terjemahan ada di `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Frasa dzikir di `tasbi
 ## Cara kerja
 
 - **Penjadwalan:** saat instalasi/startup dan setiap kali lokasi berubah, service worker mengambil waktu hari ini dan membuat entri `chrome.alarms` sekali pakai pada setiap waktu shalat mendatang, plus alarm refresh tepat setelah tengah malam.
-- **Kunci tab:** jika diaktifkan di pengaturan, saat alarm shalat berbunyi ekstensi menyuntikkan `content-lock.js` ke setiap tab yang terbuka dan menampilkan overlay hitung mundur selama durasi yang dikonfigurasi. Overlay memblokir keyboard, scroll, dan input pointer. Tab yang Anda buka atau kunjungi selama jendela penguncian juga ikut terkunci secara otomatis. Aktifkan **Allow manual unlock** untuk tombol tutup (×). Gunakan **Test tab lock** untuk pratinjau di tab saat ini.
-- **Pengingat dzikir:** jika diaktifkan, timer `chrome.alarms` menampilkan frasa acak dari `tasbih-phrases.js` di tab aktif pada interval tetap atau acak dalam rentang min/max Anda. Kartu tidak memblokir halaman; ketuk untuk menutup atau tunggu 10 detik.
+- **Kunci tab:** jika diaktifkan di pengaturan, saat alarm shalat berbunyi ekstensi menyuntikkan `overlay-lock.js` ke setiap tab yang terbuka dan menampilkan overlay hitung mundur selama durasi yang dikonfigurasi. Overlay memblokir keyboard, scroll, dan input pointer. Tab yang Anda buka atau kunjungi selama jendela penguncian juga ikut terkunci secara otomatis. Aktifkan **Allow manual unlock** untuk tombol tutup (×). Gunakan **Test tab lock** untuk pratinjau di tab saat ini.
+- **Pengingat dzikir:** jika diaktifkan, timer `chrome.alarms` menampilkan frasa acak dari `tasbih-phrases.js` di tab-tab yang terbuka pada interval tetap atau acak dalam rentang min/max Anda. Kartu tidak memblokir halaman; ketuk untuk menutup atau tunggu 10 detik.
 - **Notifikasi:** saat waktu shalat tiba, notifikasi sistem yang dilokalkan muncul.
 - **Popup:** menampilkan jadwal cache secara instan, lalu memperbarui dari jaringan; shalat berikutnya disorot dengan hitung mundur per detik.
 
