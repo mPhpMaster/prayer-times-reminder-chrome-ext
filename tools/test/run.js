@@ -99,6 +99,13 @@ eq("prayerTimestamp unparseable -> null", prayerTimestamp("nope", new Date(), "U
 const r = randomTasbihPhrase("en");
 ok("randomTasbihPhrase returns lines", r && Array.isArray(r.lines) && r.lines.length >= 1);
 
+ctx.TASBIH_PHRASES = [
+  { ar: "مستبعد", en: "Excluded", randomReminder: false },
+  { ar: "مسموح", en: "Included" }
+];
+const eligibleReminder = randomTasbihPhrase("en");
+eq("randomTasbihPhrase excludes non-random phrases", eligibleReminder.lines[0].text, "Included");
+
 // itemLabel must NOT use a structural field as a label when the language code
 // collides with it (Indonesian "id"); it should fall back to English.
 eq("itemLabel method, id-lang -> en name", itemLabel({ value: 2, en: "ISNA", ar: "x" }, "id"), "ISNA");

@@ -1695,7 +1695,11 @@ function randomTasbihPhrase(lang) {
     if (typeof TASBIH_PHRASES === "undefined" || !TASBIH_PHRASES.length) {
         return formatTasbihDisplay(fallback, code);
     }
-    const item = TASBIH_PHRASES[Math.floor(Math.random() * TASBIH_PHRASES.length)];
+    const reminderPhrases = TASBIH_PHRASES.filter((item) => item.randomReminder !== false);
+    if (!reminderPhrases.length) {
+        return formatTasbihDisplay(fallback, code);
+    }
+    const item = reminderPhrases[Math.floor(Math.random() * reminderPhrases.length)];
     return formatTasbihDisplay(item, code);
 }
 

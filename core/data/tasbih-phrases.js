@@ -1,4 +1,6 @@
-// 151 unique dhikr phrases — { ar, en, ur, fr, es, id, de }
+// 152 unique dhikr entries, 151 shown as random reminders — { ar, en, ur, fr, es, id, de }
+// `randomReminder: false` keeps an entry out of the random rotation (istirja'
+// is said upon a calamity, so showing it at random reads as announcing one).
 
 const TASBIH_PHRASES = [
     // Basic tasbih (15)
@@ -677,7 +679,7 @@ const TASBIH_PHRASES = [
         es: "Oh Allah, bendícelo y concédele una paz completa"
     },
 
-    // Quranic dhikr (14)
+    // Quranic dhikr (15)
     {
         ar: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً",
         en: "Rabbana atina fid dunya hasanatan wa fil akhirati hasanatan",
@@ -804,9 +806,16 @@ const TASBIH_PHRASES = [
         de: "Mein Erfolg kommt nur von Allah",
         es: "Mi éxito solo proviene de Allah"
     },
-    // (Istirja' — "Inna lillahi wa inna ilayhi raji'un" — deliberately left
-    // out: it is said upon a calamity, so a random reminder showing it reads
-    // as announcing one.)
+    {
+        ar: "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ",
+        en: "Inna lillahi wa inna ilayhi raji'oon",
+        ur: "بیشک ہم اللہ ہی کے ہیں اور اسی کی طرف لوٹنے والے ہیں",
+        fr: "Nous appartenons à Allah et c'est à Lui que nous retournons",
+        id: "Inna lillahi wa inna ilayhi raji'un",
+        de: "Wir gehören Allah und zu Ihm kehren wir zurück",
+        es: "Ciertamente pertenecemos a Allah y a Él retornamos",
+        randomReminder: false
+    },
 
     // Sunnah dhikr (10)
     {
