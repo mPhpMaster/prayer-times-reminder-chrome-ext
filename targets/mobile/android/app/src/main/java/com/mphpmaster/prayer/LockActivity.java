@@ -7,8 +7,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -23,6 +26,7 @@ import org.json.JSONObject;
  */
 public class LockActivity extends Activity {
 
+    private static final String TAG = "PrayerLock";
     public static final String EXTRA_CONFIG = "config";
     private static LockActivity current;
     // Lock-in-progress flag + its config, for re-asserting the screen when the
@@ -100,6 +104,10 @@ public class LockActivity extends Activity {
         }
 
         final String configJson = getIntent().getStringExtra(EXTRA_CONFIG);
+        // Full config only in debuggable builds; release logs just the event.
+        boolean debuggable = (getApplicationInfo().flags
+            & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        Log.d(TAG, debuggable ? "onCreate config=" + configJson : "onCreate");
         active = true;
         activeConfig = configJson;
         scheduleExpiryFallback(configJson);
@@ -112,6 +120,17 @@ public class LockActivity extends Activity {
         // without a user gesture — the alarm, not a tap, opens this screen.
         web.getSettings().setMediaPlaybackRequiresUserGesture(false);
         web.addJavascriptInterface(new Bridge(), "AndroidLock");
+        // Surfaces overlay-lock.js's own console.log/error (including its
+        // soundLog() diagnostics — window.__prayerSoundLog is wired to
+        // console.log in lock.html) in logcat, since there's no debugger
+        // attached on a real device.
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage cm) {
+                Log.d(TAG, "console: " + cm.message() + " (" + cm.sourceId() + ":" + cm.lineNumber() + ")");
+                return true;
+            }
+        });
         web.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -144,6 +163,7 @@ public class LockActivity extends Activity {
     // Single teardown path: stop the keep-alive service, cancel the watchdog,
     // lift DND, close.
     private void endLock() {
+        Log.d(TAG, "endLock");
         active = false;
         LockState.clear(getApplicationContext());
         stopService(new Intent(this, LockForegroundService.class));
@@ -203,6 +223,7 @@ public class LockActivity extends Activity {
     public class Bridge {
         @JavascriptInterface
         public void unlock() {
+            Log.d(TAG, "AndroidLock.unlock() called from JS");
             runOnUiThread(LockActivity.this::endLock);
         }
     }
