@@ -1,6 +1,6 @@
 {
   "name": "prayer-times-reminder",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Prayer Times Reminder — Chrome MV3 extension (prayer times, tab lock, dhikr, 8 languages).",
   "private": true,
   "type": "commonjs",

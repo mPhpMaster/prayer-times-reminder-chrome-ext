@@ -33,8 +33,18 @@ fs.rmSync(zipPath, { force: true });
 let zipped = false;
 try {
   if (process.platform === "win32") {
+    // Prefer PowerShell 7 (pwsh): Windows PowerShell 5.1's Compress-Archive
+    // writes entry paths with backslashes (icons\icon16.png), which Chrome
+    // does not unpack as folders.
+    let shell = "powershell";
+    try {
+      execSync("pwsh -NoProfile -Command exit", { stdio: "ignore" });
+      shell = "pwsh";
+    } catch {
+      console.warn("build: pwsh not found — the zip may use backslash paths; install PowerShell 7.");
+    }
     execSync(
-      `powershell -NoProfile -Command "Compress-Archive -Path '${DIST}${path.sep}*' -DestinationPath '${zipPath}' -Force"`,
+      `${shell} -NoProfile -Command "Compress-Archive -Path '${DIST}${path.sep}*' -DestinationPath '${zipPath}' -Force"`,
       { stdio: "ignore" }
     );
   } else {

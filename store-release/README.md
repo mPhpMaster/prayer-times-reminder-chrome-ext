@@ -6,7 +6,7 @@ App name: **Prayer Times Reminder (Prayer Times Break)** / **مواقيت الص
 Listing text (EN + AR): `listings/`. Privacy page to host: `../docs/privacy.html`.
 
 ## Chrome Web Store
-Upload `packages/prayer-times-reminder-chrome-v2.2.3.zip` · screenshots `assets/chrome/`.
+Upload `packages/prayer-times-reminder-chrome-v2.2.4.zip` · screenshots `assets/chrome/`.
 
 ### Permission justification — `offscreen`
 The dashboard blocks publishing until this is filled in (Privacy practices tab). Paste:
