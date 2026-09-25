@@ -285,6 +285,7 @@
     // [key, asked-flag, relevant(settings)]
     ["notifications", "notifPermAsked", () => true],
     ["fullScreen", "fullScreenIntentAsked", (s) => s.tabLockEnabled !== false],
+    ["exactAlarm", "exactAlarmAsked", () => true],
     ["dnd", "dndAccessAsked", (s) => s.tabLockEnabled !== false && s.silentDuringPrayer !== false],
     ["overlay", "overlayPermAsked", (s) => s.tasbihEnabled === true],
     ["battery", "batteryExemptAsked", () => true],
@@ -292,6 +293,7 @@
   const PERM_REQUEST = {
     notifications: () => LocalNotifications.requestPermissions(),
     fullScreen: () => Lock.ensureFullScreenIntentPermission(),
+    exactAlarm: () => Lock.ensureExactAlarmPermission(),
     dnd: () => Lock.ensureDndAccess(),
     overlay: () => Lock.ensureOverlayPermission(),
     battery: () => Lock.ensureBatteryExemption(),
@@ -301,6 +303,8 @@
     en: {
       notifications: ["Notifications", "So you get a reminder when each prayer time comes in."],
       fullScreen: ["Full-screen lock", "Lets the prayer lock cover the screen at prayer time, even while you're using another app."],
+
+      exactAlarm: ["Alarms & reminders", "So reminders and the prayer lock start at the exact minute of each prayer, not a few minutes late."],
       dnd: ["Do Not Disturb", "Keeps your phone silent while the prayer lock is on. Find \"{app}\" in the list and turn it on."],
       overlay: ["Display over other apps", "Needed to show the dhikr reminder on top of whatever app is open. Find \"{app}\" in the list and allow it."],
       battery: ["Run in background", "Stops the phone's battery saver from cancelling prayer-time alarms."],
@@ -310,6 +314,8 @@
     ar: {
       notifications: ["الإشعارات", "ليصلك تنبيه عند دخول وقت كل صلاة."],
       fullScreen: ["القفل بملء الشاشة", "ليغطي قفلُ الصلاة الشاشةَ عند دخول الوقت، حتى لو كنت تستخدم تطبيقًا آخر."],
+
+      exactAlarm: ["المنبّهات والتذكيرات", "حتى يبدأ التذكير وقفل الصلاة في دقيقة دخول الوقت تمامًا، لا بعدها بدقائق."],
       dnd: ["عدم الإزعاج", "ليبقى الجوال صامتًا أثناء قفل الصلاة. ابحث عن «{app}» في القائمة وفعّله."],
       overlay: ["الظهور فوق التطبيقات", "لإظهار تذكير الذكر فوق أي تطبيق مفتوح. ابحث عن «{app}» في القائمة واسمح له."],
       battery: ["العمل في الخلفية", "حتى لا يُلغي موفّر البطارية منبّهات أوقات الصلاة."],
@@ -319,6 +325,8 @@
     ur: {
       notifications: ["اطلاعات", "تاکہ ہر نماز کا وقت ہونے پر آپ کو یاد دہانی ملے۔"],
       fullScreen: ["فل اسکرین لاک", "نماز کے وقت نماز لاک پوری اسکرین پر آ سکے، چاہے آپ کوئی اور ایپ استعمال کر رہے ہوں۔"],
+
+      exactAlarm: ["الارم اور یاد دہانیاں", "تاکہ یاد دہانی اور نماز لاک ہر نماز کے عین وقت پر شروع ہوں، چند منٹ دیر سے نہیں۔"],
       dnd: ["ڈسٹرب نہ کریں", "نماز لاک کے دوران فون خاموش رہے۔ فہرست میں \"{app}\" تلاش کر کے آن کریں۔"],
       overlay: ["دیگر ایپس کے اوپر دکھائیں", "ذکر کی یاد دہانی کسی بھی کھلی ایپ کے اوپر دکھانے کے لیے۔ فہرست میں \"{app}\" تلاش کر کے اجازت دیں۔"],
       battery: ["پس منظر میں چلائیں", "تاکہ بیٹری سیور نماز کے الارم منسوخ نہ کرے۔"],
@@ -328,6 +336,8 @@
     fr: {
       notifications: ["Notifications", "Pour recevoir un rappel à l'heure de chaque prière."],
       fullScreen: ["Verrouillage plein écran", "Permet au verrouillage de prière de couvrir l'écran à l'heure de la prière, même dans une autre application."],
+
+      exactAlarm: ["Alarmes et rappels", "Pour que les rappels et le verrouillage démarrent à la minute exacte de chaque prière, pas quelques minutes plus tard."],
       dnd: ["Ne pas déranger", "Garde le téléphone silencieux pendant le verrouillage. Trouvez « {app} » dans la liste et activez-le."],
       overlay: ["Superposition aux autres applis", "Nécessaire pour afficher le rappel de dhikr au-dessus de l'appli ouverte. Trouvez « {app} » dans la liste et autorisez-le."],
       battery: ["Exécution en arrière-plan", "Empêche l'économiseur de batterie d'annuler les alarmes de prière."],
@@ -337,6 +347,8 @@
     es: {
       notifications: ["Notificaciones", "Para recibir un aviso cuando llegue la hora de cada oración."],
       fullScreen: ["Bloqueo a pantalla completa", "Permite que el bloqueo de oración cubra la pantalla a la hora de la oración, incluso en otra app."],
+
+      exactAlarm: ["Alarmas y recordatorios", "Para que los avisos y el bloqueo empiecen en el minuto exacto de cada oración, no unos minutos tarde."],
       dnd: ["No molestar", "Mantiene el teléfono en silencio durante el bloqueo. Busca «{app}» en la lista y actívalo."],
       overlay: ["Mostrar sobre otras apps", "Necesario para mostrar el recordatorio de dhikr sobre cualquier app abierta. Busca «{app}» en la lista y permítelo."],
       battery: ["Ejecutar en segundo plano", "Evita que el ahorro de batería cancele las alarmas de oración."],
@@ -346,6 +358,8 @@
     hi: {
       notifications: ["सूचनाएँ", "ताकि हर नमाज़ का समय होने पर आपको याद दिलाया जाए।"],
       fullScreen: ["फ़ुल-स्क्रीन लॉक", "नमाज़ के समय नमाज़ लॉक पूरी स्क्रीन पर आ सके, भले ही आप कोई दूसरा ऐप चला रहे हों।"],
+
+      exactAlarm: ["अलार्म और रिमाइंडर", "ताकि याद दिलाना और नमाज़ लॉक हर नमाज़ के ठीक समय पर शुरू हों, कुछ मिनट देर से नहीं।"],
       dnd: ["परेशान न करें", "नमाज़ लॉक के दौरान फ़ोन शांत रहे। सूची में \"{app}\" ढूँढकर चालू करें।"],
       overlay: ["दूसरे ऐप्स के ऊपर दिखाएँ", "ज़िक्र की याद किसी भी खुले ऐप के ऊपर दिखाने के लिए। सूची में \"{app}\" ढूँढकर अनुमति दें।"],
       battery: ["बैकग्राउंड में चलाएँ", "ताकि बैटरी सेवर नमाज़ के अलार्म रद्द न करे।"],
@@ -355,6 +369,8 @@
     id: {
       notifications: ["Notifikasi", "Agar Anda mendapat pengingat saat waktu setiap salat tiba."],
       fullScreen: ["Kunci layar penuh", "Agar kunci salat menutupi layar saat waktu salat, meski Anda sedang memakai aplikasi lain."],
+
+      exactAlarm: ["Alarm & pengingat", "Agar pengingat dan kunci salat dimulai tepat pada menit waktu salat, bukan terlambat beberapa menit."],
       dnd: ["Jangan Ganggu", "Menjaga ponsel tetap senyap selama kunci salat. Cari \"{app}\" di daftar lalu aktifkan."],
       overlay: ["Tampil di atas aplikasi lain", "Diperlukan untuk menampilkan pengingat zikir di atas aplikasi yang terbuka. Cari \"{app}\" di daftar lalu izinkan."],
       battery: ["Berjalan di latar belakang", "Agar penghemat baterai tidak membatalkan alarm waktu salat."],
@@ -364,6 +380,8 @@
     de: {
       notifications: ["Benachrichtigungen", "Damit Sie zu jeder Gebetszeit eine Erinnerung erhalten."],
       fullScreen: ["Vollbild-Sperre", "Damit die Gebetssperre zur Gebetszeit den Bildschirm abdeckt, auch in einer anderen App."],
+
+      exactAlarm: ["Wecker & Erinnerungen", "Damit Erinnerungen und die Gebetssperre genau zur Gebetsminute starten, nicht ein paar Minuten zu spät."],
       dnd: ["Nicht stören", "Hält das Telefon während der Gebetssperre stumm. Suchen Sie „{app}“ in der Liste und schalten Sie es ein."],
       overlay: ["Über anderen Apps einblenden", "Nötig, um die Dhikr-Erinnerung über jeder geöffneten App zu zeigen. Suchen Sie „{app}“ in der Liste und erlauben Sie es."],
       battery: ["Im Hintergrund ausführen", "Verhindert, dass der Akkusparer die Gebetsalarme abbricht."],

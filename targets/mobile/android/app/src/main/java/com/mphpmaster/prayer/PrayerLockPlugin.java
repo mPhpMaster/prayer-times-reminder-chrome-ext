@@ -66,6 +66,7 @@ public class PrayerLockPlugin extends Plugin {
         ret.put("battery", battery);
         ret.put("dnd", dnd);
         ret.put("fullScreen", fullScreen);
+        ret.put("exactAlarm", canScheduleExact(ctx));
         ret.put("overlay", DhikrOverlay.canShow(ctx));
         // The name the system settings lists show (follows the phone's locale),
         // so the web sheets can say exactly what to look for.
@@ -134,6 +135,41 @@ public class PrayerLockPlugin extends Plugin {
         JSObject ret = new JSObject();
         ret.put("granted", granted);
         call.resolve(ret);
+    }
+
+    /**
+     * Exact alarms ("Alarms & reminders"). We only declare SCHEDULE_EXACT_ALARM
+     * — Play reserves USE_EXACT_ALARM for alarm-clock/calendar apps — and on
+     * Android 14+ that is denied by default for new installs. Without it every
+     * prayer alarm falls back to an inexact one Doze can defer by minutes, so
+     * the lock and reminders would arrive late. Opens the system grant screen
+     * when missing. Returns { granted } as it was BEFORE any prompt.
+     */
+    @PluginMethod
+    public void ensureExactAlarmPermission(PluginCall call) {
+        Context ctx = getContext();
+        boolean granted = canScheduleExact(ctx);
+        if (!granted) {
+            Intent i = new Intent(
+                android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                android.net.Uri.parse("package:" + ctx.getPackageName()));
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                ctx.startActivity(i);
+            } catch (Exception ignored) {
+                // No grant screen on this OEM — alarms stay inexact.
+            }
+        }
+        JSObject ret = new JSObject();
+        ret.put("granted", granted);
+        call.resolve(ret);
+    }
+
+    private static boolean canScheduleExact(Context ctx) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true;
+        android.app.AlarmManager am =
+            (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        return am != null && am.canScheduleExactAlarms();
     }
 
     @PluginMethod

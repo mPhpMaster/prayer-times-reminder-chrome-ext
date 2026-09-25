@@ -83,7 +83,7 @@ battery-optimization exemption (Doze).
 ### Permission flow
 
 `runPermissionFlow()` in `web/adapter.js` asks for the grants **one at a time**:
-notifications → full-screen intent → Do Not Disturb → display over other apps
+notifications → full-screen intent → exact alarms ("Alarms & reminders") → Do Not Disturb → display over other apps
 → battery exemption, skipping any already granted (`PrayerLock.permissionStatus`,
 which never prompts) or irrelevant to the current settings (e.g. overlay only
 when dhikr is on). Each step first shows a short in-app sheet explaining why;
