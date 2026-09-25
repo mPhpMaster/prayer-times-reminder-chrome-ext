@@ -6,10 +6,12 @@
     <title>Prayer</title>
   </head>
   <body>
-    <!-- Capacitor's webDir entry is index.html; the app UI is the shared
-         popup.html. Redirect to it (preserving #settings for the wizard). -->
+    <!-- Capacitor's webDir entry is index.html. The game is the main screen
+         on Android (docs/GAME-DESIGN-2026-09-25.md); the original app is
+         popup.html, reached from the game's "الأدوات". A hash (e.g. #settings
+         from the onboarding wizard) still goes straight to popup.html. -->
     <script>
-      location.replace("popup.html" + location.hash);
+      location.replace(location.hash ? "popup.html" + location.hash : "game.html");
     </script>
   </body>
 </html>

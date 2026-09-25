@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="midnight-emerald">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="game.css" />
+    <title>أذكار الصلاة</title>
+</head>
+
+<!-- Phase 1 game screen (docs/GAME-DESIGN-2026-09-25.md): the current prayer
+     window, its tasks read aloud segment by segment, points, and the gift.
+     Local only — no accounts yet. The old app lives behind "الأدوات". -->
+<body>
+    <div class="orb orb-top" aria-hidden="true"></div>
+    <div class="orb orb-bottom" aria-hidden="true"></div>
+
+    <main class="card glass-card game">
+        <header class="game-head">
+            <div>
+                <h1 id="window-title">—</h1>
+                <p class="window-time" id="window-time"></p>
+            </div>
+            <button type="button" id="tools" class="ghost">⚙️ الأدوات</button>
+        </header>
+
+        <section class="scores" aria-label="النقاط">
+            <div><span id="pts-window">0</span><small>هذه الصلاة</small></div>
+            <div><span id="pts-day">0</span><small>اليوم</small></div>
+            <div><span id="pts-month">0</span><small>هذا الشهر</small></div>
+        </section>
+
+        <p class="notice" id="pre-open" hidden>تُفتح المهمات بعد الصلاة بنصف ساعة. من يبدأ في أول نصف ساعة يأخذ النقاط كاملة، وتقل كلما تأخر.</p>
+        <p class="notice" id="notice" hidden></p>
+
+        <!-- Task list -->
+        <section id="list-view">
+            <ul class="tasks" id="tasks"></ul>
+            <button type="button" class="gift" id="gift" hidden>🎁 افتح الهدية</button>
+        </section>
+
+        <!-- Reader -->
+        <section class="reader" id="reader" hidden>
+            <div class="reader-head">
+                <button type="button" id="back" class="ghost">→ المهمات</button>
+                <span class="reader-points" id="reader-points"></span>
+            </div>
+            <h2 id="reader-title"></h2>
+            <p class="source" id="reader-source"></p>
+            <p class="hint">اقرأ هذا المقطع ثم توقف لحظة</p>
+            <p class="chunk" id="chunk" aria-live="polite"></p>
+            <p class="text" id="text"></p>
+            <div class="progress" aria-hidden="true"><div class="fill" id="fill"></div></div>
+            <p class="counter" id="counter"></p>
+            <button type="button" id="mic" class="mic">🎙️ ابدأ القراءة</button>
+            <p class="heard" id="heard" aria-live="polite"></p>
+        </section>
+
+        <p class="privacy">التعرف على الصوت يتم عبر Google؛ لا يحفظ التطبيق صوتك.</p>
+    </main>
+
+    <script src="adapter.js"></script>
+    <script src="platform.js"></script>
+    <script src="i18n.js"></script>
+    <script src="vendor/adhan.js"></script>
+    <script src="vendor/tz-lookup.js"></script>
+    <script src="prayer-engine.js"></script>
+    <script src="recitation-match.js"></script>
+    <script src="game-score.js"></script>
+    <script src="game-windows.js"></script>
+    <script src="game-state.js"></script>
+    <script src="game-tasks.js"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>
