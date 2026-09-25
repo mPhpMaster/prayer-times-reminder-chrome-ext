@@ -60,15 +60,32 @@ button { font: inherit; cursor: pointer; }
 .reader[hidden] { display: none; }
 .source { font-size: 12px; color: var(--muted-foreground); margin: 0; }
 
+.hint { font-size: 12px; color: var(--muted-foreground); text-align: center; margin: 0; }
+/* The current reading chunk (at most 3 words), big and centered. */
+.chunk {
+  font-family: var(--font-arabic);
+  font-size: 38px;
+  line-height: 1.9;
+  text-align: center;
+  margin: 0;
+  min-height: 1.9em;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+.chunk .w { transition: color 0.2s; }
+.chunk .w.hit { color: var(--primary); }
+/* The whole text, small, for context and progress. */
 .text {
   font-family: var(--font-arabic);
-  font-size: 26px;
-  line-height: 2.1;
+  font-size: 17px;
+  line-height: 2;
   margin: 0;
-  word-spacing: 2px;
+  color: var(--muted-foreground);
 }
 .text .w { transition: color 0.2s; }
 .text .w.hit { color: var(--primary); }
+.text .w.cur { color: var(--foreground); text-decoration: underline; text-underline-offset: 6px; }
 
 .progress { height: 6px; border-radius: 3px; background: var(--progress-track-bg); overflow: hidden; }
 .progress .fill { height: 100%; width: 0; background: var(--progress-fill); transition: width 0.25s; }

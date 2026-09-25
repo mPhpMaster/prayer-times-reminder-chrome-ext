@@ -74,17 +74,41 @@ function renderTaskList() {
 
 // Display words keep their harakat and punctuation; each maps to the index of
 // the normalized token it produced (pause marks like ۝ produce none).
-function renderText(task) {
-  const box = $("text");
-  box.replaceChildren();
-  let tokenIndex = 0;
-  for (const word of task.text.split(/\s+/)) {
+function wordSpans(words, firstToken) {
+  const out = [];
+  let tokenIndex = firstToken;
+  for (const word of words) {
     const span = document.createElement("span");
     span.className = "w";
     span.textContent = word;
     if (normalizeArabic(word)) span.dataset.t = String(tokenIndex++);
-    box.append(span, " ");
+    out.push(span, document.createTextNode(" "));
   }
+  return out;
+}
+
+// Reading chunks of at most 3 words (the owner's suggestion): short utterances
+// decode faster and more accurately than a whole ayah.
+let chunks = [];
+let shownChunk = -1;
+function renderText(task) {
+  chunks = chunkText(task.text, 3);
+  shownChunk = -1;
+  $("text").replaceChildren(...wordSpans(task.text.split(/\s+/).filter(Boolean), 0));
+}
+
+function showChunk(pos) {
+  let i = chunks.findIndex((c) => pos < c.to);
+  if (i < 0) i = chunks.length - 1;
+  if (i !== shownChunk) {
+    shownChunk = i;
+    $("chunk").replaceChildren(...wordSpans(chunks[i].words, chunks[i].from));
+  }
+  const c = chunks[i];
+  document.querySelectorAll("#text .w").forEach((s) => {
+    const t = s.dataset.t === undefined ? -1 : Number(s.dataset.t);
+    s.classList.toggle("cur", t >= c.from && t < c.to);
+  });
 }
 
 async function selectTask(task) {
@@ -107,7 +131,9 @@ function heardText() {
 function update({ final = false } = {}) {
   if (!current) return;
   const r = matchTask(heardText(), current, { final });
-  document.querySelectorAll("#text .w").forEach((s) => {
+  const tokens = r.matched.length;
+  showChunk(r.done ? tokens - 1 : Math.round(r.progress * tokens));
+  document.querySelectorAll("#text .w, #chunk .w").forEach((s) => {
     const i = s.dataset.t;
     s.classList.toggle("hit", i !== undefined && !!r.matched[Number(i)]);
   });

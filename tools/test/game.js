@@ -14,12 +14,12 @@ load("recitation-match.js");
 load("game-score.js");
 load("game-tasks.js");
 vm.runInContext(
-  "this.__m = { normalizeArabic, tokenize, matchRecitation, matchTask, wordSimilarity };" +
+  "this.__m = { normalizeArabic, tokenize, matchRecitation, matchTask, wordSimilarity, chunkText };" +
     "this.__s = { taskWindow, pointsFactor, taskPoints, splitWindowPoints };" +
     "this.__tasks = SPIKE_TASKS;",
   ctx
 );
-const { normalizeArabic, tokenize, matchRecitation, matchTask } = ctx.__m;
+const { normalizeArabic, tokenize, matchRecitation, matchTask, chunkText } = ctx.__m;
 const { taskWindow, taskPoints, splitWindowPoints } = ctx.__s;
 const TASKS = ctx.__tasks;
 const task = (id) => TASKS.find((t) => t.id === id);
@@ -90,6 +90,19 @@ const tahlil = task("tahlil");
 const tahlilNoEnd = "لا اله الا الله وحده لا شريك له له الملك وله الحمد وهو على كل شيء";
 eq("tail dropped, not final: pending", matchRecitation(tahlilNoEnd, tahlil.text).count, 0);
 eq("tail dropped, final: counted", matchRecitation(tahlilNoEnd, tahlil.text, { final: true }).count, 1);
+
+// ---- chunkText: short reading chunks ------------------------------------------
+const ikhlasChunks = chunkText(ikhlas.text, 3);
+eq("ikhlas chunks break at ayah marks",
+  ikhlasChunks.map((c) => c.words.join(" ")),
+  ["قُلْ هُوَ اللَّهُ", "أَحَدٌ ۝", "اللَّهُ الصَّمَدُ ۝", "لَمْ يَلِدْ وَلَمْ", "يُولَدْ ۝", "وَلَمْ يَكُنْ لَهُ", "كُفُوًا أَحَدٌ"]);
+const allTokens = tokenize(ikhlas.text).length;
+ok("chunks cover every token exactly once",
+  ikhlasChunks[0].from === 0 && ikhlasChunks.at(-1).to === allTokens &&
+  ikhlasChunks.every((c, i) => i === 0 || c.from === ikhlasChunks[i - 1].to));
+ok("no chunk exceeds 3 spoken words", chunkText(task("ayat-al-kursi").text, 3).every((c) => c.to - c.from <= 3));
+eq("comma ends a chunk", chunkText("سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ", 3).map((c) => c.to - c.from), [2, 2]);
+eq("single short dhikr is one chunk", chunkText(sw.text, 3).length, 1);
 
 // ---- game-score --------------------------------------------------------------
 const M = 60 * 1000;

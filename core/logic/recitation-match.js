@@ -9,6 +9,7 @@
 //   normalizeArabic(text)                        -> "بسم الله"
 //   tokenize(text)                               -> ["بسم", "الله"]
 //   matchRecitation(heard, target, opts)         -> { count, progress, matched, done }
+//   chunkText(text, maxWords)                    -> [{ words, from, to }]  reading chunks
 
 // Harakat, tanween, shadda, sukun, superscript alef, small high/low marks and
 // Quranic pause signs — everything that isn't a base letter.
@@ -151,6 +152,39 @@ function matchRecitation(heard, target, opts = {}) {
   }
 
   return { count, progress: pos / T.length, matched, done: false };
+}
+
+// Split a text into short reading chunks (at most maxWords spoken words) so
+// the player reads a few words, pauses, and the next chunk appears. Short
+// utterances decode faster and more accurately than a whole ayah at once.
+// A chunk also ends early at a clause mark (، ۚ ۝ …) so pauses fall naturally.
+//   words    display words (vocalized, with any attached marks)
+//   from,to  token range [from, to) in tokenize(text) — matches matchRecitation's
+//            `matched` / `progress`, so the current chunk is the one holding pos
+const CLAUSE_END = /[،؛.:!?ۖ-ۜ۝]$/;
+function chunkText(text, maxWords = 3) {
+  const chunks = [];
+  let cur = null;
+  let token = 0;
+  for (const word of String(text || "").split(/\s+/).filter(Boolean)) {
+    const spoken = normalizeArabic(word) ? 1 : 0; // pause marks like ۝ carry no token
+    if (!spoken && !cur && chunks.length) {
+      chunks[chunks.length - 1].words.push(word); // a mark stays with the words it ends
+      continue;
+    }
+    if (!cur) cur = { words: [], from: token, to: token };
+    cur.words.push(word);
+    token += spoken;
+    cur.to = token;
+    const count = cur.to - cur.from;
+    if (count >= maxWords || (count > 0 && CLAUSE_END.test(word))) {
+      chunks.push(cur);
+      cur = null;
+    }
+  }
+  if (cur && cur.to > cur.from) chunks.push(cur);
+  else if (cur && chunks.length) chunks[chunks.length - 1].words.push(...cur.words);
+  return chunks;
 }
 
 // Convenience for a task: { text, repeat } -> adds `done` and clamps count.
