@@ -170,7 +170,7 @@
       // The global plugin proxy returns the handle directly or as a Promise
       // depending on the bridge version — accept both.
       const on = (ev, fn, pick) =>
-        fn && Promise.resolve(Speech.addListener(ev, (e) => fn(pick(e)))).then((h) => speechHandles.push(h));
+        fn && Promise.resolve(Speech.addListener(ev, (e) => fn(pick(e), e))).then((h) => speechHandles.push(h));
       await Promise.all([
         on("partial", onPartial, (e) => e.text),
         on("final", onFinal, (e) => e.text),

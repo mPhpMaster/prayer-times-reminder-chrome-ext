@@ -42,7 +42,7 @@ public class WhisperEngine {
     public interface Listener {
         void onReady();                    // models loaded and mic open — start speaking
         void onSpeech(boolean speaking);   // VAD state, for a "hearing you" indicator
-        void onText(String text);          // one decoded segment
+        void onText(String text, float seconds, long decodeMs); // one decoded segment
         void onBusy(int pendingSegments);  // segments waiting for / in decoding
         void onError(String message);
     }
@@ -59,6 +59,12 @@ public class WhisperEngine {
     private OfflineRecognizer recognizer;
     private Vad vad;
     private volatile boolean running = false;
+    // Recent mic audio, so each VAD segment can be widened: Silero reports speech
+    // a little after it starts, which clipped first syllables ("فسبح").
+    private static final int RING = SAMPLE_RATE * 40;
+    private static final int PRE_ROLL = SAMPLE_RATE * 4 / 10;  // 0.4 s
+    private final float[] ring = new float[RING];
+    private long written = 0; // total samples ever written into ring
     private final java.util.concurrent.atomic.AtomicInteger pending = new java.util.concurrent.atomic.AtomicInteger();
     private Thread recordThread;
 
@@ -86,9 +92,9 @@ public class WhisperEngine {
         whisper.setDecoder(dir + "whisper-decoder.int8.onnx");
         whisper.setLanguage("ar");
         whisper.setTask("transcribe");
-        // Zero-padding appended before decoding. sherpa-onnx suggests ~300 frames
-        // (3 s) for multilingual models; 1000 made every decode ~2x slower.
-        whisper.setTailPaddings(300);
+        // Zero-padding appended before decoding. Whisper drops the last word of a
+        // clip without enough trailing silence (300 frames cut "وبحمده" to "وبحم").
+        whisper.setTailPaddings(1000);
 
         OfflineModelConfig model = new OfflineModelConfig();
         model.setWhisper(whisper);
@@ -131,6 +137,7 @@ public class WhisperEngine {
                 Log.i(TAG, "models ready in " + (System.nanoTime() - tLoad) / 1_000_000 + "ms, threads="
                     + recognizer.getConfig().getModelConfig().getNumThreads());
                 vad.reset();
+                written = 0;
                 int minBuf = AudioRecord.getMinBufferSize(
                     SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
                 rec = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, SAMPLE_RATE,
@@ -148,7 +155,11 @@ public class WhisperEngine {
                 while (running) {
                     int n = rec.read(pcm, 0, VAD_WINDOW);
                     if (n <= 0) continue;
-                    for (int i = 0; i < n; i++) samples[i] = pcm[i] / 32768f;
+                    for (int i = 0; i < n; i++) {
+                        samples[i] = pcm[i] / 32768f;
+                        ring[(int) ((written + i) % RING)] = samples[i];
+                    }
+                    written += n;
                     vad.acceptWaveform(n == VAD_WINDOW ? samples : java.util.Arrays.copyOf(samples, n));
                     boolean now = vad.isSpeechDetected();
                     if (now != speaking) {
@@ -177,7 +188,7 @@ public class WhisperEngine {
         while (!vad.empty()) {
             SpeechSegment seg = vad.front();
             vad.pop();
-            float[] audio = seg.getSamples();
+            float[] audio = widen(seg);
             int queued = pending.incrementAndGet();
             listener.onBusy(queued);
             decoder.execute(() -> {
@@ -189,9 +200,9 @@ public class WhisperEngine {
                     String text = recognizer.getResult(stream).getText().trim();
                     long ms = (System.nanoTime() - t0) / 1_000_000;
                     // Spike diagnostics (adb logcat -s WhisperEngine): audio length vs decode time.
-                    Log.i(TAG, String.format(java.util.Locale.ROOT, "segment %.2fs decoded in %dms: %s",
-                        audio.length / (float) SAMPLE_RATE, ms, text));
-                    if (!text.isEmpty()) listener.onText(text);
+                    float sec = audio.length / (float) SAMPLE_RATE;
+                    Log.i(TAG, String.format(java.util.Locale.ROOT, "segment %.2fs decoded in %dms: %s", sec, ms, text));
+                    if (!text.isEmpty()) listener.onText(text, sec, ms);
                 } catch (Throwable t) {
                     listener.onError(String.valueOf(t));
                 } finally {
@@ -200,6 +211,20 @@ public class WhisperEngine {
                 }
             });
         }
+    }
+
+    /** The segment plus PRE_ROLL of audio before it, taken from the ring when
+     *  still available (VAD segment starts count samples since reset()). */
+    private float[] widen(SpeechSegment seg) {
+        float[] core = seg.getSamples();
+        long start = seg.getStart();
+        long from = Math.max(0, start - PRE_ROLL);
+        if (from < written - RING || start > written) return core; // overwritten / unknown
+        int pre = (int) (start - from);
+        float[] out = new float[pre + core.length];
+        for (int i = 0; i < pre; i++) out[i] = ring[(int) ((from + i) % RING)];
+        System.arraycopy(core, 0, out, pre, core.length);
+        return out;
     }
 
     /** Stops the mic; segments already captured still decode and are delivered

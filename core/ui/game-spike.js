@@ -141,7 +141,7 @@ async function startListening() {
   partial = "";
   $("done").hidden = true;
   update();
-  attempt = { task: current.id, startedAt: Date.now(), firstWordAt: 0, readyMs: 0, restarts: 0, errors: [] };
+  attempt = { task: current.id, startedAt: Date.now(), firstWordAt: 0, readyMs: 0, restarts: 0, errors: [], segments: [] };
   const res = await Platform.speech
     .start({
       lang: "ar-SA",
@@ -151,8 +151,11 @@ async function startListening() {
         partial = text;
         update();
       },
-      onFinal: (text) => {
+      onFinal: (text, meta = {}) => {
         finals.push(text);
+        if (attempt && meta.decodeMs != null) {
+          attempt.segments.push({ sec: Math.round(meta.seconds * 10) / 10, ms: meta.decodeMs, text });
+        }
         partial = "";
         if (attempt) attempt.restarts++;
         update();
@@ -230,6 +233,7 @@ async function saveAttempt(r, reason) {
     utterances: attempt.restarts,
     errors: attempt.errors,
     heard: heardText(),
+    segments: attempt.segments, // whisper: seconds of audio vs decode ms, per utterance
   };
   const log = (await readLog()).concat(entry).slice(-200);
   await Platform.store.set({ [LOG_KEY]: log });
