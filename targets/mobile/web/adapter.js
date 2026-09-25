@@ -161,9 +161,9 @@
   // --- scheduled prayer notifications (rolling ~7-day window) ----------------
   // Computed offline from prayer-engine + notify-plan, scheduled via
   // @capacitor/local-notifications, topped up on every launch / resume. Tapping
-  // a prayer notification starts the lock. (Auto-firing the full-screen lock
-  // while the app is closed needs the native full-screen-intent path in
-  // PrayerLockPlugin — see targets/mobile/README.md.)
+  // a prayer notification starts the lock. Auto-firing the full-screen lock
+  // while the app is closed is handled by the native full-screen-intent path
+  // in PrayerLockPlugin / LockForegroundService — see targets/mobile/README.md.
   const LocalNotifications = P.LocalNotifications;
   const CapApp = P.App;
   const SCHED_DAYS = 7;
@@ -188,23 +188,11 @@
     } catch {}
   }
 
-  // Delivery reliability: aggressive OEMs (vivo/oppo/xiaomi…) kill scheduled
-  // alarms unless the app is exempt from battery optimization. Ask once via the
-  // native plugin (system dialog); a stored flag keeps us from nagging.
-  async function ensureBatteryExemption() {
-    if (!Lock || !Lock.ensureBatteryExemption) return;
-    try {
-      const { batteryExemptAsked } = await store.get("batteryExemptAsked");
-      if (batteryExemptAsked) return;
-      await store.set({ batteryExemptAsked: true });
-      await Lock.ensureBatteryExemption();
-    } catch {}
-  }
-
   async function scheduleNotifications() {
     if (!LocalNotifications || typeof planPrayerNotifications !== "function") return;
     try {
-      const perm = await LocalNotifications.requestPermissions();
+      // Only check here — asking is the permission flow's job (see below).
+      const perm = await LocalNotifications.checkPermissions();
       if (perm && perm.display && perm.display !== "granted") return;
       const { location } = await store.get("location");
       if (!location || location.latitude == null) return;
@@ -246,14 +234,6 @@
       }
       if (!Lock || !Lock.scheduleDhikr) return;
       await Lock.scheduleDhikr();
-      // The floating balloon needs "display over other apps" — ask once.
-      const { tasbihEnabled, overlayPermAsked } = await store.get([
-        "tasbihEnabled", "overlayPermAsked",
-      ]);
-      if (tasbihEnabled === true && !overlayPermAsked && Lock.ensureOverlayPermission) {
-        await store.set({ overlayPermAsked: true });
-        await Lock.ensureOverlayPermission();
-      }
     } catch {
       /* best effort — re-tried on next resume / settings change */
     }
@@ -262,8 +242,7 @@
   // --- native prayer-time lock (fires over ANY app, app closed too) ----------
   // The notification path above only locks if the user taps it; the real
   // enforcement is native: hand the same rolling plan (with ready-made lock
-  // configs) to AlarmManager via PrayerLock.schedulePrayerLocks. Silent (DND)
-  // during the lock needs notification-policy access — ask once.
+  // configs) to AlarmManager via PrayerLock.schedulePrayerLocks.
   async function schedulePrayerLockAlarms() {
     if (!Lock || !Lock.schedulePrayerLocks) return;
     try {
@@ -289,20 +268,242 @@
         }
       }
       await Lock.schedulePrayerLocks({ entries });
-      if (entries.length) await ensureDndAccess();
     } catch {
       /* best effort — re-tried on next resume / settings change */
     }
   }
 
-  async function ensureDndAccess() {
-    if (!Lock || !Lock.ensureDndAccess) return;
+  // --- permissions: one system screen at a time, each explained first --------
+  // Android grants these on separate system screens. Earlier builds opened them
+  // all at once from each scheduler, so they stacked on top of each other with
+  // no word on why. Now: read what's missing (no prompt), and for each missing
+  // step show a short in-app sheet, open its screen only on "Continue", and
+  // wait until the user is back before the next. A step is remembered once
+  // answered either way; Settings -> "Check permissions" re-runs the flow for
+  // whatever is still missing (e.g. after an accidental Deny).
+  const PERM_STEPS = [
+    // [key, asked-flag, relevant(settings)]
+    ["notifications", "notifPermAsked", () => true],
+    ["fullScreen", "fullScreenIntentAsked", (s) => s.tabLockEnabled !== false],
+    ["dnd", "dndAccessAsked", (s) => s.tabLockEnabled !== false && s.silentDuringPrayer !== false],
+    ["overlay", "overlayPermAsked", (s) => s.tasbihEnabled === true],
+    ["battery", "batteryExemptAsked", () => true],
+  ];
+  const PERM_REQUEST = {
+    notifications: () => LocalNotifications.requestPermissions(),
+    fullScreen: () => Lock.ensureFullScreenIntentPermission(),
+    dnd: () => Lock.ensureDndAccess(),
+    overlay: () => Lock.ensureOverlayPermission(),
+    battery: () => Lock.ensureBatteryExemption(),
+  };
+  // [title, why] per step, plus the sheet's buttons and the settings entry.
+  const PERM_TEXT = {
+    en: {
+      notifications: ["Notifications", "So you get a reminder when each prayer time comes in."],
+      fullScreen: ["Full-screen lock", "Lets the prayer lock cover the screen at prayer time, even while you're using another app."],
+      dnd: ["Do Not Disturb", "Keeps your phone silent while the prayer lock is on. Find \"{app}\" in the list and turn it on."],
+      overlay: ["Display over other apps", "Needed to show the dhikr reminder on top of whatever app is open. Find \"{app}\" in the list and allow it."],
+      battery: ["Run in background", "Stops the phone's battery saver from cancelling prayer-time alarms."],
+      cont: "Continue", later: "Not now", ok: "OK",
+      check: "Check permissions", allSet: ["All set", "Every permission the app needs is granted."],
+    },
+    ar: {
+      notifications: ["الإشعارات", "ليصلك تنبيه عند دخول وقت كل صلاة."],
+      fullScreen: ["القفل بملء الشاشة", "ليغطي قفلُ الصلاة الشاشةَ عند دخول الوقت، حتى لو كنت تستخدم تطبيقًا آخر."],
+      dnd: ["عدم الإزعاج", "ليبقى الجوال صامتًا أثناء قفل الصلاة. ابحث عن «{app}» في القائمة وفعّله."],
+      overlay: ["الظهور فوق التطبيقات", "لإظهار تذكير الذكر فوق أي تطبيق مفتوح. ابحث عن «{app}» في القائمة واسمح له."],
+      battery: ["العمل في الخلفية", "حتى لا يُلغي موفّر البطارية منبّهات أوقات الصلاة."],
+      cont: "متابعة", later: "ليس الآن", ok: "حسنًا",
+      check: "فحص الأذونات", allSet: ["كل شيء جاهز", "جميع الأذونات التي يحتاجها التطبيق ممنوحة."],
+    },
+    ur: {
+      notifications: ["اطلاعات", "تاکہ ہر نماز کا وقت ہونے پر آپ کو یاد دہانی ملے۔"],
+      fullScreen: ["فل اسکرین لاک", "نماز کے وقت نماز لاک پوری اسکرین پر آ سکے، چاہے آپ کوئی اور ایپ استعمال کر رہے ہوں۔"],
+      dnd: ["ڈسٹرب نہ کریں", "نماز لاک کے دوران فون خاموش رہے۔ فہرست میں \"{app}\" تلاش کر کے آن کریں۔"],
+      overlay: ["دیگر ایپس کے اوپر دکھائیں", "ذکر کی یاد دہانی کسی بھی کھلی ایپ کے اوپر دکھانے کے لیے۔ فہرست میں \"{app}\" تلاش کر کے اجازت دیں۔"],
+      battery: ["پس منظر میں چلائیں", "تاکہ بیٹری سیور نماز کے الارم منسوخ نہ کرے۔"],
+      cont: "جاری رکھیں", later: "ابھی نہیں", ok: "ٹھیک ہے",
+      check: "اجازتیں چیک کریں", allSet: ["سب تیار ہے", "ایپ کو درکار تمام اجازتیں مل چکی ہیں۔"],
+    },
+    fr: {
+      notifications: ["Notifications", "Pour recevoir un rappel à l'heure de chaque prière."],
+      fullScreen: ["Verrouillage plein écran", "Permet au verrouillage de prière de couvrir l'écran à l'heure de la prière, même dans une autre application."],
+      dnd: ["Ne pas déranger", "Garde le téléphone silencieux pendant le verrouillage. Trouvez « {app} » dans la liste et activez-le."],
+      overlay: ["Superposition aux autres applis", "Nécessaire pour afficher le rappel de dhikr au-dessus de l'appli ouverte. Trouvez « {app} » dans la liste et autorisez-le."],
+      battery: ["Exécution en arrière-plan", "Empêche l'économiseur de batterie d'annuler les alarmes de prière."],
+      cont: "Continuer", later: "Plus tard", ok: "OK",
+      check: "Vérifier les autorisations", allSet: ["Tout est prêt", "Toutes les autorisations nécessaires sont accordées."],
+    },
+    es: {
+      notifications: ["Notificaciones", "Para recibir un aviso cuando llegue la hora de cada oración."],
+      fullScreen: ["Bloqueo a pantalla completa", "Permite que el bloqueo de oración cubra la pantalla a la hora de la oración, incluso en otra app."],
+      dnd: ["No molestar", "Mantiene el teléfono en silencio durante el bloqueo. Busca «{app}» en la lista y actívalo."],
+      overlay: ["Mostrar sobre otras apps", "Necesario para mostrar el recordatorio de dhikr sobre cualquier app abierta. Busca «{app}» en la lista y permítelo."],
+      battery: ["Ejecutar en segundo plano", "Evita que el ahorro de batería cancele las alarmas de oración."],
+      cont: "Continuar", later: "Ahora no", ok: "Aceptar",
+      check: "Revisar permisos", allSet: ["Todo listo", "La app tiene todos los permisos que necesita."],
+    },
+    hi: {
+      notifications: ["सूचनाएँ", "ताकि हर नमाज़ का समय होने पर आपको याद दिलाया जाए।"],
+      fullScreen: ["फ़ुल-स्क्रीन लॉक", "नमाज़ के समय नमाज़ लॉक पूरी स्क्रीन पर आ सके, भले ही आप कोई दूसरा ऐप चला रहे हों।"],
+      dnd: ["परेशान न करें", "नमाज़ लॉक के दौरान फ़ोन शांत रहे। सूची में \"{app}\" ढूँढकर चालू करें।"],
+      overlay: ["दूसरे ऐप्स के ऊपर दिखाएँ", "ज़िक्र की याद किसी भी खुले ऐप के ऊपर दिखाने के लिए। सूची में \"{app}\" ढूँढकर अनुमति दें।"],
+      battery: ["बैकग्राउंड में चलाएँ", "ताकि बैटरी सेवर नमाज़ के अलार्म रद्द न करे।"],
+      cont: "जारी रखें", later: "अभी नहीं", ok: "ठीक है",
+      check: "अनुमतियाँ जाँचें", allSet: ["सब तैयार है", "ऐप को ज़रूरी सभी अनुमतियाँ मिल गई हैं।"],
+    },
+    id: {
+      notifications: ["Notifikasi", "Agar Anda mendapat pengingat saat waktu setiap salat tiba."],
+      fullScreen: ["Kunci layar penuh", "Agar kunci salat menutupi layar saat waktu salat, meski Anda sedang memakai aplikasi lain."],
+      dnd: ["Jangan Ganggu", "Menjaga ponsel tetap senyap selama kunci salat. Cari \"{app}\" di daftar lalu aktifkan."],
+      overlay: ["Tampil di atas aplikasi lain", "Diperlukan untuk menampilkan pengingat zikir di atas aplikasi yang terbuka. Cari \"{app}\" di daftar lalu izinkan."],
+      battery: ["Berjalan di latar belakang", "Agar penghemat baterai tidak membatalkan alarm waktu salat."],
+      cont: "Lanjutkan", later: "Nanti", ok: "OK",
+      check: "Periksa izin", allSet: ["Semua siap", "Semua izin yang dibutuhkan aplikasi sudah diberikan."],
+    },
+    de: {
+      notifications: ["Benachrichtigungen", "Damit Sie zu jeder Gebetszeit eine Erinnerung erhalten."],
+      fullScreen: ["Vollbild-Sperre", "Damit die Gebetssperre zur Gebetszeit den Bildschirm abdeckt, auch in einer anderen App."],
+      dnd: ["Nicht stören", "Hält das Telefon während der Gebetssperre stumm. Suchen Sie „{app}“ in der Liste und schalten Sie es ein."],
+      overlay: ["Über anderen Apps einblenden", "Nötig, um die Dhikr-Erinnerung über jeder geöffneten App zu zeigen. Suchen Sie „{app}“ in der Liste und erlauben Sie es."],
+      battery: ["Im Hintergrund ausführen", "Verhindert, dass der Akkusparer die Gebetsalarme abbricht."],
+      cont: "Weiter", later: "Nicht jetzt", ok: "OK",
+      check: "Berechtigungen prüfen", allSet: ["Alles bereit", "Alle nötigen Berechtigungen sind erteilt."],
+    },
+  };
+
+  async function permissionState() {
+    let st = {};
+    try { if (Lock && Lock.permissionStatus) st = await Lock.permissionStatus(); } catch {}
     try {
-      const { dndAccessAsked } = await store.get("dndAccessAsked");
-      if (dndAccessAsked) return;
-      await store.set({ dndAccessAsked: true });
-      await Lock.ensureDndAccess();
+      const p = await LocalNotifications.checkPermissions();
+      st.notifications = p.display === "granted";
     } catch {}
+    return st;
+  }
+
+  // Resolves once the user is back from the system screen/dialog. If nothing
+  // took the app to the background (no grant screen on this OEM), resolve
+  // right away instead of waiting for a resume that never comes.
+  function waitForReturn() {
+    return new Promise((resolve) => {
+      let paused = false;
+      let handles = [];
+      const finish = () => {
+        clearTimeout(noScreen);
+        clearTimeout(cap);
+        handles.forEach((h) => h && h.remove && h.remove());
+        resolve();
+      };
+      const noScreen = setTimeout(() => { if (!paused) finish(); }, 2500);
+      const cap = setTimeout(finish, 10 * 60 * 1000);
+      Promise.all([
+        CapApp.addListener("pause", () => { paused = true; }),
+        CapApp.addListener("resume", finish),
+      ]).then((hs) => { handles = hs; }).catch(() => {});
+    });
+  }
+
+  // Minimal modal in the popup's own theme. Resolves true on the primary button.
+  function permSheet(lang, title, body, primary, secondary) {
+    return new Promise((resolve) => {
+      const L = tr(lang);
+      const wrap = document.createElement("div");
+      wrap.dir = L.dir || "ltr";
+      wrap.style.cssText =
+        "position:fixed;inset:0;z-index:2147483647;display:flex;align-items:flex-end;" +
+        "justify-content:center;padding:16px;background:oklch(0 0 0 / 0.6)";
+      const card = document.createElement("div");
+      card.style.cssText =
+        "width:100%;max-width:440px;box-sizing:border-box;padding:20px;border-radius:var(--radius,1rem);" +
+        "background:var(--card,#1c2b2b);color:var(--foreground,#fff);border:1px solid var(--border,#fff2);" +
+        "box-shadow:var(--shadow-card,none);font-family:inherit";
+      const h = document.createElement("h2");
+      h.textContent = title;
+      h.style.cssText = "margin:0 0 8px;font-size:1.15rem;color:var(--primary,#2dd4a7)";
+      const p = document.createElement("p");
+      p.textContent = body;
+      p.style.cssText = "margin:0 0 18px;line-height:1.6;color:var(--muted-foreground,#ccc)";
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;gap:10px;justify-content:flex-end";
+      const btn = (label, isPrimary, value) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = label;
+        b.style.cssText =
+          "padding:10px 18px;border-radius:calc(var(--radius,1rem) * .6);font:inherit;cursor:pointer;" +
+          (isPrimary
+            ? "border:0;background:var(--primary,#2dd4a7);color:var(--primary-foreground,#000);font-weight:600"
+            : "border:1px solid var(--border,#fff2);background:transparent;color:var(--foreground,#fff)");
+        b.addEventListener("click", () => { wrap.remove(); resolve(value); });
+        row.appendChild(b);
+      };
+      if (secondary) btn(secondary, false, false);
+      btn(primary, true, true);
+      card.append(h, p, row);
+      wrap.appendChild(card);
+      document.body.appendChild(wrap);
+    });
+  }
+
+  let permFlowActive = false;
+  // force: ignore the "already asked" flags (the Settings button).
+  async function runPermissionFlow({ force = false } = {}) {
+    if (permFlowActive || !Lock || !CapApp) return;
+    permFlowActive = true;
+    try {
+      const s = await readSettings([
+        "lang", "tabLockEnabled", "silentDuringPrayer", "tasbihEnabled",
+      ]);
+      const { location } = await store.get("location");
+      // First run: let the user pick a city before asking for anything.
+      if (!force && !(location && location.latitude != null)) return;
+      const lang = s.lang || "en";
+      const T = PERM_TEXT[lang] || PERM_TEXT.en;
+      const state = await permissionState();
+      const asked = await store.get(PERM_STEPS.map((p) => p[1]));
+      let prompted = false;
+      for (const [key, askedKey, relevant] of PERM_STEPS) {
+        if (state[key] !== false || !relevant(s)) continue;
+        if (!force && asked[askedKey]) continue;
+        prompted = true;
+        const [title, why] = T[key];
+        // {app}: the name the system lists show, which follows the PHONE's
+        // language (e.g. "مواقيت الصلاة"), not the app's own language setting.
+        const body = why.replace("{app}", state.appLabel || "Prayer Times");
+        const go = await permSheet(lang, title, body, T.cont, T.later);
+        await store.set({ [askedKey]: true });
+        if (!go) continue;
+        const back = key === "notifications" ? null : waitForReturn();
+        try { await PERM_REQUEST[key](); } catch {}
+        if (back) await back;
+      }
+      if (force && !prompted) await permSheet(lang, T.allSet[0], T.allSet[1], T.ok);
+      if (prompted) scheduleNotifications(); // notifications may have just been allowed
+    } catch {
+      /* best effort — re-tried on next launch / settings change */
+    } finally {
+      permFlowActive = false;
+    }
+  }
+
+  // Settings entry to re-run the flow, next to the "Test lock" button.
+  async function addPermissionsButton() {
+    const anchor = document.getElementById("test-lock-btn");
+    if (!anchor || document.getElementById("check-perms-btn")) return;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.id = "check-perms-btn";
+    b.className = anchor.className;
+    b.style.marginTop = "8px";
+    const label = async () => {
+      const { lang } = await readSettings(["lang"]);
+      b.textContent = (PERM_TEXT[lang] || PERM_TEXT.en).check;
+    };
+    await label();
+    b.addEventListener("click", () => runPermissionFlow({ force: true }));
+    anchor.insertAdjacentElement("afterend", b);
+    store.onChange((changes) => { if ("lang" in changes) label(); });
   }
 
   async function startLockForPrayer(prayer) {
@@ -320,10 +521,11 @@
     scheduleNotifications();
     schedulePrayerLockAlarms();
     syncDhikrSchedule();
-    ensureBatteryExemption();
+    runPermissionFlow();
   }
 
   window.addEventListener("load", scheduleAll);
+  window.addEventListener("load", addPermissionsButton);
   if (CapApp && CapApp.addListener) CapApp.addListener("resume", scheduleAll);
   // Android hardware back: from Settings go back to the main view (popup.js
   // hook); already on the main view -> close the app. Registering this listener
@@ -337,11 +539,14 @@
     });
   }
   // Re-arm the alarms as soon as their settings change.
+  const PERM_TRIGGER_KEYS = ["location", "tabLockEnabled", "silentDuringPrayer", "tasbihEnabled"];
   const LOCK_KEYS = ["location", "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer", "tabLockEnabled"];
   store.onChange((changes) => {
     const keys = Object.keys(changes);
     if (keys.some((k) => k.startsWith("tasbih"))) syncDhikrSchedule();
     if (keys.some((k) => LOCK_KEYS.includes(k))) schedulePrayerLockAlarms();
+    // A feature just switched on (or a city was picked) may need a grant.
+    if (keys.some((k) => PERM_TRIGGER_KEYS.includes(k))) runPermissionFlow();
   });
   if (LocalNotifications && LocalNotifications.addListener) {
     LocalNotifications.addListener("localNotificationActionPerformed", (e) => {

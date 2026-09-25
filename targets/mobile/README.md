@@ -8,7 +8,7 @@ native bridge is `web/adapter.js` (`Platform` over Capacitor plugins +
 ## First-time setup / build
 
 ```
-# from targets/mobile  (Android Studio + JDK 17 + SDK already present)
+# from targets/mobile  (Android Studio + JDK 21 + SDK already present)
 npm init -y
 npm i @capacitor/core @capacitor/cli @capacitor/android \
       @capacitor/preferences @capacitor/local-notifications @capacitor/geolocation @capacitor/app
@@ -20,6 +20,9 @@ npx cap open android        # build/run from Android Studio
 ```
 
 `ANDROID_HOME` is currently unset — point it at `~/AppData/Local/Android/Sdk`.
+The Capacitor plugins compile with a **JDK 21** toolchain; the default JDK 17
+fails with `Cannot find a Java installation … languageVersion=21`, so set
+`JAVA_HOME` to a JDK 21 (e.g. `C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot`).
 Build from **PowerShell**, not Git Bash (Gradle workers can't open loopback
 sockets there):
 
@@ -27,6 +30,7 @@ sockets there):
 # debug
 node ../../tools/sync-core.mjs mobile; npx cap copy android
 cd android; $env:ANDROID_HOME="$env:USERPROFILE\AppData\Local\Android\Sdk"
+$env:JAVA_HOME="C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot"
 .\gradlew.bat assembleDebug
 
 # release (signed): APK for sideloading + AAB for Google Play
@@ -44,15 +48,17 @@ this exact keystore. Version lives in `app/build.gradle`
 ## Native lock plugin (`PrayerLock`, Java — implemented)
 
 The web adapter calls `Capacitor.Plugins.PrayerLock.{ start, clear, showDhikr,
-scheduleDhikr, ensureOverlayPermission, ensureBatteryExemption }`. Dhikr is
+scheduleDhikr, ensureOverlayPermission, ensureBatteryExemption,
+ensureFullScreenIntentPermission }`. Dhikr is
 deliberately NOT a notification (no sound, no shade entry): `DhikrScheduler`
 arms one-shot exact `AlarmManager` alarms from the stored settings
 (`CapacitorStorage` prefs, so no separate sync channel), each fire shows the
-silent click-through `DhikrOverlay` (`TYPE_APPLICATION_OVERLAY` WebView loading
+silent `DhikrOverlay` balloon — tapping it dismisses it; touches outside the
+balloon pass through to the app below (`TYPE_APPLICATION_OVERLAY` WebView loading
 `dhikr.html` → shared `overlay-tasbih.js`), then re-arms (random mode needs a
 fresh gap each time). Skips quietly when the screen is off; `BootReceiver`
 re-arms after reboot; requires the "display over other apps" grant
-(`ensureOverlayPermission`, asked once). The plugin lives under
+(`ensureOverlayPermission`, asked via the permission flow — see below). The plugin lives under
 `android/app/src/main/java/com/mphpmaster/prayer/` and provides:
 
 - **Lock**: high-importance notification with `setFullScreenIntent(...)`
@@ -60,7 +66,7 @@ re-arms after reboot; requires the "display over other apps" grant
   (`FLAG_KEEP_SCREEN_ON`, `setShowWhenLocked`) that loads `overlay-lock.js`;
   a foreground `Service` keeps it alive; a `TYPE_APPLICATION_OVERLAY`
   (`SYSTEM_ALERT_WINDOW`) re-asserts if the user leaves.
-- **Silent/DND**: `NotificationManager.setInterruptionFilter(INTERRUPTION_FILTER_NONE)`
+- **Silent/DND**: `NotificationManager.setInterruptionFilter(INTERRUPTION_FILTER_ALARMS)` (alarms-only: silences calls, ringtone and notifications but keeps media, so the lock's own adhan/chime still plays — `NONE` muted it)
   (`ACCESS_NOTIFICATION_POLICY`, user-granted).
 - **Camera off (optional)**: `DeviceAdminReceiver` + `DevicePolicyManager.setCameraDisabled(true)`.
 
@@ -73,6 +79,22 @@ battery-optimization exemption (Doze).
 `AndroidManifest.xml` permissions: `SYSTEM_ALERT_WINDOW`, `FOREGROUND_SERVICE`,
 `USE_FULL_SCREEN_INTENT`, `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM` /
 `USE_EXACT_ALARM`, `ACCESS_NOTIFICATION_POLICY`, `BIND_DEVICE_ADMIN`.
+
+### Permission flow
+
+`runPermissionFlow()` in `web/adapter.js` asks for the grants **one at a time**:
+notifications → full-screen intent → Do Not Disturb → display over other apps
+→ battery exemption, skipping any already granted (`PrayerLock.permissionStatus`,
+which never prompts) or irrelevant to the current settings (e.g. overlay only
+when dhikr is on). Each step first shows a short in-app sheet explaining why;
+the system screen opens only on "Continue", and the next step waits until the
+user is back. It waits for a city to be chosen, and re-runs when a relevant
+setting turns on. Each step is asked once (`*Asked` flags); **Settings → Check
+permissions** re-runs it for anything still missing, e.g. after an accidental
+Deny. Android 11+ ignores the `package:` URI for the DND and overlay screens and
+shows the full app list, which is why those sheets tell the user to find the
+app in it, by the label the system actually shows (`permissionStatus().appLabel`,
+which follows the phone's language: "مواقيت الصلاة" on an Arabic phone).
 
 ## Status
 
@@ -97,6 +119,16 @@ battery-optimization exemption (Doze).
   — required on vivo/oppo/xiaomi or scheduled alarms silently die. Verified:
   notification fires with the app process killed; dhikr overlay draws for its
   full 11 s window on the alarm cadence.
+- ✅ **Lock actually surfaces when the app is backgrounded/killed**:
+  `LockForegroundService`'s notification uses `setFullScreenIntent(...)` on a
+  HIGH-importance channel (`prayer-lock-alarm`) targeting `LockActivity`
+  directly — the OS-sanctioned way to launch a full-screen UI from the
+  background (same mechanism as alarm-clock/calling apps), instead of relying
+  on `LockLauncher`'s plain `startActivity()`, which several OEMs (Android 10+)
+  silently block even with `SYSTEM_ALERT_WINDOW` granted. On Android 14+ this
+  also needs a one-time user grant (`PrayerLock.ensureFullScreenIntentPermission`,
+  `ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT`) — asked via the permission flow
+  (see Permission flow above). The notification is also tappable as a manual fallback.
 - ✅ Lock teardown is symmetric: manual unlock (X), countdown expiry
   (`__prayerLockOnExpire`), and a native fallback timer in `LockActivity` all
   stop the foreground service, restore DND (`Dnd.java`), and finish the
