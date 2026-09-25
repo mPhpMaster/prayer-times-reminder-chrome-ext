@@ -329,6 +329,9 @@
   // during the lock needs notification-policy access — ask once.
   async function schedulePrayerLockAlarms() {
     if (!Lock || !Lock.schedulePrayerLocks) return;
+    // A page without the planners must not send an empty schedule — that
+    // would disarm every prayer lock (it did, when game.html became home).
+    if (typeof planPrayerNotifications !== "function" || typeof buildLockConfig !== "function") return;
     try {
       const s = await readSettings([
         "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer", "tabLockEnabled",
@@ -378,11 +381,55 @@
     enforce.start(buildLockConfig(s, { prayerName }));
   }
 
+  // --- game alerts: "tasks open" / "30 min left" per prayer window ------------
+  // Planned by notify-plan.js (planGameAlerts). "closing" is skipped for a
+  // window the player already finished (gameState), and the whole set is
+  // re-planned after each finished window via Platform.gameAlerts.refresh().
+  // Setting: store key "gameAlerts" (default on).
+  const PRAYER_AR = { Fajr: "الفجر", Dhuhr: "الظهر", Asr: "العصر", Maghrib: "المغرب", Isha: "العشاء" };
+  const NEXT_PRAYER = { Fajr: "Dhuhr", Dhuhr: "Asr", Asr: "Maghrib", Maghrib: "Isha", Isha: "Fajr" };
+
+  async function scheduleGameAlerts() {
+    if (!LocalNotifications || typeof planGameAlerts !== "function") return;
+    try {
+      const pending = await LocalNotifications.getPending();
+      const old = (pending.notifications || [])
+        .filter((n) => Number(n.id) >= GAME_ALERT_ID_BASE && Number(n.id) < LEGACY_DHIKR_ID_BASE)
+        .map((n) => ({ id: n.id }));
+      if (old.length) await LocalNotifications.cancel({ notifications: old });
+
+      const s = await store.get(["location", "gameAlerts", "gameState"]);
+      if (s.gameAlerts === false || !s.location || s.location.latitude == null) return;
+      const windows = (s.gameState && s.gameState.windows) || {};
+      const finished = (key) => {
+        const w = windows[key];
+        return !!(w && w.complete); // set by game.js once every task is done
+      };
+      const notifications = planGameAlerts(PrayerEngine, s.location, new Date(), SCHED_DAYS, SCHED_PRAYERS)
+        .filter((a) => a.kind === "open" || !finished(a.key))
+        .map((a) => ({
+          id: a.id,
+          title: a.kind === "open" ? `فُتحت مهمات صلاة ${PRAYER_AR[a.prayer]}` : `بقيت نصف ساعة على صلاة ${PRAYER_AR[NEXT_PRAYER[a.prayer]]}`,
+          body: a.kind === "open"
+            ? "ابدأ الآن لتأخذ النقاط كاملة."
+            : `أكمل مهمات صلاة ${PRAYER_AR[a.prayer]} قبل أن تفوتك.`,
+          schedule: { at: new Date(a.when), allowWhileIdle: true },
+          channelId: PRAYER_CHANNEL,
+          extra: { game: a.kind, key: a.key },
+        }));
+      if (notifications.length) await LocalNotifications.schedule({ notifications });
+    } catch {
+      /* best effort — re-tried on next resume */
+    }
+  }
+  globalThis.__PTPlatform.gameAlerts = { refresh: scheduleGameAlerts };
+
   async function scheduleAll() {
     await ensureChannels();
     scheduleNotifications();
     schedulePrayerLockAlarms();
     syncDhikrSchedule();
+    scheduleGameAlerts();
     ensureBatteryExemption();
   }
 
@@ -409,6 +456,7 @@
   if (LocalNotifications && LocalNotifications.addListener) {
     LocalNotifications.addListener("localNotificationActionPerformed", (e) => {
       const extra = e && e.notification && e.notification.extra;
+      if (extra && extra.game) return; // game alert: opening the app is enough
       startLockForPrayer(extra && extra.prayer);
     });
   }

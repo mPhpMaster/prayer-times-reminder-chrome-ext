@@ -295,6 +295,13 @@ async function finishReading() {
   else markTaskDone(state, current.key, task.id, points, now);
   await save();
   syncNow();
+  // A finished window no longer needs its "30 min left" alert.
+  const e = entry();
+  if (!isGift && !e.complete && allTasksDone(e, tasks.map((t) => t.id))) {
+    e.complete = true;
+    await save();
+    if (Platform.gameAlerts) Platform.gameAlerts.refresh();
+  }
   await closeReader("done");
   showNotice(isGift ? `🎁 تقبّل الله، +${points} نقطة` : `✓ ${task.title}: +${points} نقطة`);
 }
@@ -402,6 +409,7 @@ function personItem(u, onClick) {
 }
 
 async function renderMe() {
+  $("alerts").checked = (await Platform.store.get("gameAlerts")).gameAlerts !== false;
   $("account-form").hidden = !!account;
   $("account").hidden = !account;
   if (!apiUrl) {
@@ -506,6 +514,10 @@ for (const b of document.querySelectorAll(".seg button")) {
   });
 }
 $("register").addEventListener("click", register);
+$("alerts").addEventListener("change", async (e) => {
+  await Platform.store.set({ gameAlerts: e.target.checked });
+  if (Platform.gameAlerts) Platform.gameAlerts.refresh();
+});
 $("search").addEventListener("input", onSearch);
 $("hide-progress").addEventListener("change", async (e) => {
   try {

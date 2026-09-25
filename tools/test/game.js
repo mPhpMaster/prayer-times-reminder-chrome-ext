@@ -18,6 +18,7 @@ load("game-windows.js");
 load("game-state.js");
 load("game-tasks.js");
 load("game-sync.js");
+load("notify-plan.js");
 vm.runInContext(
   "this.__m = { normalizeArabic, tokenize, matchRecitation, matchTask, wordSimilarity, chunkText };" +
     "this.__s = { taskWindow, pointsFactor, taskPoints, splitWindowPoints };" +
@@ -25,7 +26,8 @@ vm.runInContext(
     "this.__w = { currentWindow, GAME_PRAYERS };" +
     "this.__st = { emptyGameState, markTaskStarted, markTaskDone, markGiftDone, windowPoints, pointsWithPrefix, allTasksDone, pruneGameState, normalizeGameState };" +
     "this.__cat = { GAME_TASKS, WINDOW_TASKS, tasksForWindow, GIFTS, giftForWindow };" +
-    "this.__sync = { pendingCompletions, markSynced };",
+    "this.__sync = { pendingCompletions, markSynced };" +
+    "this.__alerts = { planGameAlerts, GAME_ALERT_ID_BASE };",
   ctx
 );
 const { normalizeArabic, tokenize, matchRecitation, matchTask, chunkText } = ctx.__m;
@@ -155,6 +157,31 @@ eq("22:00 is Isha, closing at tomorrow's Fajr", [w2.prayer, w2.nextPrayerAt], ["
 const w3 = currentWindow(stubEngine, {}, at(26, 2, 0));
 eq("02:00 is still yesterday's Isha window", [w3.prayer, w3.key], ["Isha", "2026-09-25:Isha"]);
 eq("04:30 exactly starts Fajr", currentWindow(stubEngine, {}, at(26, 4, 30)).key, "2026-09-26:Fajr");
+
+// ---- notify-plan: game alerts ---------------------------------------------------------
+const { planGameAlerts, GAME_ALERT_ID_BASE } = ctx.__alerts;
+const alerts = planGameAlerts(stubEngine, {}, at(25, 13, 0), 1, ctx.__w.GAME_PRAYERS);
+const fmt = (ms) => { const d = new Date(ms); return `${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
+eq("alerts after 13:00: past ones dropped, Isha closes before next Fajr",
+  alerts.map((a) => `${a.key} ${a.kind} ${fmt(a.when)}`),
+  [
+    "2026-09-25:Dhuhr closing 25 14:40",
+    "2026-09-25:Asr open 25 15:40",
+    "2026-09-25:Asr closing 25 17:20",
+    "2026-09-25:Maghrib open 25 18:20",
+    "2026-09-25:Maghrib closing 25 18:40",
+    "2026-09-25:Isha open 25 19:40",
+    "2026-09-25:Isha closing 26 04:00",
+  ]);
+const week = planGameAlerts(stubEngine, {}, at(25, 0, 0), 7, ctx.__w.GAME_PRAYERS);
+ok("alert ids unique and inside [10M, 20M)",
+  new Set(week.map((a) => a.id)).size === week.length && week.every((a) => a.id >= GAME_ALERT_ID_BASE && a.id < 20000000));
+eq("a week has 2 alerts per window, plus last night's closing", week.length, 7 * 5 * 2 + 1);
+const yesterdayPlan = planGameAlerts(stubEngine, {}, at(24, 22, 0), 1, ctx.__w.GAME_PRAYERS);
+eq("re-planning after midnight reuses yesterday's id for that alert",
+  week[0].id, yesterdayPlan.find((a) => a.key === "2026-09-24:Isha" && a.kind === "closing").id);
+eq("after midnight, last night's Isha still gets its closing alert",
+  `${week[0].key} ${week[0].kind} ${fmt(week[0].when)}`, "2026-09-24:Isha closing 25 04:00");
 
 // ---- game-state ---------------------------------------------------------------------
 const S = ctx.__st;

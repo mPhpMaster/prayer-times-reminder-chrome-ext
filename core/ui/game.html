@@ -76,6 +76,7 @@
 
         <!-- Account, follows, hide progress -->
         <section id="me-view" hidden>
+            <label class="row"><input type="checkbox" id="alerts" /> <span>نبّهني عند فتح المهمات، وقبل الصلاة التالية بنصف ساعة إن لم أكملها</span></label>
             <div id="account-form">
                 <p>اختر اسم مستخدم لتظهر في لوحة المتصدرين ويتابعك أصدقاؤك. حروف عربية أو إنجليزية وأرقام، من 3 إلى 20.</p>
                 <input id="username" maxlength="20" autocomplete="off" placeholder="اسم المستخدم" />
@@ -109,6 +110,10 @@
     <script src="vendor/adhan.js"></script>
     <script src="vendor/tz-lookup.js"></script>
     <script src="prayer-engine.js"></script>
+    <!-- The adapter re-plans prayer notifications, locks and game alerts on
+         load/resume; this page is the Android home, so it needs the planners. -->
+    <script src="lock-config.js"></script>
+    <script src="notify-plan.js"></script>
     <script src="recitation-match.js"></script>
     <script src="game-score.js"></script>
     <script src="game-windows.js"></script>
