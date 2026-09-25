@@ -16,8 +16,8 @@ android {
         applicationId "com.mphpmaster.prayer"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 219
-        versionName "2.1.6"
+        versionCode 221
+        versionName "2.2.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // sherpa-onnx ships native libs for 4 ABIs; x86/32-bit emulators aren't targets.
         ndk { abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }
@@ -44,6 +44,16 @@ android {
             if (keystoreProps['storeFile']) {
                 signingConfig signingConfigs.release
             }
+        }
+        debug {
+            // Distinct app id so a debug sideload installs next to the real
+            // (release-signed) app instead of conflicting with it — Android
+            // refuses to replace an app with one signed by a different key.
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            // Distinct label too, so it's visually distinguishable from the
+            // real app on the home screen (same icon/name otherwise).
+            resValue "string", "app_name", "Prayer Times (Debug)"
         }
     }
 }
