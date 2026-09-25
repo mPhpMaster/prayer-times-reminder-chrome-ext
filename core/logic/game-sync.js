@@ -12,7 +12,7 @@
 
 const GAME_ACCOUNT_KEY = "gameAccount"; // { username, token }
 const GAME_API_KEY = "gameApiUrl"; // override of GAME_API_DEFAULT (dev / self-hosting)
-const GAME_API_DEFAULT = ""; // set when the API is deployed; empty = local-only game
+const GAME_API_DEFAULT = "https://prayer-times.sarhsoft.com"; // Laravel backend (backend/); override with gameApiUrl
 
 class GameApiError extends Error {
   constructor(status, code) {

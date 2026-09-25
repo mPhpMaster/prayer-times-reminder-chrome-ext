@@ -42,3 +42,18 @@ php artisan test                   # SQLite in memory
 Errors are `{"error": "code"}` with a matching HTTP status. The app's client
 is `core/logic/game-sync.js`. Location is never sent — prayer windows are
 computed on the device.
+
+## Production (prayer-times.sarhsoft.com)
+
+- App code: `/home/sarhsoft/laravel/prayer-times` (outside the web root, so
+  `.env`, `storage/` and the SQLite file are never served).
+- Web root `/home/sarhsoft/public_html/prayer-times.sarhsoft.com`: only a
+  copy of `public/` whose `index.php` requires the app by absolute path, and
+  `.htaccess` (cPanel `ea-php83` handler + Laravel rewrites). The vhost is set
+  to PHP 8.3 (`whmapi1 php_set_vhost_versions`).
+- Database: SQLite at `database/database.sqlite` for now; switch by editing
+  `.env` (see the table above), then `php artisan migrate --force` and
+  `php artisan config:cache`.
+- Redeploy: upload the changed files (WinSCP), then as user `sarhsoft` with
+  `/opt/cpanel/ea-php83/root/usr/bin/php`: `composer install --no-dev -o`,
+  `artisan migrate --force`, `artisan config:cache`, `artisan route:cache`.
