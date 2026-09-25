@@ -25,6 +25,13 @@
         <p class="status" id="status">جارٍ فحص التعرف على الصوت…</p>
 
         <label class="toggle">
+            <span>المحرك:</span>
+            <select id="engine">
+                <option value="whisper">نموذج التلاوة داخل التطبيق</option>
+                <option value="default">خدمة التعرف في النظام</option>
+            </select>
+        </label>
+        <label class="toggle" id="offline-row" hidden>
             <input type="checkbox" id="prefer-offline" checked />
             <span>فضّل التعرف داخل الجهاز (دون إنترنت)</span>
         </label>

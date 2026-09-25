@@ -19,6 +19,8 @@ android {
         versionCode 219
         versionName "2.1.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // sherpa-onnx ships native libs for 4 ABIs; x86/32-bit emulators aren't targets.
+        ndk { abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
@@ -54,6 +56,9 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    // On-device recitation recognizer (WhisperEngine). The AAR is not committed
+    // (*.aar is gitignored, ~50 MB): fetch it with `node tools/fetch-asr.mjs`.
+    implementation files('libs/sherpa-onnx-1.13.8.aar')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"

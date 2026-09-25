@@ -38,6 +38,8 @@ button { font: inherit; cursor: pointer; }
 .status { color: var(--muted-foreground); font-size: 13px; line-height: 1.6; margin: 0; }
 .status.bad { color: var(--destructive); }
 
+.toggle[hidden] { display: none; }
+.toggle select { font: inherit; background: var(--secondary); color: var(--foreground); border: 1px solid var(--border); border-radius: 8px; padding: 4px 6px; }
 .toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted-foreground); }
 
 .tasks { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -84,6 +86,8 @@ button { font: inherit; cursor: pointer; }
   font-size: 17px;
   font-weight: 700;
 }
+.mic.loading { opacity: 0.7; }
+.mic.hearing { box-shadow: 0 0 0 6px oklch(0.78 0.14 170 / 0.35); }
 .mic.on { background: var(--destructive); color: #fff; animation: pulse 1.4s infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 10px oklch(0.65 0.22 25 / 0.15); } }
 

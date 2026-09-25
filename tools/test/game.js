@@ -51,6 +51,11 @@ eq("partial repetition not counted", matchRecitation("سبحان الله", sw.t
 ok("partial repetition reports progress", matchRecitation("سبحان الله", sw.text).progress > 0.5);
 eq("recognizer spelling drift still matches",
   matchRecitation("سبحان اللة وبحمدة", sw.text).count, 1);
+// Real model output (tarteel whisper on synthetic speech): article swallowed,
+// vocalized, alef dropped.
+eq("whisper output: swallowed article still matches",
+  matchRecitation("سُبْحَنَ لَهِ وَبِحَمْدِي", sw.text).count, 1);
+eq("article rule does not make لا match الا", matchRecitation("لا", "الا").count, 0);
 eq("unrelated speech counts nothing", matchRecitation("السلام عليكم كيف الحال", sw.text).count, 0);
 
 // Recognizer drops the last word of a repetition, then the next one starts.

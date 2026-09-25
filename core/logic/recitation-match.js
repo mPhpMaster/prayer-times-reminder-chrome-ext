@@ -12,9 +12,9 @@
 
 // Harakat, tanween, shadda, sukun, superscript alef, small high/low marks and
 // Quranic pause signs — everything that isn't a base letter.
-const RM_MARKS = /[ؐ-ًؚ-ٰٟۖ-ۭ࣓-ࣿ]/g;
-const RM_TATWEEL = /ـ/g;
-const NOT_LETTER = /[^ء-ي\s]/g;
+const RM_MARKS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u08D3-\u08FF]/g;
+const RM_TATWEEL = /\u0640/g;
+const NOT_LETTER = /[^\u0621-\u064A\s]/g;
 
 function normalizeArabic(text) {
   return String(text || "")
@@ -66,10 +66,21 @@ function wordSimilarity(a, b) {
   return Math.max(ratio(a, b), ratio(dropAlef(a), dropAlef(b)));
 }
 
+// The definite article is often swallowed in connected recitation
+// ("سبحان اللهِ" is heard as "سبحان لَهِ"), so words are also compared with a
+// leading ال / وال / فال / بال reduced to its bare stem.
+const dropArticle = (w) => w.replace(/^([وفب]?)ال(?=..)/, "$1");
+
 // Short words ("لا", "له", "ما") carry little signal — require an exact hit.
+function shortMatch(heard, want) {
+  return heard === want || dropAlef(heard) === dropAlef(want);
+}
+
 function wordsMatch(heard, want, minSim) {
-  if (want.length <= 2 || heard.length <= 2) return heard === want || dropAlef(heard) === dropAlef(want);
-  return wordSimilarity(heard, want) >= minSim;
+  const h2 = dropArticle(heard);
+  const w2 = dropArticle(want);
+  if (want.length <= 2 || heard.length <= 2) return shortMatch(heard, want) || shortMatch(h2, w2);
+  return wordSimilarity(heard, want) >= minSim || (h2 !== heard || w2 !== want ? wordSimilarity(h2, w2) >= minSim : false);
 }
 
 // opts:

@@ -53,6 +53,8 @@ public class SpeechPlugin extends Plugin {
     private String lang = "ar-SA";
     private boolean preferOffline = true;
     private boolean useOnDevice = false;
+    private boolean useWhisper = false;
+    private WhisperEngine whisper;
 
     @PluginMethod
     public void isAvailable(PluginCall call) {
@@ -64,6 +66,8 @@ public class SpeechPlugin extends Plugin {
         }
         ret.put("onDevice", onDevice);
         ret.put("permission", getPermissionState("microphone") == PermissionState.GRANTED);
+        ret.put("whisper", WhisperEngine.modelsPresent(getContext()));
+        ret.put("whisperDir", WhisperEngine.modelDir(getContext()).getAbsolutePath());
         call.resolve(ret);
     }
 
@@ -152,7 +156,10 @@ public class SpeechPlugin extends Plugin {
         lang = call.getString("lang", "ar-SA");
         preferOffline = call.getBoolean("preferOffline", true);
         // "onDevice" = the dedicated on-device service (API 31+), else the user's default recognizer.
-        useOnDevice = "onDevice".equals(call.getString("engine", "default"))
+        String engine = call.getString("engine", "default");
+        // "whisper" = bundled Quran-tuned model (WhisperEngine), works without a system recognizer.
+        useWhisper = "whisper".equals(engine);
+        useOnDevice = "onDevice".equals(engine)
             && Build.VERSION.SDK_INT >= 31
             && SpeechRecognizer.isOnDeviceRecognitionAvailable(getContext());
         if (getPermissionState("microphone") != PermissionState.GRANTED) {
@@ -172,6 +179,10 @@ public class SpeechPlugin extends Plugin {
     }
 
     private void begin(PluginCall call) {
+        if (useWhisper) {
+            beginWhisper(call);
+            return;
+        }
         if (!SpeechRecognizer.isRecognitionAvailable(getContext())) {
             call.reject("recognizer-unavailable");
             return;
@@ -188,8 +199,44 @@ public class SpeechPlugin extends Plugin {
         });
     }
 
+    private void beginWhisper(PluginCall call) {
+        if (!WhisperEngine.modelsPresent(getContext())) {
+            call.reject("whisper-model-missing");
+            return;
+        }
+        if (whisper == null) whisper = new WhisperEngine(getContext());
+        whisper.start(new WhisperEngine.Listener() {
+            @Override public void onReady() { emitState(true); }
+            @Override public void onSpeech(boolean speaking) {
+                JSObject o = new JSObject();
+                o.put("speaking", speaking);
+                notifyListeners("speech", o);
+            }
+            @Override public void onText(String text) {
+                JSObject o = new JSObject();
+                o.put("text", text);
+                notifyListeners("final", o);
+            }
+            @Override public void onError(String message) {
+                JSObject e = new JSObject();
+                e.put("code", -2);
+                e.put("message", message);
+                notifyListeners("error", e);
+                emitState(false);
+            }
+        });
+        call.resolve(); // "state" {listening:true} follows once the model is loaded
+    }
+
     @PluginMethod
     public void stop(PluginCall call) {
+        if (whisper != null && whisper.isRunning()) {
+            whisper.stop(() -> {
+                emitState(false);
+                call.resolve();
+            });
+            return;
+        }
         continuous = false;
         main.post(() -> {
             if (recognizer != null) recognizer.stopListening();
@@ -311,6 +358,7 @@ public class SpeechPlugin extends Plugin {
     @Override
     protected void handleOnPause() {
         // Never keep the mic open behind the user's back.
+        if (whisper != null && whisper.isRunning()) whisper.stop(() -> {});
         continuous = false;
         main.post(this::destroyRecognizer);
         emitState(false);

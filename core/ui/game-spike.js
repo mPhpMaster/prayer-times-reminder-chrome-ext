@@ -28,18 +28,29 @@ async function checkRecognizer() {
   }
   try {
     const s = await Platform.speech.status();
-    if (!s.available) {
-      setStatus("لا توجد خدمة تعرف على الصوت في هذا الجهاز (ثبّت تطبيق Google أو خدمة مشابهة).", true);
+    if (!s.available && !s.whisper) {
+      setStatus("لا يوجد نموذج تلاوة ولا خدمة تعرف على الصوت في هذا الجهاز.", true);
       return;
     }
+    if (!s.whisper) {
+      $("engine").value = "default";
+      $("engine").querySelector('[value="whisper"]').disabled = true;
+    }
+    syncEngineUi();
     setStatus(
-      "خدمة التعرف موجودة. " +
+      (s.whisper ? "نموذج التلاوة موجود على الجهاز. " : "نموذج التلاوة غير موجود على الجهاز. ") +
+        "خدمة النظام موجودة. " +
         (s.onDevice ? "التعرف داخل الجهاز متاح. " : "التعرف داخل الجهاز غير متاح، سيُستخدم الإنترنت. ") +
         (s.permission ? "" : "سيُطلب إذن الميكروفون عند أول قراءة.")
     );
   } catch (e) {
     setStatus("تعذّر فحص خدمة التعرف: " + e, true);
   }
+}
+
+const engine = () => $("engine").value;
+function syncEngineUi() {
+  $("offline-row").hidden = engine() === "whisper";
 }
 
 function renderTaskList() {
@@ -130,10 +141,11 @@ async function startListening() {
   partial = "";
   $("done").hidden = true;
   update();
-  attempt = { task: current.id, startedAt: Date.now(), firstWordAt: 0, restarts: 0, errors: [] };
+  attempt = { task: current.id, startedAt: Date.now(), firstWordAt: 0, readyMs: 0, restarts: 0, errors: [] };
   const res = await Platform.speech
     .start({
       lang: "ar-SA",
+      engine: engine(),
       preferOffline: $("prefer-offline").checked,
       onPartial: (text) => {
         partial = text;
@@ -146,9 +158,14 @@ async function startListening() {
         update();
       },
       onState: (on) => {
-        // The mic closes briefly between utterances; only reflect a real stop.
+        // Whisper reports ready once the model is loaded; the system
+        // recognizer closes the mic briefly between utterances.
+        if (on && $("mic").classList.contains("loading")) setStatus("أسمعك، ابدأ القراءة.");
+        if (on) $("mic").classList.remove("loading");
+        if (on && attempt && !attempt.readyMs) attempt.readyMs = Date.now() - attempt.startedAt;
         if (!on && !listening) setMic(false);
       },
+      onSpeech: (speaking) => $("mic").classList.toggle("hearing", speaking),
       onError: (e) => {
         if (attempt) attempt.errors.push(e.message || e.code);
         setStatus("توقف التعرف: " + (e.message || e.code), true);
@@ -166,6 +183,10 @@ async function startListening() {
   }
   listening = true;
   setMic(true);
+  if (engine() === "whisper") {
+    $("mic").classList.add("loading");
+    setStatus("جارٍ تحميل نموذج التلاوة…");
+  }
 }
 
 async function stopListening(reason = "user") {
@@ -180,6 +201,7 @@ async function stopListening(reason = "user") {
 
 function setMic(on) {
   $("mic").classList.toggle("on", on);
+  if (!on) $("mic").classList.remove("loading", "hearing");
   $("mic").textContent = on ? "⏹ إيقاف" : "🎙️ ابدأ القراءة";
 }
 
@@ -193,7 +215,9 @@ async function saveAttempt(r, reason) {
     at: new Date(attempt.startedAt).toISOString(),
     task: attempt.task,
     reason,
+    engine: engine(),
     offline: $("prefer-offline").checked,
+    readyMs: attempt.readyMs || null,
     count: r.count,
     repeat: current.repeat,
     done: r.done,
@@ -212,6 +236,10 @@ function renderLog(log) {
   $("log").textContent = log.length ? JSON.stringify(log.slice().reverse(), null, 1) : "لا محاولات بعد.";
 }
 
+$("engine").addEventListener("change", async () => {
+  await stopListening("engine");
+  syncEngineUi();
+});
 $("mic").addEventListener("click", () => (listening ? stopListening("user") : startListening()));
 $("back").addEventListener("click", async () => {
   await stopListening("back");
