@@ -156,19 +156,17 @@
 
 ## البنية التقنية
 
-### الخادم: Supabase (مقترح)
+### الباك اند: Laravel
 
-الأسرع للبدء، لأن فيه تسجيل دخول Google والحسابات المجهولة وقاعدة Postgres وسياسات صلاحيات على مستوى الصف (RLS). البديل Neon مع خادم خاص، لكنه يحتاج بناء تسجيل الدخول يدويًا.
+**التطبيق لا يتصل بقاعدة البيانات أبدًا.** يتصل بواجهة Laravel في `backend/` عبر `/v1/*` بمفتاح دخول، والباك اند وحده يعرف القاعدة. القاعدة تُختار من ملف `.env` ويمكن تغييرها دون لمس التطبيق: MySQL، أو PostgreSQL (Neon أو Supabase)، أو SQLite للتطوير. تسجيل الدخول خاص بنا (اسم مستخدم ومفتاح يُحفظ منه SHA-256 فقط)، لا تسجيل دخول المزوّد.
 
 ### نموذج البيانات المبدئي
 
 ```
-profiles        (id, username, display_name, hide_progress, created_at)
-follows         (follower_id, followee_id, created_at)
-task_catalog    (id, version, window, kind, text_ar, repeat, source, review_status)
-completions     (user_id, window_date, window, task_id, completed_at)
-rewards         (user_id, window_date, window, reward_id, claimed_at)
-leaderboard_monthly (view محسوب من completions مع استبعاد hide_progress)
+game_users      (id, username, username_lower, display_name, hide_progress, token_hash)
+game_follows    (follower_id, followee_id, created_at)
+game_completions (user_id, window_key, item_id, kind task|gift, points, started_at, done_at)
+(لوحة المتصدرين الشهرية تُحسب من game_completions مع استبعاد hide_progress)
 ```
 
 - **الموقع لا يُرفع إلى الخادم.** النوافذ تُحسب على الجهاز، والجهاز يرسل `window_date` واسم النافذة.
