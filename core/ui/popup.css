@@ -504,6 +504,7 @@ button.secondary {
   transition: color 0.15s ease;
 }
 .about-link:hover { color: var(--teal); }
+.about-link[hidden] { display: none; }
 
 /* Companion Chrome-extension card (desktop only; popup.js unhides it) */
 /* The `display` rules below beat the [hidden] UA rule, so restore it explicitly —

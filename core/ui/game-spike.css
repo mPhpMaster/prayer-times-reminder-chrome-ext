@@ -1,0 +1,130 @@
+/* Phase 0 voice spike — standalone page on theme.css tokens (popup.css not loaded). */
+
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  overflow-x: hidden;
+}
+
+.card.spike {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.spike-head { display: flex; align-items: center; gap: 10px; }
+.spike-head h1 { font-family: var(--font-arabic); font-size: 20px; margin: 0; }
+
+button { font: inherit; cursor: pointer; }
+.ghost {
+  background: transparent;
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+}
+
+.status { color: var(--muted-foreground); font-size: 13px; line-height: 1.6; margin: 0; }
+.status.bad { color: var(--destructive); }
+
+.toggle[hidden] { display: none; }
+.toggle select { font: inherit; background: var(--secondary); color: var(--foreground); border: 1px solid var(--border); border-radius: 8px; padding: 4px 6px; }
+.toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted-foreground); }
+
+.tasks { display: flex; flex-wrap: wrap; gap: 8px; }
+.tasks button {
+  flex: 1 1 140px;
+  background: var(--secondary);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  text-align: start;
+}
+.tasks button[aria-pressed="true"] { border-color: var(--primary); box-shadow: var(--focus-ring-shadow); }
+.tasks button .n { display: block; font-size: 12px; color: var(--muted-foreground); }
+.tasks button.complete::after { content: " ✓"; color: var(--primary); }
+
+.reader { display: flex; flex-direction: column; gap: 10px; }
+.reader[hidden] { display: none; }
+.source { font-size: 12px; color: var(--muted-foreground); margin: 0; }
+
+.hint { font-size: 12px; color: var(--muted-foreground); text-align: center; margin: 0; }
+/* The current reading segment, big and centered. */
+.chunk {
+  font-family: var(--font-arabic);
+  font-size: 32px;
+  line-height: 1.9;
+  text-align: center;
+  margin: 0;
+  min-height: 1.9em;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+.chunk .w { transition: color 0.2s; }
+.chunk .w.hit { color: var(--primary); }
+/* The whole text, small, for context and progress. */
+.text {
+  font-family: var(--font-arabic);
+  font-size: 17px;
+  line-height: 2;
+  margin: 0;
+  color: var(--muted-foreground);
+}
+.text .w { transition: color 0.2s; }
+.text .w.hit { color: var(--primary); }
+.text .w.cur { color: var(--foreground); text-decoration: underline; text-underline-offset: 6px; }
+
+.progress { height: 6px; border-radius: 3px; background: var(--progress-track-bg); overflow: hidden; }
+.progress .fill { height: 100%; width: 0; background: var(--progress-fill); transition: width 0.25s; }
+
+.counter { font-size: 18px; font-weight: 700; text-align: center; margin: 0; font-variant-numeric: tabular-nums; }
+
+.mic {
+  align-self: center;
+  min-width: 200px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.mic.loading { opacity: 0.7; }
+.mic.hearing { box-shadow: 0 0 0 6px oklch(0.78 0.14 170 / 0.35); }
+.mic.on { background: var(--destructive); color: #fff; animation: pulse 1.4s infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 10px oklch(0.65 0.22 25 / 0.15); } }
+
+.busy { font-size: 12px; color: var(--gold); text-align: center; margin: 0; }
+.busy[hidden] { display: none; }
+.heard { font-size: 13px; color: var(--muted-foreground); min-height: 1.6em; margin: 0; line-height: 1.7; }
+.heard .partial { opacity: 0.6; }
+.done { color: var(--primary); font-weight: 700; text-align: center; margin: 0; }
+.done[hidden] { display: none; }
+
+.log summary { cursor: pointer; color: var(--muted-foreground); font-size: 13px; }
+.log pre {
+  direction: ltr;
+  text-align: left;
+  font-size: 11px;
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--muted);
+  border-radius: var(--radius);
+  padding: 8px;
+}

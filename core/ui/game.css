@@ -1,0 +1,194 @@
+/* Phase 1 game screen — standalone page on theme.css tokens. */
+
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  overflow-x: hidden;
+}
+
+.card.game {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+button { font: inherit; cursor: pointer; }
+[hidden] { display: none !important; }
+
+.ghost {
+  background: transparent;
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+}
+
+.game-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.game-head h1 { font-family: var(--font-arabic); font-size: 24px; margin: 0; }
+.window-time { margin: 4px 0 0; font-size: 13px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+.scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.scores div {
+  background: var(--muted);
+  border-radius: var(--radius);
+  padding: 10px 6px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.scores span { font-size: 22px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+.scores small { font-size: 11px; color: var(--muted-foreground); }
+
+.notice {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.tasks button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--secondary);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: start;
+}
+.tasks button:disabled { opacity: 0.55; cursor: default; }
+.tasks .name { font-family: var(--font-arabic); font-size: 18px; }
+.tasks .meta { display: block; font-size: 12px; color: var(--muted-foreground); margin-top: 2px; }
+.tasks .pts { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gold); white-space: nowrap; }
+.tasks .done { border-color: var(--primary); }
+.tasks .done .pts { color: var(--primary); }
+
+.gift {
+  background: linear-gradient(135deg, var(--gold), var(--primary));
+  color: var(--primary-foreground);
+  border: 0;
+  border-radius: var(--radius);
+  padding: 14px;
+  font-size: 18px;
+  font-weight: 700;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.reader { display: flex; flex-direction: column; gap: 10px; }
+.reader-head { display: flex; justify-content: space-between; align-items: center; }
+.reader-points { font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+.reader h2 { font-family: var(--font-arabic); font-size: 20px; margin: 0; }
+.source { font-size: 12px; color: var(--muted-foreground); margin: 0; }
+.hint { font-size: 12px; color: var(--muted-foreground); text-align: center; margin: 0; }
+
+.chunk {
+  font-family: var(--font-arabic);
+  font-size: 32px;
+  line-height: 1.9;
+  text-align: center;
+  margin: 0;
+  min-height: 1.9em;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+.text {
+  font-family: var(--font-arabic);
+  font-size: 17px;
+  line-height: 2;
+  margin: 0;
+  color: var(--muted-foreground);
+}
+.w { transition: color 0.2s; }
+.w.hit { color: var(--primary); }
+.text .w.cur { color: var(--foreground); text-decoration: underline; text-underline-offset: 6px; }
+
+.progress { height: 6px; border-radius: 3px; background: var(--progress-track-bg); overflow: hidden; }
+.progress .fill { height: 100%; width: 0; background: var(--progress-fill); transition: width 0.25s; }
+.counter { font-size: 18px; font-weight: 700; text-align: center; margin: 0; font-variant-numeric: tabular-nums; }
+
+.mic {
+  align-self: center;
+  min-width: 200px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.mic.on { background: var(--destructive); color: #fff; }
+.heard { font-size: 13px; color: var(--muted-foreground); min-height: 1.6em; margin: 0; line-height: 1.7; }
+
+.privacy { font-size: 11px; color: var(--muted-foreground); text-align: center; margin: 0; }
+
+/* ---- tabs + social ---- */
+.tabs, .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+.tabs button, .seg button {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+}
+.tabs button[aria-selected="true"], .seg button[aria-pressed="true"] {
+  color: var(--foreground);
+  border-color: var(--primary);
+}
+.primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 0;
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-weight: 700;
+}
+input[type="search"], #username, #search {
+  width: 100%;
+  font: inherit;
+  background: var(--input);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin: 6px 0;
+}
+.muted { color: var(--muted-foreground); font-size: 13px; margin: 0; }
+.board, .people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.board li, .people li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--secondary);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.board .rank { width: 2em; font-weight: 700; color: var(--gold); text-align: center; }
+.board .name, .people .name { flex: 1; }
+.board .p { font-weight: 700; font-variant-numeric: tabular-nums; }
+.board li.me { border: 1px solid var(--primary); }
+.me-line { font-size: 14px; margin: 0; }
+.row { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.6; }
+#me-view h3 { font-size: 15px; margin: 14px 0 4px; }
+.who { margin: 0; }

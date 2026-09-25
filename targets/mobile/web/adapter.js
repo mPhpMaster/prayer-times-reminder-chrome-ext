@@ -156,7 +156,70 @@
     hasLockAccess: () => Promise.resolve(true),
   };
 
-  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions };
+  // --- speech: native continuous recognizer (SpeechPlugin) -------------------
+  // Streams text only; matching against the task lives in recitation-match.js.
+  // start() resolves once the mic is open (after the RECORD_AUDIO prompt).
+  const Speech = P.Speech;
+  let speechHandles = [];
+  let googleLoop = null; // { active } while the Google-dialog engine is running
+
+  // engine "google": one Google voice dialog per utterance, relaunched until
+  // stop() or the user cancels the dialog. Pairs with the 3-word reading chunks.
+  async function runGoogleLoop(loop, { lang, getPrompt, onFinal, onState, onError }) {
+    onState && onState(true);
+    while (loop.active) {
+      let r;
+      try {
+        r = await Speech.recognizeOnce({ lang, prompt: getPrompt ? getPrompt() : undefined });
+      } catch (e) {
+        onError && onError({ code: -3, message: String(e && e.message || e) });
+        break;
+      }
+      if (!loop.active) break;
+      if (r && r.text) onFinal && onFinal(r.text, {});
+      else break; // canceled / nothing heard: stop, the player presses start again
+    }
+    loop.active = false;
+    onState && onState(false);
+  }
+
+  const speech = Speech && {
+    status: () => Speech.isAvailable(),
+    checkSupport: (lang = "ar-SA") => Speech.checkSupport({ lang }),
+    downloadModel: (lang = "ar-SA", onDevice = false) => Speech.downloadModel({ lang, onDevice }),
+    start: async ({ lang = "ar-SA", preferOffline = true, engine = "default", onPartial, onFinal, onState, onSpeech, onBusy, onError, getPrompt } = {}) => {
+      await speech.stop();
+      if (engine === "google") {
+        if (!Speech.recognizeOnce) return { ok: false, reason: "no-google-dialog" };
+        googleLoop = { active: true };
+        runGoogleLoop(googleLoop, { lang, getPrompt, onFinal, onState, onError });
+        return { ok: true };
+      }
+      // The global plugin proxy returns the handle directly or as a Promise
+      // depending on the bridge version — accept both.
+      const on = (ev, fn, pick) =>
+        fn && Promise.resolve(Speech.addListener(ev, (e) => fn(pick(e), e))).then((h) => speechHandles.push(h));
+      await Promise.all([
+        on("partial", onPartial, (e) => e.text),
+        on("final", onFinal, (e) => e.text),
+        on("state", onState, (e) => e.listening),
+        on("speech", onSpeech, (e) => e.speaking), // whisper engine: VAD hears speech
+        on("busy", onBusy, (e) => e.pending),      // whisper engine: segments being decoded
+        on("error", onError, (e) => e),
+      ].filter(Boolean));
+      try { await Speech.start({ lang, preferOffline, engine }); return { ok: true }; }
+      catch (e) { return { ok: false, reason: String(e && e.message || e) }; }
+    },
+    stop: async () => {
+      if (googleLoop) { googleLoop.active = false; googleLoop = null; }
+      try { await Speech.stop(); } catch {}
+      const hs = speechHandles;
+      speechHandles = [];
+      await Promise.all(hs.map((h) => Promise.resolve().then(() => h.remove()).catch(() => {})));
+    },
+  };
+
+  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions, speech };
 
   // --- scheduled prayer notifications (rolling ~7-day window) ----------------
   // Computed offline from prayer-engine + notify-plan, scheduled via
@@ -245,6 +308,9 @@
   // configs) to AlarmManager via PrayerLock.schedulePrayerLocks.
   async function schedulePrayerLockAlarms() {
     if (!Lock || !Lock.schedulePrayerLocks) return;
+    // A page without the planners must not send an empty schedule — that
+    // would disarm every prayer lock (it did, when game.html became home).
+    if (typeof planPrayerNotifications !== "function" || typeof buildLockConfig !== "function") return;
     try {
       const s = await readSettings([
         "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer", "tabLockEnabled",
@@ -534,11 +600,55 @@
     enforce.start(buildLockConfig(s, { prayerName }));
   }
 
+  // --- game alerts: "tasks open" / "30 min left" per prayer window ------------
+  // Planned by notify-plan.js (planGameAlerts). "closing" is skipped for a
+  // window the player already finished (gameState), and the whole set is
+  // re-planned after each finished window via Platform.gameAlerts.refresh().
+  // Setting: store key "gameAlerts" (default on).
+  const PRAYER_AR = { Fajr: "الفجر", Dhuhr: "الظهر", Asr: "العصر", Maghrib: "المغرب", Isha: "العشاء" };
+  const NEXT_PRAYER = { Fajr: "Dhuhr", Dhuhr: "Asr", Asr: "Maghrib", Maghrib: "Isha", Isha: "Fajr" };
+
+  async function scheduleGameAlerts() {
+    if (!LocalNotifications || typeof planGameAlerts !== "function") return;
+    try {
+      const pending = await LocalNotifications.getPending();
+      const old = (pending.notifications || [])
+        .filter((n) => Number(n.id) >= GAME_ALERT_ID_BASE && Number(n.id) < LEGACY_DHIKR_ID_BASE)
+        .map((n) => ({ id: n.id }));
+      if (old.length) await LocalNotifications.cancel({ notifications: old });
+
+      const s = await store.get(["location", "gameAlerts", "gameState"]);
+      if (s.gameAlerts === false || !s.location || s.location.latitude == null) return;
+      const windows = (s.gameState && s.gameState.windows) || {};
+      const finished = (key) => {
+        const w = windows[key];
+        return !!(w && w.complete); // set by game.js once every task is done
+      };
+      const notifications = planGameAlerts(PrayerEngine, s.location, new Date(), SCHED_DAYS, SCHED_PRAYERS)
+        .filter((a) => a.kind === "open" || !finished(a.key))
+        .map((a) => ({
+          id: a.id,
+          title: a.kind === "open" ? `فُتحت مهمات صلاة ${PRAYER_AR[a.prayer]}` : `بقيت نصف ساعة على صلاة ${PRAYER_AR[NEXT_PRAYER[a.prayer]]}`,
+          body: a.kind === "open"
+            ? "ابدأ الآن لتأخذ النقاط كاملة."
+            : `أكمل مهمات صلاة ${PRAYER_AR[a.prayer]} قبل أن تفوتك.`,
+          schedule: { at: new Date(a.when), allowWhileIdle: true },
+          channelId: PRAYER_CHANNEL,
+          extra: { game: a.kind, key: a.key },
+        }));
+      if (notifications.length) await LocalNotifications.schedule({ notifications });
+    } catch {
+      /* best effort — re-tried on next resume */
+    }
+  }
+  globalThis.__PTPlatform.gameAlerts = { refresh: scheduleGameAlerts };
+
   async function scheduleAll() {
     await ensureChannels();
     scheduleNotifications();
     schedulePrayerLockAlarms();
     syncDhikrSchedule();
+    scheduleGameAlerts();
     runPermissionFlow();
   }
 
@@ -569,6 +679,7 @@
   if (LocalNotifications && LocalNotifications.addListener) {
     LocalNotifications.addListener("localNotificationActionPerformed", (e) => {
       const extra = e && e.notification && e.notification.extra;
+      if (extra && extra.game) return; // game alert: opening the app is enough
       startLockForPrayer(extra && extra.prayer);
     });
   }

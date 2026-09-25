@@ -17,6 +17,11 @@
 //   Platform.enforce.clear()               -> { ok }            end any active lock
 //   Platform.dhikr.test()                  -> { ok, reason? }   show a test dhikr now
 //   Platform.runtime.getURL(path)          -> string   (sync)
+//   Platform.speech?                       optional (Android only for now):
+//     .status()                            -> { available, onDevice, permission, whisper }
+//     .start({ lang, preferOffline, engine: "default"|"onDevice"|"whisper",
+//              onPartial, onFinal, onState, onSpeech, onError }) -> { ok, reason? }
+//     .stop()                              close the mic
 //   Platform.runtime.closeOnboarding()     close the onboarding/welcome surface
 //
 // Background scheduling + the prayer-time enforcement fan-out are provided by
