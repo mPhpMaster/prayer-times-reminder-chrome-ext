@@ -32,10 +32,7 @@ async function checkRecognizer() {
       setStatus("لا يوجد نموذج تلاوة ولا خدمة تعرف على الصوت في هذا الجهاز.", true);
       return;
     }
-    if (!s.whisper) {
-      $("engine").value = "default";
-      $("engine").querySelector('[value="whisper"]').disabled = true;
-    }
+    if (!s.whisper) $("engine").querySelector('[value="whisper"]').disabled = true;
     syncEngineUi();
     setStatus(
       (s.whisper ? "نموذج التلاوة موجود على الجهاز. " : "نموذج التلاوة غير موجود على الجهاز. ") +
@@ -50,7 +47,7 @@ async function checkRecognizer() {
 
 const engine = () => $("engine").value;
 function syncEngineUi() {
-  $("offline-row").hidden = engine() === "whisper";
+  $("offline-row").hidden = engine() !== "default";
 }
 
 function renderTaskList() {
@@ -173,6 +170,7 @@ async function startListening() {
       lang: "ar-SA",
       engine: engine(),
       preferOffline: $("prefer-offline").checked,
+      getPrompt: () => (chunks[shownChunk] ? chunks[shownChunk].words.join(" ") : undefined),
       onPartial: (text) => {
         partial = text;
         update();
@@ -187,6 +185,11 @@ async function startListening() {
         update();
       },
       onState: (on) => {
+        // Google dialog loop ended (dialog canceled / nothing heard).
+        if (!on && listening && engine() === "google") {
+          stopListening("dialog-closed");
+          return;
+        }
         // Whisper reports ready once the model is loaded; the system
         // recognizer closes the mic briefly between utterances.
         if (on && $("mic").classList.contains("loading")) setStatus("أسمعك، ابدأ القراءة.");
@@ -292,7 +295,8 @@ $("clear-log").addEventListener("click", async () => {
   renderLog([]);
 });
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) stopListening("hidden");
+  // The Google dialog covers the page on purpose; don't treat that as leaving.
+  if (document.hidden && engine() !== "google") stopListening("hidden");
 });
 
 renderTaskList();

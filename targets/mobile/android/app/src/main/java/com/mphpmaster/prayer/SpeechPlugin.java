@@ -15,6 +15,9 @@ import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import androidx.activity.result.ActivityResult;
+
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
@@ -149,6 +152,41 @@ public class SpeechPlugin extends Plugin {
             }
             main.postDelayed(r::destroy, 5000);
         });
+    }
+
+    /** One utterance through the Google voice dialog (RecognizerIntent
+     *  activity). Unlike the in-process SpeechRecognizer this reaches Google's
+     *  online Arabic recognizer on phones whose on-device list has no Arabic.
+     *  Resolves { text } or { canceled: true }. Audio goes to Google. */
+    @PluginMethod
+    public void recognizeOnce(PluginCall call) {
+        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, call.getString("lang", "ar-SA"));
+        i.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        String prompt = call.getString("prompt");
+        if (prompt != null) i.putExtra(RecognizerIntent.EXTRA_PROMPT, prompt);
+        try {
+            startActivityForResult(call, i, "onDialogResult");
+        } catch (Exception e) {
+            call.reject("dialog-unavailable");
+        }
+    }
+
+    @ActivityCallback
+    private void onDialogResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        JSObject ret = new JSObject();
+        Intent data = result.getData();
+        java.util.ArrayList<String> r = data != null
+            ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS) : null;
+        if (result.getResultCode() != android.app.Activity.RESULT_OK || r == null || r.isEmpty()) {
+            ret.put("canceled", true);
+            ret.put("code", result.getResultCode());
+        } else {
+            ret.put("text", r.get(0));
+        }
+        call.resolve(ret);
     }
 
     @PluginMethod

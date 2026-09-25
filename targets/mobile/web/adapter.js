@@ -161,12 +161,40 @@
   // start() resolves once the mic is open (after the RECORD_AUDIO prompt).
   const Speech = P.Speech;
   let speechHandles = [];
+  let googleLoop = null; // { active } while the Google-dialog engine is running
+
+  // engine "google": one Google voice dialog per utterance, relaunched until
+  // stop() or the user cancels the dialog. Pairs with the 3-word reading chunks.
+  async function runGoogleLoop(loop, { lang, getPrompt, onFinal, onState, onError }) {
+    onState && onState(true);
+    while (loop.active) {
+      let r;
+      try {
+        r = await Speech.recognizeOnce({ lang, prompt: getPrompt ? getPrompt() : undefined });
+      } catch (e) {
+        onError && onError({ code: -3, message: String(e && e.message || e) });
+        break;
+      }
+      if (!loop.active) break;
+      if (r && r.text) onFinal && onFinal(r.text, {});
+      else break; // canceled / nothing heard: stop, the player presses start again
+    }
+    loop.active = false;
+    onState && onState(false);
+  }
+
   const speech = Speech && {
     status: () => Speech.isAvailable(),
     checkSupport: (lang = "ar-SA") => Speech.checkSupport({ lang }),
     downloadModel: (lang = "ar-SA", onDevice = false) => Speech.downloadModel({ lang, onDevice }),
-    start: async ({ lang = "ar-SA", preferOffline = true, engine = "default", onPartial, onFinal, onState, onSpeech, onBusy, onError } = {}) => {
+    start: async ({ lang = "ar-SA", preferOffline = true, engine = "default", onPartial, onFinal, onState, onSpeech, onBusy, onError, getPrompt } = {}) => {
       await speech.stop();
+      if (engine === "google") {
+        if (!Speech.recognizeOnce) return { ok: false, reason: "no-google-dialog" };
+        googleLoop = { active: true };
+        runGoogleLoop(googleLoop, { lang, getPrompt, onFinal, onState, onError });
+        return { ok: true };
+      }
       // The global plugin proxy returns the handle directly or as a Promise
       // depending on the bridge version — accept both.
       const on = (ev, fn, pick) =>
@@ -183,6 +211,7 @@
       catch (e) { return { ok: false, reason: String(e && e.message || e) }; }
     },
     stop: async () => {
+      if (googleLoop) { googleLoop.active = false; googleLoop = null; }
       try { await Speech.stop(); } catch {}
       const hs = speechHandles;
       speechHandles = [];
