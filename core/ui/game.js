@@ -116,7 +116,11 @@ function tick() {
     } else {
       // Points are fixed at the first start; before that they fall with time.
       const at = rec && rec.startedAt ? rec.startedAt : now;
-      pts.textContent = open ? `${taskPoints(t.share, win, at)} نقطة` : "—";
+      pts.textContent = open
+        ? `${taskPoints(t.share, win, at)} نقطة`
+        : now < win.opensAt
+          ? `🔒 تُفتح ${fmtClock(win.opensAt)}`
+          : "فاتت";
       b.disabled = !open;
     }
   }
