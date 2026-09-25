@@ -141,3 +141,54 @@ button { font: inherit; cursor: pointer; }
 .heard { font-size: 13px; color: var(--muted-foreground); min-height: 1.6em; margin: 0; line-height: 1.7; }
 
 .privacy { font-size: 11px; color: var(--muted-foreground); text-align: center; margin: 0; }
+
+/* ---- tabs + social ---- */
+.tabs, .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+.tabs button, .seg button {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+}
+.tabs button[aria-selected="true"], .seg button[aria-pressed="true"] {
+  color: var(--foreground);
+  border-color: var(--primary);
+}
+.primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 0;
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-weight: 700;
+}
+input[type="search"], #username, #search {
+  width: 100%;
+  font: inherit;
+  background: var(--input);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin: 6px 0;
+}
+.muted { color: var(--muted-foreground); font-size: 13px; margin: 0; }
+.board, .people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.board li, .people li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--secondary);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.board .rank { width: 2em; font-weight: 700; color: var(--gold); text-align: center; }
+.board .name, .people .name { flex: 1; }
+.board .p { font-weight: 700; font-variant-numeric: tabular-nums; }
+.board li.me { border: 1px solid var(--primary); }
+.me-line { font-size: 14px; margin: 0; }
+.row { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.6; }
+#me-view h3 { font-size: 15px; margin: 14px 0 4px; }
+.who { margin: 0; }

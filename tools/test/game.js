@@ -17,13 +17,15 @@ load("game-score.js");
 load("game-windows.js");
 load("game-state.js");
 load("game-tasks.js");
+load("game-sync.js");
 vm.runInContext(
   "this.__m = { normalizeArabic, tokenize, matchRecitation, matchTask, wordSimilarity, chunkText };" +
     "this.__s = { taskWindow, pointsFactor, taskPoints, splitWindowPoints };" +
     "this.__tasks = SPIKE_TASKS;" +
     "this.__w = { currentWindow, GAME_PRAYERS };" +
     "this.__st = { emptyGameState, markTaskStarted, markTaskDone, markGiftDone, windowPoints, pointsWithPrefix, allTasksDone, pruneGameState, normalizeGameState };" +
-    "this.__cat = { GAME_TASKS, WINDOW_TASKS, tasksForWindow, GIFTS, giftForWindow };",
+    "this.__cat = { GAME_TASKS, WINDOW_TASKS, tasksForWindow, GIFTS, giftForWindow };" +
+    "this.__sync = { pendingCompletions, markSynced };",
   ctx
 );
 const { normalizeArabic, tokenize, matchRecitation, matchTask, chunkText } = ctx.__m;
@@ -174,6 +176,19 @@ ok("allTasksDone false while one is open", !S.allTasksDone(st.windows["2026-09-2
 S.pruneGameState(st, at(25, 12, 0).getTime() + 62 * 86400000);
 ok("prune drops windows older than 62 days", !st.windows["2026-08-31:Isha"] && !!st.windows["2026-09-25:Dhuhr"]);
 eq("garbage state normalizes to empty", S.normalizeGameState({ foo: 1 }).windows, {});
+
+// ---- game-sync: offline-first queue ---------------------------------------------------
+const Y = ctx.__sync;
+const st2 = S.emptyGameState();
+S.markTaskDone(st2, "2026-09-25:Asr", "tasbih-33", 27, 10);
+S.markTaskStarted(st2, "2026-09-25:Asr", "tahmid-33", 11); // not finished: not sent
+S.markGiftDone(st2, "2026-09-25:Asr", "afuwwun", 100, 12);
+const pend = Y.pendingCompletions(st2);
+eq("pending: finished task + gift only", pend.map((r) => [r.itemId, r.kind, r.points]), [["tasbih-33", "task", 27], ["afuwwun", "gift", 100]]);
+Y.markSynced(st2, pend);
+eq("after ack nothing is pending", Y.pendingCompletions(st2), []);
+S.markTaskDone(st2, "2026-09-25:Asr", "tahmid-33", 20, 13);
+eq("a newly finished task is pending again", Y.pendingCompletions(st2).map((r) => r.itemId), ["tahmid-33"]);
 
 // ---- catalog ----------------------------------------------------------------------
 const C = ctx.__cat;
