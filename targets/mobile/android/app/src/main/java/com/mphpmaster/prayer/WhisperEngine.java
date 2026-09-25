@@ -5,6 +5,7 @@ import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.util.Log;
 
 import com.k2fsa.sherpa.onnx.OfflineModelConfig;
 import com.k2fsa.sherpa.onnx.OfflineRecognizer;
@@ -42,12 +43,14 @@ public class WhisperEngine {
         void onReady();                    // models loaded and mic open — start speaking
         void onSpeech(boolean speaking);   // VAD state, for a "hearing you" indicator
         void onText(String text);          // one decoded segment
+        void onBusy(int pendingSegments);  // segments waiting for / in decoding
         void onError(String message);
     }
 
     static final String[] MODEL_FILES = {
         "whisper-encoder.int8.onnx", "whisper-decoder.int8.onnx", "whisper-tokens.txt", "silero_vad.onnx",
     };
+    private static final String TAG = "WhisperEngine";
     private static final int SAMPLE_RATE = 16000;
     private static final int VAD_WINDOW = 512; // silero v4/v5 window at 16 kHz
 
@@ -56,6 +59,7 @@ public class WhisperEngine {
     private OfflineRecognizer recognizer;
     private Vad vad;
     private volatile boolean running = false;
+    private final java.util.concurrent.atomic.AtomicInteger pending = new java.util.concurrent.atomic.AtomicInteger();
     private Thread recordThread;
 
     public WhisperEngine(Context ctx) {
@@ -82,7 +86,9 @@ public class WhisperEngine {
         whisper.setDecoder(dir + "whisper-decoder.int8.onnx");
         whisper.setLanguage("ar");
         whisper.setTask("transcribe");
-        whisper.setTailPaddings(1000);
+        // Zero-padding appended before decoding. sherpa-onnx suggests ~300 frames
+        // (3 s) for multilingual models; 1000 made every decode ~2x slower.
+        whisper.setTailPaddings(300);
 
         OfflineModelConfig model = new OfflineModelConfig();
         model.setWhisper(whisper);
@@ -99,8 +105,10 @@ public class WhisperEngine {
         SileroVadModelConfig silero = new SileroVadModelConfig();
         silero.setModel(dir + "silero_vad.onnx");
         silero.setThreshold(0.5f);
-        silero.setMinSilenceDuration(0.35f); // a breath between repetitions ends a segment
-        silero.setMinSpeechDuration(0.2f);
+        // A breath between repetitions ends a segment; shorter gaps inside a
+        // phrase must not, or Whisper gets sub-second fragments and drops words.
+        silero.setMinSilenceDuration(0.6f);
+        silero.setMinSpeechDuration(0.25f);
         silero.setMaxSpeechDuration(20f);    // Whisper's window is 30 s
         silero.setWindowSize(VAD_WINDOW);
 
@@ -118,7 +126,10 @@ public class WhisperEngine {
         recordThread = new Thread(() -> {
             AudioRecord rec = null;
             try {
+                long tLoad = System.nanoTime();
                 ensureLoaded();
+                Log.i(TAG, "models ready in " + (System.nanoTime() - tLoad) / 1_000_000 + "ms, threads="
+                    + recognizer.getConfig().getModelConfig().getNumThreads());
                 vad.reset();
                 int minBuf = AudioRecord.getMinBufferSize(
                     SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
@@ -167,17 +178,25 @@ public class WhisperEngine {
             SpeechSegment seg = vad.front();
             vad.pop();
             float[] audio = seg.getSamples();
+            int queued = pending.incrementAndGet();
+            listener.onBusy(queued);
             decoder.execute(() -> {
                 OfflineStream stream = recognizer.createStream();
+                long t0 = System.nanoTime();
                 try {
                     stream.acceptWaveform(audio, SAMPLE_RATE);
                     recognizer.decode(stream);
                     String text = recognizer.getResult(stream).getText().trim();
+                    long ms = (System.nanoTime() - t0) / 1_000_000;
+                    // Spike diagnostics (adb logcat -s WhisperEngine): audio length vs decode time.
+                    Log.i(TAG, String.format(java.util.Locale.ROOT, "segment %.2fs decoded in %dms: %s",
+                        audio.length / (float) SAMPLE_RATE, ms, text));
                     if (!text.isEmpty()) listener.onText(text);
                 } catch (Throwable t) {
                     listener.onError(String.valueOf(t));
                 } finally {
                     stream.release();
+                    listener.onBusy(pending.decrementAndGet());
                 }
             });
         }

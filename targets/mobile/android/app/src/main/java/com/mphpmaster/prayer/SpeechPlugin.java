@@ -212,6 +212,11 @@ public class SpeechPlugin extends Plugin {
                 o.put("speaking", speaking);
                 notifyListeners("speech", o);
             }
+            @Override public void onBusy(int pendingSegments) {
+                JSObject o = new JSObject();
+                o.put("pending", pendingSegments);
+                notifyListeners("busy", o);
+            }
             @Override public void onText(String text) {
                 JSObject o = new JSObject();
                 o.put("text", text);

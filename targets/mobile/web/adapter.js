@@ -165,7 +165,7 @@
     status: () => Speech.isAvailable(),
     checkSupport: (lang = "ar-SA") => Speech.checkSupport({ lang }),
     downloadModel: (lang = "ar-SA", onDevice = false) => Speech.downloadModel({ lang, onDevice }),
-    start: async ({ lang = "ar-SA", preferOffline = true, engine = "default", onPartial, onFinal, onState, onSpeech, onError } = {}) => {
+    start: async ({ lang = "ar-SA", preferOffline = true, engine = "default", onPartial, onFinal, onState, onSpeech, onBusy, onError } = {}) => {
       await speech.stop();
       // The global plugin proxy returns the handle directly or as a Promise
       // depending on the bridge version — accept both.
@@ -176,6 +176,7 @@
         on("final", onFinal, (e) => e.text),
         on("state", onState, (e) => e.listening),
         on("speech", onSpeech, (e) => e.speaking), // whisper engine: VAD hears speech
+        on("busy", onBusy, (e) => e.pending),      // whisper engine: segments being decoded
         on("error", onError, (e) => e),
       ].filter(Boolean));
       try { await Speech.start({ lang, preferOffline, engine }); return { ok: true }; }

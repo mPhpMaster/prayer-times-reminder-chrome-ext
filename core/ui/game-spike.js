@@ -166,6 +166,10 @@ async function startListening() {
         if (!on && !listening) setMic(false);
       },
       onSpeech: (speaking) => $("mic").classList.toggle("hearing", speaking),
+      onBusy: (n) => {
+        $("busy").hidden = n === 0;
+        $("busy").textContent = n > 1 ? `جارٍ تفريغ ${n} مقاطع…` : "جارٍ تفريغ ما قلته…";
+      },
       onError: (e) => {
         if (attempt) attempt.errors.push(e.message || e.code);
         setStatus("توقف التعرف: " + (e.message || e.code), true);
