@@ -131,29 +131,31 @@ async function startListening() {
   $("done").hidden = true;
   update();
   attempt = { task: current.id, startedAt: Date.now(), firstWordAt: 0, restarts: 0, errors: [] };
-  const res = await Platform.speech.start({
-    lang: "ar-SA",
-    preferOffline: $("prefer-offline").checked,
-    onPartial: (text) => {
-      partial = text;
-      update();
-    },
-    onFinal: (text) => {
-      finals.push(text);
-      partial = "";
-      if (attempt) attempt.restarts++;
-      update();
-    },
-    onState: (on) => {
-      // The mic closes briefly between utterances; only reflect a real stop.
-      if (!on && !listening) setMic(false);
-    },
-    onError: (e) => {
-      if (attempt) attempt.errors.push(e.message || e.code);
-      setStatus("توقف التعرف: " + (e.message || e.code), true);
-      stopListening("error");
-    },
-  });
+  const res = await Platform.speech
+    .start({
+      lang: "ar-SA",
+      preferOffline: $("prefer-offline").checked,
+      onPartial: (text) => {
+        partial = text;
+        update();
+      },
+      onFinal: (text) => {
+        finals.push(text);
+        partial = "";
+        if (attempt) attempt.restarts++;
+        update();
+      },
+      onState: (on) => {
+        // The mic closes briefly between utterances; only reflect a real stop.
+        if (!on && !listening) setMic(false);
+      },
+      onError: (e) => {
+        if (attempt) attempt.errors.push(e.message || e.code);
+        setStatus("توقف التعرف: " + (e.message || e.code), true);
+        stopListening("error");
+      },
+    })
+    .catch((e) => ({ ok: false, reason: String(e && e.message || e) }));
   if (!res.ok) {
     setStatus(
       res.reason.includes("microphone-denied") ? "لم يُمنح إذن الميكروفون." : "تعذّر بدء التعرف: " + res.reason,

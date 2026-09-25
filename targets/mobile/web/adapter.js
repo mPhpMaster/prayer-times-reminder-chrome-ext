@@ -163,24 +163,28 @@
   let speechHandles = [];
   const speech = Speech && {
     status: () => Speech.isAvailable(),
-    start: async ({ lang = "ar-SA", preferOffline = true, onPartial, onFinal, onState, onError } = {}) => {
+    checkSupport: (lang = "ar-SA") => Speech.checkSupport({ lang }),
+    downloadModel: (lang = "ar-SA", onDevice = false) => Speech.downloadModel({ lang, onDevice }),
+    start: async ({ lang = "ar-SA", preferOffline = true, engine = "default", onPartial, onFinal, onState, onError } = {}) => {
       await speech.stop();
+      // The global plugin proxy returns the handle directly or as a Promise
+      // depending on the bridge version — accept both.
       const on = (ev, fn, pick) =>
-        fn && Speech.addListener(ev, (e) => fn(pick(e))).then((h) => speechHandles.push(h));
+        fn && Promise.resolve(Speech.addListener(ev, (e) => fn(pick(e)))).then((h) => speechHandles.push(h));
       await Promise.all([
         on("partial", onPartial, (e) => e.text),
         on("final", onFinal, (e) => e.text),
         on("state", onState, (e) => e.listening),
         on("error", onError, (e) => e),
       ].filter(Boolean));
-      try { await Speech.start({ lang, preferOffline }); return { ok: true }; }
+      try { await Speech.start({ lang, preferOffline, engine }); return { ok: true }; }
       catch (e) { return { ok: false, reason: String(e && e.message || e) }; }
     },
     stop: async () => {
       try { await Speech.stop(); } catch {}
       const hs = speechHandles;
       speechHandles = [];
-      await Promise.all(hs.map((h) => h.remove().catch(() => {})));
+      await Promise.all(hs.map((h) => Promise.resolve().then(() => h.remove()).catch(() => {})));
     },
   };
 

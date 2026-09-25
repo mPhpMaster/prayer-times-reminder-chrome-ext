@@ -52,6 +52,7 @@ public class SpeechPlugin extends Plugin {
     private boolean continuous = false;
     private String lang = "ar-SA";
     private boolean preferOffline = true;
+    private boolean useOnDevice = false;
 
     @PluginMethod
     public void isAvailable(PluginCall call) {
@@ -66,10 +67,94 @@ public class SpeechPlugin extends Plugin {
         call.resolve(ret);
     }
 
+    /** API 33+: ask the default recognizer (and the on-device one) which
+     *  languages it supports / has installed, so a missing Arabic pack is
+     *  reported instead of surfacing later as "language-not-supported". */
+    @PluginMethod
+    public void checkSupport(PluginCall call) {
+        String l = call.getString("lang", "ar-SA");
+        if (Build.VERSION.SDK_INT < 33) {
+            JSObject ret = new JSObject();
+            ret.put("supported", false);
+            ret.put("reason", "api<33");
+            call.resolve(ret);
+            return;
+        }
+        main.post(() -> {
+            JSObject ret = new JSObject();
+            final int[] pending = { 2 };
+            Runnable done = () -> { if (--pending[0] == 0) call.resolve(ret); };
+            querySupport(SpeechRecognizer.createSpeechRecognizer(getContext()), l, ret, "default", done);
+            if (SpeechRecognizer.isOnDeviceRecognitionAvailable(getContext())) {
+                querySupport(SpeechRecognizer.createOnDeviceSpeechRecognizer(getContext()), l, ret, "onDevice", done);
+            } else {
+                ret.put("onDevice", "unavailable");
+                done.run();
+            }
+        });
+    }
+
+    @android.annotation.TargetApi(33)
+    private void querySupport(SpeechRecognizer r, String l, JSObject into, String key, Runnable done) {
+        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, l);
+        r.checkRecognitionSupport(i, getContext().getMainExecutor(),
+            new android.speech.RecognitionSupportCallback() {
+                @Override
+                public void onSupportResult(android.speech.RecognitionSupport s) {
+                    JSObject o = new JSObject();
+                    o.put("installed", new com.getcapacitor.JSArray(s.getInstalledOnDeviceLanguages()));
+                    o.put("pending", new com.getcapacitor.JSArray(s.getPendingOnDeviceLanguages()));
+                    o.put("supportedOnDevice", new com.getcapacitor.JSArray(s.getSupportedOnDeviceLanguages()));
+                    o.put("online", new com.getcapacitor.JSArray(s.getOnlineLanguages()));
+                    into.put(key, o);
+                    r.destroy();
+                    done.run();
+                }
+
+                @Override
+                public void onError(int error) {
+                    into.put(key, "error-" + error);
+                    r.destroy();
+                    done.run();
+                }
+            });
+    }
+
+    /** API 33+: ask the recognizer to download the language pack (the system
+     *  may show its own confirmation). `onDevice` picks the on-device service. */
+    @PluginMethod
+    public void downloadModel(PluginCall call) {
+        String l = call.getString("lang", "ar-SA");
+        boolean onDevice = call.getBoolean("onDevice", false);
+        if (Build.VERSION.SDK_INT < 33) {
+            call.reject("api<33");
+            return;
+        }
+        main.post(() -> {
+            SpeechRecognizer r = onDevice
+                ? SpeechRecognizer.createOnDeviceSpeechRecognizer(getContext())
+                : SpeechRecognizer.createSpeechRecognizer(getContext());
+            Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, l);
+            try {
+                r.triggerModelDownload(i);
+                call.resolve();
+            } catch (Exception e) {
+                call.reject(String.valueOf(e));
+            }
+            main.postDelayed(r::destroy, 5000);
+        });
+    }
+
     @PluginMethod
     public void start(PluginCall call) {
         lang = call.getString("lang", "ar-SA");
         preferOffline = call.getBoolean("preferOffline", true);
+        // "onDevice" = the dedicated on-device service (API 31+), else the user's default recognizer.
+        useOnDevice = "onDevice".equals(call.getString("engine", "default"))
+            && Build.VERSION.SDK_INT >= 31
+            && SpeechRecognizer.isOnDeviceRecognitionAvailable(getContext());
         if (getPermissionState("microphone") != PermissionState.GRANTED) {
             requestPermissionForAlias("microphone", call, "micPermissionCallback");
             return;
@@ -94,7 +179,9 @@ public class SpeechPlugin extends Plugin {
         continuous = true;
         main.post(() -> {
             destroyRecognizer();
-            recognizer = SpeechRecognizer.createSpeechRecognizer(getContext());
+            recognizer = useOnDevice && Build.VERSION.SDK_INT >= 31
+                ? SpeechRecognizer.createOnDeviceSpeechRecognizer(getContext())
+                : SpeechRecognizer.createSpeechRecognizer(getContext());
             recognizer.setRecognitionListener(listener);
             listen();
             call.resolve();
