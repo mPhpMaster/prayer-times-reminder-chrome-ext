@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -66,6 +67,13 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+        <!-- The local-notifications plugin's own boot receiver re-delivers EVERY
+             notification missed while the phone was off, 15 s after boot — a
+             burst of stale "prayer time" alerts. BootReceiver restores only
+             upcoming ones instead (PrayerNotificationRestore). -->
+        <receiver
+            android:name="com.capacitorjs.plugins.localnotifications.LocalNotificationRestoreReceiver"
+            tools:node="remove" />
     </application>
 
     <!-- Permissions -->
