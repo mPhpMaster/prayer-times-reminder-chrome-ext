@@ -1079,6 +1079,9 @@ el.aboutLink.addEventListener("click", (e) => {
   window.location.href = "about.html";
 });
 
+// Phase 0 voice spike entry — only where the shell provides speech (Android).
+if (Platform.speech) document.getElementById("game-spike-link").hidden = false;
+
 el.langSelect.addEventListener("change", () => {
   if (el.langSelect.value) setLanguage(el.langSelect.value);
 });

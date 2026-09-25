@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="midnight-emerald">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="game-spike.css" />
+    <title>تجربة القراءة بالصوت</title>
+</head>
+
+<!-- Phase 0 voice spike (docs/GAME-DESIGN-2026-09-25.md): measures how well the
+     device recognizer follows real recitation. Arabic-only dev screen; every
+     finished attempt is appended to the "gameSpikeLog" store key for analysis. -->
+<body>
+    <div class="orb orb-top" aria-hidden="true"></div>
+    <div class="orb orb-bottom" aria-hidden="true"></div>
+
+    <main class="card glass-card spike">
+        <header class="spike-head">
+            <button type="button" id="back" class="ghost">→ رجوع</button>
+            <h1>تجربة القراءة بالصوت</h1>
+        </header>
+
+        <p class="status" id="status">جارٍ فحص التعرف على الصوت…</p>
+
+        <label class="toggle">
+            <input type="checkbox" id="prefer-offline" checked />
+            <span>فضّل التعرف داخل الجهاز (دون إنترنت)</span>
+        </label>
+
+        <nav class="tasks" id="tasks" aria-label="المهمات"></nav>
+
+        <section class="reader" id="reader" hidden>
+            <p class="source" id="source"></p>
+            <p class="text" id="text"></p>
+            <div class="progress" aria-hidden="true"><div class="fill" id="fill"></div></div>
+            <p class="counter" id="counter"></p>
+            <button type="button" id="mic" class="mic">🎙️ ابدأ القراءة</button>
+            <p class="heard" id="heard" aria-live="polite"></p>
+            <p class="done" id="done" hidden>✓ اكتملت المهمة</p>
+        </section>
+
+        <details class="log">
+            <summary>سجل المحاولات</summary>
+            <pre id="log"></pre>
+            <button type="button" id="copy-log" class="ghost">نسخ السجل</button>
+            <button type="button" id="clear-log" class="ghost">مسح السجل</button>
+        </details>
+    </main>
+
+    <script src="adapter.js"></script>
+    <script src="platform.js"></script>
+    <script src="recitation-match.js"></script>
+    <script src="game-tasks.js"></script>
+    <script src="game-spike.js"></script>
+</body>
+
+</html>

@@ -156,7 +156,35 @@
     hasLockAccess: () => Promise.resolve(true),
   };
 
-  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions };
+  // --- speech: native continuous recognizer (SpeechPlugin) -------------------
+  // Streams text only; matching against the task lives in recitation-match.js.
+  // start() resolves once the mic is open (after the RECORD_AUDIO prompt).
+  const Speech = P.Speech;
+  let speechHandles = [];
+  const speech = Speech && {
+    status: () => Speech.isAvailable(),
+    start: async ({ lang = "ar-SA", preferOffline = true, onPartial, onFinal, onState, onError } = {}) => {
+      await speech.stop();
+      const on = (ev, fn, pick) =>
+        fn && Speech.addListener(ev, (e) => fn(pick(e))).then((h) => speechHandles.push(h));
+      await Promise.all([
+        on("partial", onPartial, (e) => e.text),
+        on("final", onFinal, (e) => e.text),
+        on("state", onState, (e) => e.listening),
+        on("error", onError, (e) => e),
+      ].filter(Boolean));
+      try { await Speech.start({ lang, preferOffline }); return { ok: true }; }
+      catch (e) { return { ok: false, reason: String(e && e.message || e) }; }
+    },
+    stop: async () => {
+      try { await Speech.stop(); } catch {}
+      const hs = speechHandles;
+      speechHandles = [];
+      await Promise.all(hs.map((h) => h.remove().catch(() => {})));
+    },
+  };
+
+  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions, speech };
 
   // --- scheduled prayer notifications (rolling ~7-day window) ----------------
   // Computed offline from prayer-engine + notify-plan, scheduled via
