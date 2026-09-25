@@ -23,7 +23,11 @@ final class Dnd {
         NotificationManager nm = manager(ctx);
         if (nm == null || !nm.isNotificationPolicyAccessGranted()) return;
         previousFilter = nm.getCurrentInterruptionFilter();
-        nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE);
+        // ALARMS, not NONE: "total silence" also mutes the media stream, which
+        // killed the lock's own prayer-time sound (adhan / chime, played by the
+        // lock WebView as media). Alarms-only still silences calls, ringtone and
+        // notifications — the point of "silent during prayer".
+        nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALARMS);
     }
 
     static void restore(Context ctx) {

@@ -16,6 +16,11 @@
     <script src="overlay-lock.js"></script>
     <script>
       (function () {
+        // Surface overlay-lock.js's sound diagnostics (which sound branch ran,
+        // whether the adhan file failed to load) via console.log — the native
+        // WebChromeClient forwards it to logcat, since there's no debugger
+        // attached on a real device.
+        window.__prayerSoundLog = function (m) { console.log("[PrayerLock] " + m); };
         // Unlock => tell the native plugin to end the lock everywhere.
         window.__prayerLockOnUnlock = function () {
           if (window.AndroidLock && window.AndroidLock.unlock) window.AndroidLock.unlock();
