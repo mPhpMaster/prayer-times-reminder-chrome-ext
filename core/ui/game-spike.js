@@ -84,12 +84,12 @@ function wordSpans(words, firstToken) {
   return out;
 }
 
-// Reading chunks of at most 3 words (the owner's suggestion): short utterances
-// decode faster and more accurately than a whole ayah.
+// Meaningful reading segments (split at clause marks): short utterances
+// recognize faster and more accurately than a whole ayah.
 let chunks = [];
 let shownChunk = -1;
 function renderText(task) {
-  chunks = chunkText(task.text, 3);
+  chunks = chunkText(task.text);
   shownChunk = -1;
   $("text").replaceChildren(...wordSpans(task.text.split(/\s+/).filter(Boolean), 0));
 }

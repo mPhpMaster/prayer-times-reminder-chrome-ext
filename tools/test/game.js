@@ -91,18 +91,21 @@ const tahlilNoEnd = "لا اله الا الله وحده لا شريك له ل�
 eq("tail dropped, not final: pending", matchRecitation(tahlilNoEnd, tahlil.text).count, 0);
 eq("tail dropped, final: counted", matchRecitation(tahlilNoEnd, tahlil.text, { final: true }).count, 1);
 
-// ---- chunkText: short reading chunks ------------------------------------------
-const ikhlasChunks = chunkText(ikhlas.text, 3);
-eq("ikhlas chunks break at ayah marks",
-  ikhlasChunks.map((c) => c.words.join(" ")),
-  ["قُلْ هُوَ اللَّهُ", "أَحَدٌ ۝", "اللَّهُ الصَّمَدُ ۝", "لَمْ يَلِدْ وَلَمْ", "يُولَدْ ۝", "وَلَمْ يَكُنْ لَهُ", "كُفُوًا أَحَدٌ"]);
+// ---- chunkText: meaningful reading segments ------------------------------------
+const seg = (id) => chunkText(task(id).text).map((c) => c.words.join(" "));
+eq("ikhlas: one segment per ayah", seg("al-ikhlas"),
+  ["قُلْ هُوَ اللَّهُ أَحَدٌ ۝", "اللَّهُ الصَّمَدُ ۝", "لَمْ يَلِدْ وَلَمْ يُولَدْ ۝", "وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ"]);
+eq("tahlil: split at its natural pauses", seg("tahlil"),
+  ["لَا إِلَٰهَ إِلَّا اللَّهُ،", "وَحْدَهُ لَا شَرِيكَ لَهُ،", "لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ،", "وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ"]);
+eq("ayat al-kursi: split at waqf marks", seg("ayat-al-kursi").length, 9);
+eq("ayat al-kursi: first segment", seg("ayat-al-kursi")[0], "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ");
+const ikhlasChunks = chunkText(ikhlas.text);
 const allTokens = tokenize(ikhlas.text).length;
-ok("chunks cover every token exactly once",
+ok("segments cover every token exactly once",
   ikhlasChunks[0].from === 0 && ikhlasChunks.at(-1).to === allTokens &&
   ikhlasChunks.every((c, i) => i === 0 || c.from === ikhlasChunks[i - 1].to));
-ok("no chunk exceeds 3 spoken words", chunkText(task("ayat-al-kursi").text, 3).every((c) => c.to - c.from <= 3));
-eq("comma ends a chunk", chunkText("سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ", 3).map((c) => c.to - c.from), [2, 2]);
-eq("single short dhikr is one chunk", chunkText(sw.text, 3).length, 1);
+eq("maxWords caps a run with no clause mark", chunkText("ا ب ت ث ج ح خ", 3).map((c) => c.to - c.from), [3, 3, 1]);
+eq("single short dhikr is one segment", chunkText(sw.text).length, 1);
 
 // ---- game-score --------------------------------------------------------------
 const M = 60 * 1000;

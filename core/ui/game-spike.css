@@ -61,10 +61,10 @@ button { font: inherit; cursor: pointer; }
 .source { font-size: 12px; color: var(--muted-foreground); margin: 0; }
 
 .hint { font-size: 12px; color: var(--muted-foreground); text-align: center; margin: 0; }
-/* The current reading chunk (at most 3 words), big and centered. */
+/* The current reading segment, big and centered. */
 .chunk {
   font-family: var(--font-arabic);
-  font-size: 38px;
+  font-size: 32px;
   line-height: 1.9;
   text-align: center;
   margin: 0;

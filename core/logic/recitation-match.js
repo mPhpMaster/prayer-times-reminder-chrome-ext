@@ -154,15 +154,15 @@ function matchRecitation(heard, target, opts = {}) {
   return { count, progress: pos / T.length, matched, done: false };
 }
 
-// Split a text into short reading chunks (at most maxWords spoken words) so
-// the player reads a few words, pauses, and the next chunk appears. Short
-// utterances decode faster and more accurately than a whole ayah at once.
-// A chunk also ends early at a clause mark (، ۚ ۝ …) so pauses fall naturally.
+// Split a text into reading segments so the player reads one phrase, pauses,
+// and the next appears: short utterances recognize faster and more accurately
+// than a whole ayah. Segments end at clause marks (، ۚ ۗ ۖ ۝ …) so each one is
+// a meaningful phrase; maxWords only caps a run with no mark at all.
 //   words    display words (vocalized, with any attached marks)
 //   from,to  token range [from, to) in tokenize(text) — matches matchRecitation's
 //            `matched` / `progress`, so the current chunk is the one holding pos
 const CLAUSE_END = /[،؛.:!?ۖ-ۜ۝]$/;
-function chunkText(text, maxWords = 3) {
+function chunkText(text, maxWords = 10) {
   const chunks = [];
   let cur = null;
   let token = 0;

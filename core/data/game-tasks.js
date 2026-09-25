@@ -5,6 +5,10 @@
 // lowered from the sunnah counts so a test run stays short — `sunnahRepeat`
 // keeps the real number for the full catalog.
 //
+// Reading is split into meaningful segments at clause marks (see chunkText):
+// waqf signs and ayah ends in Quran text — never edited to force a split —
+// and commas at the natural pauses of a dhikr.
+//
 // Every entry must be ma'thur and carries its source. `review` stays
 // "pending" until the wording and grading are checked; nothing pending ships
 // in a public release (docs/GAME-DESIGN-2026-09-25.md, phase 5).
@@ -22,7 +26,7 @@ const SPIKE_TASKS = [
   {
     id: "tahlil",
     kind: "dhikr",
-    text: "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+    text: "لَا إِلَٰهَ إِلَّا اللَّهُ، وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
     repeat: 3,
     sunnahRepeat: 100,
     source: "البخاري ومسلم",
@@ -32,7 +36,7 @@ const SPIKE_TASKS = [
     id: "sayyid-al-istighfar",
     kind: "dhikr",
     text:
-      "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، " +
+      "اللَّهُمَّ أَنْتَ رَبِّي، لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، " +
       "أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ لَكَ بِذَنْبِي فَاغْفِرْ لِي، " +
       "فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
     repeat: 1,
