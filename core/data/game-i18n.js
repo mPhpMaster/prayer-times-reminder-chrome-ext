@@ -9,7 +9,7 @@
 const GAME_I18N = {
   ar: {
     pageTitle: "أذكار الصلاة",
-    tools: "⚙️ الأدوات",
+    tools: "🕌 المواقيت",
     tabTasks: "المهمات",
     tabBoard: "المتصدرون",
     tabMe: "حسابي",
@@ -81,7 +81,7 @@ const GAME_I18N = {
     follow: "تابِع",
     unfollow: "إلغاء المتابعة",
     saveFail: "تعذّر حفظ الإعداد الآن.",
-    needLocation: "اختر موقعك أولًا من الأدوات والإعدادات، لتُحسب مواقيت الصلاة ومهماتها.",
+    needLocation: "اختر موقعك أولًا من صفحة المواقيت والإعدادات، لتُحسب مواقيت الصلاة ومهماتها.",
     boardRow: (rank, name, n) => `المركز ${rank}: ${name}، ${n} نقطة`,
     openProfile: (name) => `عرض ملف ${name}`,
     tasks: {
@@ -101,7 +101,7 @@ const GAME_I18N = {
 
   en: {
     pageTitle: "Prayer Adhkar",
-    tools: "⚙️ Tools",
+    tools: "🕌 Prayer times",
     tabTasks: "Tasks",
     tabBoard: "Leaderboard",
     tabMe: "My account",
@@ -173,7 +173,7 @@ const GAME_I18N = {
     follow: "Follow",
     unfollow: "Unfollow",
     saveFail: "Couldn't save the setting right now.",
-    needLocation: "Choose your location first under Tools & settings, so prayer times and tasks can be calculated.",
+    needLocation: "Choose your location first in Prayer times › Settings, so prayer times and tasks can be calculated.",
     boardRow: (rank, name, n) => `Rank ${rank}: ${name}, ${n} points`,
     openProfile: (name) => `Open ${name}'s profile`,
     tasks: {
@@ -193,7 +193,7 @@ const GAME_I18N = {
 
   de: {
     pageTitle: "Gebets-Adhkar",
-    tools: "⚙️ Werkzeuge",
+    tools: "🕌 Gebetszeiten",
     tabTasks: "Aufgaben",
     tabBoard: "Bestenliste",
     tabMe: "Mein Konto",
@@ -265,7 +265,7 @@ const GAME_I18N = {
     follow: "Folgen",
     unfollow: "Nicht mehr folgen",
     saveFail: "Die Einstellung konnte gerade nicht gespeichert werden.",
-    needLocation: "Wähle zuerst unter Werkzeuge & Einstellungen deinen Standort, damit Gebetszeiten und Aufgaben berechnet werden.",
+    needLocation: "Wähle zuerst unter Gebetszeiten › Einstellungen deinen Standort, damit Gebetszeiten und Aufgaben berechnet werden.",
     boardRow: (rank, name, n) => `Platz ${rank}: ${name}, ${n} Punkte`,
     openProfile: (name) => `Profil von ${name} öffnen`,
     tasks: {
@@ -285,7 +285,7 @@ const GAME_I18N = {
 
   fr: {
     pageTitle: "Adhkar de la prière",
-    tools: "⚙️ Outils",
+    tools: "🕌 Horaires",
     tabTasks: "Tâches",
     tabBoard: "Classement",
     tabMe: "Mon compte",
@@ -357,7 +357,7 @@ const GAME_I18N = {
     follow: "Suivre",
     unfollow: "Ne plus suivre",
     saveFail: "Impossible d’enregistrer le réglage pour l’instant.",
-    needLocation: "Choisissez d’abord votre position dans Outils et réglages, pour calculer les horaires de prière et les tâches.",
+    needLocation: "Choisissez d’abord votre position dans Horaires › Réglages, pour calculer les horaires de prière et les tâches.",
     boardRow: (rank, name, n) => `Rang ${rank} : ${name}, ${n} points`,
     openProfile: (name) => `Ouvrir le profil de ${name}`,
     tasks: {
@@ -377,7 +377,7 @@ const GAME_I18N = {
 
   es: {
     pageTitle: "Adhkar de la oración",
-    tools: "⚙️ Herramientas",
+    tools: "🕌 Horarios",
     tabTasks: "Tareas",
     tabBoard: "Clasificación",
     tabMe: "Mi cuenta",
@@ -449,7 +449,7 @@ const GAME_I18N = {
     follow: "Seguir",
     unfollow: "Dejar de seguir",
     saveFail: "No se pudo guardar el ajuste ahora.",
-    needLocation: "Elige primero tu ubicación en Herramientas y ajustes, para calcular los horarios de oración y las tareas.",
+    needLocation: "Elige primero tu ubicación en Horarios › Ajustes, para calcular los horarios de oración y las tareas.",
     boardRow: (rank, name, n) => `Puesto ${rank}: ${name}, ${n} puntos`,
     openProfile: (name) => `Abrir el perfil de ${name}`,
     tasks: {
@@ -469,7 +469,7 @@ const GAME_I18N = {
 
   id: {
     pageTitle: "Zikir Salat",
-    tools: "⚙️ Alat",
+    tools: "🕌 Jadwal salat",
     tabTasks: "Tugas",
     tabBoard: "Papan peringkat",
     tabMe: "Akun saya",
@@ -541,7 +541,7 @@ const GAME_I18N = {
     follow: "Ikuti",
     unfollow: "Berhenti mengikuti",
     saveFail: "Tidak bisa menyimpan pengaturan sekarang.",
-    needLocation: "Pilih lokasimu dulu di Alat & pengaturan, agar waktu salat dan tugas bisa dihitung.",
+    needLocation: "Pilih lokasimu dulu di Jadwal salat › Pengaturan, agar waktu salat dan tugas bisa dihitung.",
     boardRow: (rank, name, n) => `Peringkat ${rank}: ${name}, ${n} poin`,
     openProfile: (name) => `Buka profil ${name}`,
     tasks: {
@@ -561,7 +561,7 @@ const GAME_I18N = {
 
   ur: {
     pageTitle: "نماز کے اذکار",
-    tools: "⚙️ ٹولز",
+    tools: "🕌 اوقاتِ نماز",
     tabTasks: "کام",
     tabBoard: "لیڈر بورڈ",
     tabMe: "میرا اکاؤنٹ",
@@ -633,7 +633,7 @@ const GAME_I18N = {
     follow: "فالو کریں",
     unfollow: "فالو ختم کریں",
     saveFail: "ابھی ترتیب محفوظ نہیں ہو سکی۔",
-    needLocation: "پہلے ٹولز اور ترتیبات سے اپنا مقام منتخب کریں، تاکہ نماز کے اوقات اور کام حساب ہو سکیں۔",
+    needLocation: "پہلے اوقاتِ نماز › ترتیبات سے اپنا مقام منتخب کریں، تاکہ نماز کے اوقات اور کام حساب ہو سکیں۔",
     boardRow: (rank, name, n) => `درجہ ${rank}: ${name}، ${n} پوائنٹس`,
     openProfile: (name) => `${name} کا پروفائل کھولیں`,
     tasks: {
@@ -653,7 +653,7 @@ const GAME_I18N = {
 
   hi: {
     pageTitle: "नमाज़ के अज़कार",
-    tools: "⚙️ टूल्स",
+    tools: "🕌 नमाज़ के समय",
     tabTasks: "काम",
     tabBoard: "लीडरबोर्ड",
     tabMe: "मेरा खाता",
@@ -725,7 +725,7 @@ const GAME_I18N = {
     follow: "फ़ॉलो करें",
     unfollow: "फ़ॉलो हटाएँ",
     saveFail: "अभी सेटिंग सहेजी नहीं जा सकी।",
-    needLocation: "पहले टूल्स और सेटिंग्स में अपना स्थान चुनें, ताकि नमाज़ के समय और काम गिने जा सकें।",
+    needLocation: "पहले नमाज़ के समय › सेटिंग्स में अपना स्थान चुनें, ताकि नमाज़ के समय और काम गिने जा सकें।",
     boardRow: (rank, name, n) => `रैंक ${rank}: ${name}, ${n} अंक`,
     openProfile: (name) => `${name} की प्रोफ़ाइल खोलें`,
     tasks: {
@@ -751,7 +751,6 @@ const GAME_I18N_MORE = {
   ar: {
     authIntro: "سجّل الدخول لتظهر في المتصدرين ويتابعك أصدقاؤك. تقدمك محفوظ على جهازك في كل الأحوال.",
     google: "المتابعة بحساب Google",
-    googleOff: "الدخول بحساب Google غير مفعّل بعد؛ استخدم البريد الإلكتروني.",
     orEmail: "أو بالبريد الإلكتروني",
     modeSignIn: "تسجيل الدخول",
     modeSignUp: "حساب جديد",
@@ -821,7 +820,6 @@ const GAME_I18N_MORE = {
   en: {
     authIntro: "Sign in to appear on the leaderboard and let friends follow you. Your progress stays saved on this device either way.",
     google: "Continue with Google",
-    googleOff: "Google sign-in isn't enabled yet; use email instead.",
     orEmail: "or with email",
     modeSignIn: "Sign in",
     modeSignUp: "New account",
@@ -891,7 +889,6 @@ const GAME_I18N_MORE = {
   de: {
     authIntro: "Melde dich an, um in der Bestenliste zu erscheinen und Freunden das Folgen zu ermöglichen. Dein Fortschritt bleibt so oder so auf diesem Gerät.",
     google: "Weiter mit Google",
-    googleOff: "Die Anmeldung mit Google ist noch nicht aktiviert; nutze die E-Mail.",
     orEmail: "oder per E-Mail",
     modeSignIn: "Anmelden",
     modeSignUp: "Neues Konto",
@@ -961,7 +958,6 @@ const GAME_I18N_MORE = {
   fr: {
     authIntro: "Connectez-vous pour apparaître au classement et être suivi par vos amis. Votre progression reste enregistrée sur cet appareil dans tous les cas.",
     google: "Continuer avec Google",
-    googleOff: "La connexion Google n’est pas encore activée ; utilisez l’e-mail.",
     orEmail: "ou par e-mail",
     modeSignIn: "Se connecter",
     modeSignUp: "Nouveau compte",
@@ -1031,7 +1027,6 @@ const GAME_I18N_MORE = {
   es: {
     authIntro: "Inicia sesión para aparecer en la clasificación y que tus amigos te sigan. Tu progreso queda guardado en este dispositivo de todos modos.",
     google: "Continuar con Google",
-    googleOff: "El acceso con Google aún no está activado; usa el correo.",
     orEmail: "o con correo electrónico",
     modeSignIn: "Iniciar sesión",
     modeSignUp: "Cuenta nueva",
@@ -1101,7 +1096,6 @@ const GAME_I18N_MORE = {
   id: {
     authIntro: "Masuk agar tampil di papan peringkat dan bisa diikuti teman. Kemajuanmu tetap tersimpan di perangkat ini.",
     google: "Lanjutkan dengan Google",
-    googleOff: "Masuk dengan Google belum diaktifkan; gunakan email.",
     orEmail: "atau dengan email",
     modeSignIn: "Masuk",
     modeSignUp: "Akun baru",
@@ -1171,7 +1165,6 @@ const GAME_I18N_MORE = {
   ur: {
     authIntro: "لیڈر بورڈ پر آنے اور دوستوں کے فالو کرنے کے لیے سائن اِن کریں۔ آپ کی پیش رفت ہر حال میں اس ڈیوائس پر محفوظ رہتی ہے۔",
     google: "Google کے ساتھ جاری رکھیں",
-    googleOff: "Google سے سائن اِن ابھی فعال نہیں؛ ای میل استعمال کریں۔",
     orEmail: "یا ای میل سے",
     modeSignIn: "سائن اِن",
     modeSignUp: "نیا اکاؤنٹ",
@@ -1241,7 +1234,6 @@ const GAME_I18N_MORE = {
   hi: {
     authIntro: "लीडरबोर्ड पर दिखने और दोस्तों के फ़ॉलो करने के लिए साइन इन करें। आपकी प्रगति हर हाल में इस डिवाइस पर सहेजी रहती है।",
     google: "Google से जारी रखें",
-    googleOff: "Google से साइन इन अभी चालू नहीं है; ईमेल इस्तेमाल करें।",
     orEmail: "या ईमेल से",
     modeSignIn: "साइन इन",
     modeSignUp: "नया खाता",

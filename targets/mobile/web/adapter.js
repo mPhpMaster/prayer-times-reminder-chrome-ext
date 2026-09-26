@@ -686,13 +686,13 @@
   // it while there is a previous screen:
   //   1. the page's own screens first — game.js (__ptBack: reader, tabs,
   //      profile, dialog) or popup.js (__ptPopupBack: Settings -> main view);
-  //   2. then the page's parent page (Tools -> the game). The WebView's own
+  //   2. then the page's parent page (the game -> prayer times). The WebView's own
   //      canGoBack is not used: on device it reports false after an in-app
   //      page change, so the parent is explicit here;
-  //   3. only on the game's home screen, send the app to the background
+  //   3. only on the prayer-times home screen, send the app to the background
   //      (minimize keeps its state; exit is the fallback on old plugins).
   // Registering this listener replaces Capacitor's default back handling.
-  const PARENT_PAGE = { "popup.html": "game.html", "game-spike.html": "popup.html" };
+  const PARENT_PAGE = { "game.html": "popup.html", "game-spike.html": "popup.html" };
   if (CapApp && CapApp.addListener) {
     CapApp.addListener("backButton", () => {
       const hook = window.__ptBack || window.__ptPopupBack;
@@ -722,7 +722,11 @@
   if (LocalNotifications && LocalNotifications.addListener) {
     LocalNotifications.addListener("localNotificationActionPerformed", (e) => {
       const extra = e && e.notification && e.notification.extra;
-      if (extra && extra.game) return; // game alert: opening the app is enough
+      if (extra && extra.game) {
+        // Game alert ("tasks are open"): take the player to the game.
+        if (!/\/game\.html$/.test(location.pathname)) location.href = "game.html";
+        return;
+      }
       startLockForPrayer(extra && extra.prayer);
     });
   }

@@ -1120,14 +1120,6 @@ el.aboutLink.addEventListener("click", (e) => {
 // shows in the debug build only.
 if (Platform.speech) {
   document.getElementById("game-link").hidden = false;
-  // Came here from the game ("الأدوات")? Step back to it instead of stacking
-  // another game page, so Android back keeps a short, sensible history.
-  document.getElementById("game-link").addEventListener("click", (e) => {
-    if (/\/game\.html(#.*)?$/.test(document.referrer) && window.history.length > 1) {
-      e.preventDefault();
-      window.history.back();
-    }
-  });
   if (Platform.devBuild) {
     Platform.devBuild().then((dev) => {
       if (dev) document.getElementById("game-spike-link").hidden = false;

@@ -424,6 +424,18 @@ eq("city names carry no harakat", cityValues.filter((v) => /[ً-ْ]/.test(v)), [
 const egCities = JSON.parse(fs.readFileSync(path.join(cityDir, `${cityIndex.Egypt}.json`), "utf8"));
 eq("Egypt: real names, not letter-by-letter", [egCities.Cairo, egCities.Alexandria, egCities.Helwan], ["القاهرة", "الإسكندرية", "حلوان"]);
 
+// ---- prayer times are home; sign-in is only for the optional game --------------------
+const REPO = path.resolve(__dirname, "..", "..");
+const mobileIndex = fs.readFileSync(path.join(REPO, "targets", "mobile", "web", "index.html"), "utf8");
+ok("Android opens on prayer times (popup.html), not the game", /location\.replace\("popup\.html" \+ location\.hash\)/.test(mobileIndex) && !/"game\.html"/.test(mobileIndex));
+const adapterSrc = fs.readFileSync(path.join(REPO, "targets", "mobile", "web", "adapter.js"), "utf8");
+ok("Android back: the game's parent is prayer times", /PARENT_PAGE = \{ "game\.html": "popup\.html"/.test(adapterSrc));
+ok("prayer times has no parent page (back there leaves the app)", !/"popup\.html": "/.test(adapterSrc));
+ok("no 'Google not enabled' placeholder in the game page", !/google-off|googleOff/.test(html));
+ok("no 'Google not enabled' string in any language", Object.values(I.GAME_I18N).every((d) => !("googleOff" in d)));
+const popupSrc = fs.readFileSync(path.join(ROOT, "popup.js"), "utf8");
+ok("prayer times never asks for a game account", !/gameAccount|GAME_ACCOUNT_KEY|signIn|\/v1\/auth/.test(popupSrc));
+
 if (failures.length) {
   console.error(`game: ${failures.length} FAILED, ${passed} passed`);
   failures.forEach((f) => console.error("  ✗ " + f));
