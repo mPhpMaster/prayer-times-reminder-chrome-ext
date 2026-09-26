@@ -219,7 +219,14 @@
     },
   };
 
-  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions, speech };
+  // The debug build installs as com.mphpmaster.prayer.debug (build.gradle
+  // applicationIdSuffix), so developer-only screens can hide in release.
+  const devBuild = () =>
+    P.App.getInfo()
+      .then((i) => /\.debug$/.test(i.id))
+      .catch(() => false);
+
+  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions, speech, devBuild };
 
   // --- scheduled prayer notifications (rolling ~7-day window) ----------------
   // Computed offline from prayer-engine + notify-plan, scheduled via

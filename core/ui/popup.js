@@ -1079,10 +1079,16 @@ el.aboutLink.addEventListener("click", (e) => {
   window.location.href = "about.html";
 });
 
-// Game + phase 0 voice spike entries — only where the shell provides speech (Android).
+// Game entry — only where the shell provides speech (Android). The phase 0
+// voice spike is a developer page (its Whisper model isn't bundled), so it
+// shows in the debug build only.
 if (Platform.speech) {
   document.getElementById("game-link").hidden = false;
-  document.getElementById("game-spike-link").hidden = false;
+  if (Platform.devBuild) {
+    Platform.devBuild().then((dev) => {
+      if (dev) document.getElementById("game-spike-link").hidden = false;
+    });
+  }
 }
 
 el.langSelect.addEventListener("change", () => {

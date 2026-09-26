@@ -17,6 +17,8 @@
 //   Platform.enforce.clear()               -> { ok }            end any active lock
 //   Platform.dhikr.test()                  -> { ok, reason? }   show a test dhikr now
 //   Platform.runtime.getURL(path)          -> string   (sync)
+//   Platform.devBuild?()                   -> boolean   optional (Android): true only in the
+//                                            debug build; gates developer-only screens
 //   Platform.speech?                       optional (Android only for now):
 //     .status()                            -> { available, onDevice, permission, whisper }
 //     .start({ lang, preferOffline, engine: "default"|"onDevice"|"whisper",
