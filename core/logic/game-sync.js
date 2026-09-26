@@ -5,7 +5,7 @@
 // sends finished items not yet acknowledged, and the server dedupes, so a
 // retry after a network failure is harmless.
 //
-//   gameApi(baseUrl, token)            -> { register, me, updateMe, pushProgress, users, profile,
+//   gameApi(baseUrl, token)            -> { register, me, updateMe, deleteMe, pushProgress, users, profile,
 //                                           follow, unfollow, following, leaderboard }
 //   pendingCompletions(state)          -> rows for POST /v1/progress
 //   markSynced(state, rows)
@@ -48,6 +48,7 @@ function gameApi(baseUrl, token) {
     register: (username) => call("POST", "/v1/register", { username }),
     me: () => call("GET", "/v1/me"),
     updateMe: (patch) => call("PATCH", "/v1/me", patch),
+    deleteMe: () => call("DELETE", "/v1/me"),
     pushProgress: (completions) => call("POST", "/v1/progress", { completions }),
     users: (q) => call("GET", `/v1/users?q=${u(q)}`),
     profile: (name, month) => call("GET", `/v1/users/${u(name)}?month=${month}`),

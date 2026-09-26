@@ -29,12 +29,13 @@
 </head>
 <body>
   <h1>Privacy Policy — Prayer Times Reminder</h1>
-  <p class="updated">Last updated: 25 September 2026 &middot; Applies to the Chrome extension, the Windows app, and the Android app.</p>
+  <p class="updated">Last updated: 26 September 2026 &middot; Applies to the Chrome extension, the Windows app, and the Android app.</p>
 
   <div class="card">
     <p><strong>Prayer Times Reminder</strong> (“the app”) is built to respect your privacy.
-    It has no user accounts, shows no ads, and includes no third‑party analytics or
-    tracking. The developer cannot see your data.</p>
+    It shows no ads and includes no third‑party analytics or tracking. The only data the developer
+    receives is what you choose to share through the optional <strong>game account</strong> on Android
+    (see “Android game” below).</p>
   </div>
 
   <h2>What the app stores</h2>
@@ -63,8 +64,7 @@
     <li><strong>Nominatim / OpenStreetMap</strong> (<code>nominatim.openstreetmap.org</code>) — the <em>name</em> of the city you select (with its country), to find its coordinates for the offline calculation and, when the interface language is Arabic, to show its Arabic label. Your device coordinates are not sent.</li>
   </ul>
   <p>These services receive your request the way any website does (including your IP address) and
-  handle it under their own privacy policies. The developer does not run a server and receives none
-  of this data.</p>
+  handle it under their own privacy policies. The developer receives none of this data.</p>
 
   <h2>Permissions</h2>
   <p>The prayer lock covers the screen (or the browser tab, in the extension) during prayer
@@ -75,7 +75,7 @@
   <p>On Android, settings and cached prayer times are stored in the app’s private storage on your
   phone. If you use your device’s location, the coordinates are used <strong>on the phone</strong> to
   calculate prayer times and are never sent anywhere. Only the requests listed above (a country or
-  city <em>name</em>) leave the device, over HTTPS.</p>
+  city <em>name</em>) and, if you create one, your game account data (see “Android game”) leave the device, over HTTPS.</p>
   <p>The app asks for these Android permissions. Each one is used only for the purpose shown:</p>
   <ul>
     <li><strong>Location</strong> (approximate/precise) — optional; to calculate prayer times for where you are, on the device.</li>
@@ -86,17 +86,36 @@
     <li><strong>Do Not Disturb access</strong> — optional “silent during prayer”; your previous setting is restored when the lock ends.</li>
     <li><strong>Ignore battery optimizations</strong> — so the phone’s battery saver does not stop reminders from arriving.</li>
     <li><strong>Run at startup</strong> — to re-schedule reminders after the phone restarts.</li>
-    <li><strong>Internet</strong> — only for the city lookups listed above.</li>
+    <li><strong>Microphone</strong> — only while you tap the microphone in the game to recite a dhikr (see below).</li>
+    <li><strong>Internet</strong> — for the city lookups listed above and, if you create a game account, the game server.</li>
   </ul>
   <p>The app never ends or blocks a phone call: if a prayer lock is due during a call, it waits until the call ends.</p>
 
+  <h2>Android game</h2>
+  <p>The Android app opens on a dhikr game. Playing works entirely on your phone. Two parts are optional:</p>
+  <ul>
+    <li><strong>Game account.</strong> If you create one, it is only a <strong>username</strong> you choose (no email,
+    no password, no phone number). The app then sends to our game server (<code>prayer-times.sarhsoft.com</code>,
+    over HTTPS): your username, the dhikr tasks you finish (task, points, and the time you started and finished),
+    the players you follow, and whether you hid your progress. The server uses this only to show the leaderboard and
+    your points to the players who follow you; it keeps a hash of your access token, never the token itself.
+    Your location, city and prayer times are never sent — prayer windows are computed on the phone.
+    You can hide your progress from others at any time.</li>
+    <li><strong>Voice.</strong> When you tap the microphone to recite, the app uses Android’s speech recognition
+    (Google’s voice input). Your voice is processed by that service under
+    <a href="https://policies.google.com/privacy">Google’s privacy policy</a>. The app only receives the recognized
+    text, compares it with the dhikr on your phone, and does not store or send your voice or the text to us.</li>
+  </ul>
+
   <h2>Deleting your data</h2>
-  <p>The developer does not store any of your data, so there is nothing to request. To delete everything
-  the app keeps on your device, clear the app’s data (Android: Settings › Apps › Prayer Times Reminder › Storage ›
-  Clear data) or uninstall it.</p>
+  <p><strong>Game account:</strong> in the app, open <em>حسابي</em> (My account) › <em>احذف حسابي</em> (Delete my account).
+  This permanently deletes your username, points, progress and follows from our server at once. If you no longer
+  have the app, see <a href="delete-account.html">how to request deletion</a>.</p>
+  <p><strong>On your phone:</strong> to delete everything the app keeps on your device, clear the app’s data
+  (Android: Settings › Apps › Prayer Times Reminder › Storage › Clear data) or uninstall it.</p>
 
   <h2>Children</h2>
-  <p>The app is suitable for all ages and does not knowingly collect any personal information from anyone.</p>
+  <p>The app is suitable for all ages. The optional game account asks only for a username; the app does not knowingly collect any other personal information from anyone.</p>
 
   <h2>Changes</h2>
   <p>If this policy changes, the “last updated” date above will change accordingly.</p>

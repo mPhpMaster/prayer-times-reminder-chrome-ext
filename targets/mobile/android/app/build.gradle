@@ -16,8 +16,8 @@ android {
         applicationId "com.mphpmaster.prayer"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 221
-        versionName "2.2.4"
+        versionCode 222
+        versionName "2.3.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // sherpa-onnx ships native libs for 4 ABIs; x86/32-bit emulators aren't targets.
         ndk { abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }

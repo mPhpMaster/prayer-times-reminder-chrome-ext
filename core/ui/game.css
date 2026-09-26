@@ -192,3 +192,12 @@ input[type="search"], #username, #search {
 .row { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.6; }
 #me-view h3 { font-size: 15px; margin: 14px 0 4px; }
 .who { margin: 0; }
+.note { font-size: 13px; color: var(--muted-foreground); margin: 0 0 8px; }
+.danger {
+  background: transparent;
+  color: var(--destructive);
+  border: 1px solid var(--destructive);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-weight: 700;
+}
