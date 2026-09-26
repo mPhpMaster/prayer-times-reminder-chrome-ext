@@ -540,7 +540,15 @@ async function loadCities(preselect) {
   if (lang === "ar") await loadBundledCityNames(country);
   // In Arabic, sort by the Arabic name; cities with no Arabic name (shown in
   // English) come after them.
-  const rows = cities.map((c) => ({ c, label: cityLabel(c, country) }));
+  // The source lists some places under two spellings (Assiut / Asyūţ); in
+  // Arabic both read "أسيوط", so show it once (keeping the preselected one).
+  const seen = new Set();
+  let rows = cities.map((c) => ({ c, label: cityLabel(c, country) }));
+  if (lang === "ar") {
+    rows = rows
+      .sort((a, b) => Number(b.c === preselect) - Number(a.c === preselect))
+      .filter(({ label }) => (seen.has(label) ? false : seen.add(label)));
+  }
   if (lang === "ar") {
     const isAr = (t) => /[؀-ۿ]/.test(t);
     rows.sort((a, b) => Number(!isAr(a.label)) - Number(!isAr(b.label)) || a.label.localeCompare(b.label, "ar"));
