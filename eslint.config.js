@@ -33,6 +33,11 @@ module.exports = [
     }
   },
   {
+    // The extension's lazily imported ES modules (adapter.js loads them on first use).
+    files: ["targets/extension/speech-web.js", "targets/extension/google-auth-chrome.js"],
+    languageOptions: { sourceType: "module", globals: { ...sharedGlobals, crypto: "readonly", atob: "readonly" } }
+  },
+  {
     // Architectural guard: core/ must be platform-agnostic. Platform calls
     // (chrome.*) belong only in the per-target adapters under targets/.
     files: ["core/**/*.js"],

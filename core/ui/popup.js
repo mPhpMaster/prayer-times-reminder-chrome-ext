@@ -894,6 +894,7 @@ function applyLanguage() {
   el.labelStartup.textContent = t.startupLabel;
   el.hintStartup.textContent = t.startupHint;
   el.aboutLink.textContent = t.aboutBtn;
+  document.getElementById("game-link").textContent = t.gameBtn;
 
   updateLockOptionsVisibility();
   updateTasbihOptionsVisibility();
@@ -1115,11 +1116,17 @@ el.aboutLink.addEventListener("click", (e) => {
   window.location.href = "about.html";
 });
 
-// Game entry — only where the shell provides speech (Android). The phase 0
-// voice spike is a developer page (its Whisper model isn't bundled), so it
-// shows in the debug build only.
+// Game entry — only where the shell provides speech (Android, Chrome). The
+// phase 0 voice spike is a developer page (its Whisper model isn't bundled),
+// so it shows in the debug build only. The extension popup is too small and
+// transient for the game (and can't ask for the microphone), so there it
+// opens in its own tab, like "About".
 if (Platform.speech) {
   document.getElementById("game-link").hidden = false;
+  if (Platform.name === "chrome") {
+    document.getElementById("game-link").target = "_blank";
+    document.getElementById("game-link").rel = "noopener";
+  }
   // Came here from the game ("الأدوات")? Step back to it instead of stacking
   // another game page, so Android back keeps a short, sensible history.
   document.getElementById("game-link").addEventListener("click", (e) => {

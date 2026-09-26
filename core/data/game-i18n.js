@@ -751,7 +751,6 @@ const GAME_I18N_MORE = {
   ar: {
     authIntro: "سجّل الدخول لتظهر في المتصدرين ويتابعك أصدقاؤك. تقدمك محفوظ على جهازك في كل الأحوال.",
     google: "المتابعة بحساب Google",
-    googleOff: "الدخول بحساب Google غير مفعّل بعد؛ استخدم البريد الإلكتروني.",
     orEmail: "أو بالبريد الإلكتروني",
     modeSignIn: "تسجيل الدخول",
     modeSignUp: "حساب جديد",
@@ -821,7 +820,6 @@ const GAME_I18N_MORE = {
   en: {
     authIntro: "Sign in to appear on the leaderboard and let friends follow you. Your progress stays saved on this device either way.",
     google: "Continue with Google",
-    googleOff: "Google sign-in isn't enabled yet; use email instead.",
     orEmail: "or with email",
     modeSignIn: "Sign in",
     modeSignUp: "New account",
@@ -891,7 +889,6 @@ const GAME_I18N_MORE = {
   de: {
     authIntro: "Melde dich an, um in der Bestenliste zu erscheinen und Freunden das Folgen zu ermöglichen. Dein Fortschritt bleibt so oder so auf diesem Gerät.",
     google: "Weiter mit Google",
-    googleOff: "Die Anmeldung mit Google ist noch nicht aktiviert; nutze die E-Mail.",
     orEmail: "oder per E-Mail",
     modeSignIn: "Anmelden",
     modeSignUp: "Neues Konto",
@@ -961,7 +958,6 @@ const GAME_I18N_MORE = {
   fr: {
     authIntro: "Connectez-vous pour apparaître au classement et être suivi par vos amis. Votre progression reste enregistrée sur cet appareil dans tous les cas.",
     google: "Continuer avec Google",
-    googleOff: "La connexion Google n’est pas encore activée ; utilisez l’e-mail.",
     orEmail: "ou par e-mail",
     modeSignIn: "Se connecter",
     modeSignUp: "Nouveau compte",
@@ -1031,7 +1027,6 @@ const GAME_I18N_MORE = {
   es: {
     authIntro: "Inicia sesión para aparecer en la clasificación y que tus amigos te sigan. Tu progreso queda guardado en este dispositivo de todos modos.",
     google: "Continuar con Google",
-    googleOff: "El acceso con Google aún no está activado; usa el correo.",
     orEmail: "o con correo electrónico",
     modeSignIn: "Iniciar sesión",
     modeSignUp: "Cuenta nueva",
@@ -1101,7 +1096,6 @@ const GAME_I18N_MORE = {
   id: {
     authIntro: "Masuk agar tampil di papan peringkat dan bisa diikuti teman. Kemajuanmu tetap tersimpan di perangkat ini.",
     google: "Lanjutkan dengan Google",
-    googleOff: "Masuk dengan Google belum diaktifkan; gunakan email.",
     orEmail: "atau dengan email",
     modeSignIn: "Masuk",
     modeSignUp: "Akun baru",
@@ -1171,7 +1165,6 @@ const GAME_I18N_MORE = {
   ur: {
     authIntro: "لیڈر بورڈ پر آنے اور دوستوں کے فالو کرنے کے لیے سائن اِن کریں۔ آپ کی پیش رفت ہر حال میں اس ڈیوائس پر محفوظ رہتی ہے۔",
     google: "Google کے ساتھ جاری رکھیں",
-    googleOff: "Google سے سائن اِن ابھی فعال نہیں؛ ای میل استعمال کریں۔",
     orEmail: "یا ای میل سے",
     modeSignIn: "سائن اِن",
     modeSignUp: "نیا اکاؤنٹ",
@@ -1241,7 +1234,6 @@ const GAME_I18N_MORE = {
   hi: {
     authIntro: "लीडरबोर्ड पर दिखने और दोस्तों के फ़ॉलो करने के लिए साइन इन करें। आपकी प्रगति हर हाल में इस डिवाइस पर सहेजी रहती है।",
     google: "Google से जारी रखें",
-    googleOff: "Google से साइन इन अभी चालू नहीं है; ईमेल इस्तेमाल करें।",
     orEmail: "या ईमेल से",
     modeSignIn: "साइन इन",
     modeSignUp: "नया खाता",

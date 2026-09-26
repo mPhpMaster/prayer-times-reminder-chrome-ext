@@ -1,6 +1,6 @@
 # Privacy Policy — Prayer Times Reminder
 
-_Last updated: 2 July 2026_
+_Last updated: 27 September 2026_
 
 **Prayer Times Reminder** ("the extension") is designed to respect your privacy.
 This policy explains what data the extension uses and how.
@@ -24,8 +24,12 @@ The extension stores the following **locally on your device** using Chrome's
 - A **cache** of today's prayer times and the city list for your country, so the
   popup loads quickly.
 
+- Your **dhikr game** progress (tasks finished, points, times) and game
+  settings, if you play the optional game.
+
 This data never leaves your device except as described below, and the developer
-has **no access** to it.
+has **no access** to it. Prayer times, prayer alerts and every prayer setting
+work **without any account**.
 
 ## Data sent to third parties
 
@@ -47,7 +51,30 @@ free public APIs:
   return prayer times.
 
 Only the minimum information needed to fulfill the request is sent. No personal
-identifiers, accounts, or contact details are transmitted.
+identifiers, accounts, or contact details are sent to these services.
+
+## Optional dhikr game and game account
+
+The popup's **Prayer Adhkar** link opens an optional game page. Playing works
+entirely in the extension, and your progress stays on your device.
+
+- **Voice.** When you tap the microphone to recite, the page uses Chrome's
+  built-in speech recognition, which asks for microphone permission the first
+  time. Your voice is processed by that service under
+  [Google's privacy policy](https://policies.google.com/privacy). The extension
+  only receives the recognized text, compares it with the dhikr locally, and
+  does not store or send your voice or the text to the developer.
+- **Game account (optional, only for the leaderboard and follows).** You can
+  sign in with an **email address and password**, or with **Google** (Chrome's
+  own sign-in window, via the `identity` permission — the extension receives
+  only the sign-in token Google issues for the game). The game server
+  (`prayer-times.sarhsoft.com`, HTTPS) then stores your email, a one-way hash of
+  your password (never the password), Google's account ID if you use Google,
+  your public username, the dhikr tasks you finish (task, points, start and
+  finish times), the players you follow, and whether you hid your progress.
+  Your location, city and prayer times are never sent. You can delete the
+  account at any time from **My account › Delete my account**; see
+  [the full policy](https://github.com/mPhpMaster/prayer-times-reminder-chrome-ext/blob/main/docs/privacy.html).
 
 ## Tab lock and page access
 
@@ -96,7 +123,8 @@ Dhikr reminders cannot run on restricted Chrome pages (e.g. `chrome://` or
 - It does **not** collect, sell, or share your personal data.
 - It does **not** use analytics or tracking.
 - It does **not** show ads.
-- It does **not** transmit data to the developer.
+- It does **not** transmit data to the developer, except the optional game
+  account data you choose to share (above).
 - It does **not** monitor or record your browsing activity.
 
 ## Permissions
@@ -108,6 +136,7 @@ Dhikr reminders cannot run on restricted Chrome pages (e.g. `chrome://` or
 | `storage` | Save your location, language, preferences, and cached times locally. |
 | `geolocation` | Optional; only used if you click **Use my location**. |
 | `scripting` | Inject the lock overlay and dhikr card scripts into your open tabs. |
+| `identity` | Optional **Continue with Google** in the dhikr game: opens Chrome's Google sign-in window. Not used for anything else; prayer features never need it. |
 | `<all_urls>` (optional) | Inject the tab-lock overlay and the dhikr card on your open website tabs. Requested at runtime when you first enable tab lock or dhikr — **not** granted at install, and you can decline. |
 
 The extension declares **no** host permissions for the AlAdhan, CountriesNow, or

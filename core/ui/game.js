@@ -775,7 +775,7 @@ function authErrorText(e) {
     "username-taken": G.usernameTaken,
     "account-conflict": G.accountConflict,
     "google-invalid": G.googleFailed,
-    "google-unavailable": G.googleOff,
+    "google-unavailable": G.googleFailed,
     "bad-code": G.badCode,
     "code-expired": G.codeExpired,
     "too-many-attempts": G.tooMany,
@@ -842,10 +842,10 @@ async function renderMe() {
   if (account && account.legacy) $("legacy-note").textContent = G.legacyNote(account.username);
   if (!signedIn && $("google-name").hidden && $("reset").hidden) showAuthPane("main");
 
-  const cfg = await loadAuthConfig();
-  const googleReady = !!(cfg && cfg.google && Platform.googleAuth);
-  $("google-btn").hidden = !googleReady;
-  $("google-off").hidden = googleReady;
+  // Google sign-in is offered wherever the shell can do it; its client id is
+  // fetched when the button is pressed (signInWithGoogle).
+  $("google-btn").hidden = !Platform.googleAuth;
+  loadAuthConfig();
 
   if (!account) return;
   $("me-name").textContent = account.username;
@@ -902,7 +902,8 @@ function submitAuth(ev) {
 function signInWithGoogle() {
   withBusy($("google-btn"), async () => {
     const cfg = await loadAuthConfig();
-    if (!cfg || !cfg.google || !Platform.googleAuth) throw { code: "google-unavailable" };
+    if (!cfg) throw { code: "offline" };
+    if (!cfg.google || !Platform.googleAuth) throw { code: "google-unavailable" };
     const idToken = await Platform.googleAuth.signIn(cfg.google.clientId);
     try {
       await signedIn(await gameApi(apiUrl).google(idToken, undefined, legacyToken()));
