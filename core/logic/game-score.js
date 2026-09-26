@@ -46,12 +46,20 @@ function taskPoints(maxPoints, win, startedAt) {
   return Math.round(maxPoints * pointsFactor(win, startedAt));
 }
 
-// Split a window's total across its tasks by weight (default: equal), with
-// the rounding remainder on the last task so the parts always sum to total.
+// Split a window's total across its tasks by weight (default: equal). The
+// catalog weighs each task by the words actually recited — its word count
+// times its repeat (game-tasks.js) — so a longer / more repeated dhikr earns
+// more. Largest-remainder rounding: every task gets at least 1 point and the
+// parts always sum to exactly `total`.
 function splitWindowPoints(tasks, total = WINDOW_POINTS) {
-  const weights = tasks.map((t) => t.weight || 1);
-  const sum = weights.reduce((a, b) => a + b, 0) || 1;
-  const parts = weights.map((w) => Math.floor((total * w) / sum));
-  if (parts.length) parts[parts.length - 1] += total - parts.reduce((a, b) => a + b, 0);
+  if (!tasks.length) return [];
+  const weights = tasks.map((t) => (t.weight > 0 ? t.weight : 1));
+  const sum = weights.reduce((a, b) => a + b, 0);
+  const free = total - tasks.length; // 1 point each up front
+  const exact = weights.map((w) => (free * w) / sum);
+  const parts = exact.map((x) => 1 + Math.floor(x));
+  let left = total - parts.reduce((a, b) => a + b, 0);
+  const order = exact.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+  for (let k = 0; left > 0; k = (k + 1) % order.length, left--) parts[order[k][1]]++;
   return parts;
 }

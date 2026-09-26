@@ -55,3 +55,12 @@ function makeWindow(prayer, date, prayerAt, nextPrayerAt) {
   const day = dayKey(date);
   return { key: `${day}:${prayer}`, prayer, day, prayerAt, nextPrayerAt, win: taskWindow(prayerAt, nextPrayerAt) };
 }
+
+// The window only changes at a prayer time, so the per-second tick recomputes
+// prayer times (currentWindow) just once a minute — or at once when the next
+// prayer is reached, so the switch is never late. Countdowns use the cached
+// window's timestamps and stay second-accurate.
+const WINDOW_RECHECK_MS = 60 * 1000;
+function needsWindowRefresh(current, lastCheckMs, nowMs) {
+  return !current || nowMs >= current.nextPrayerAt || nowMs - lastCheckMs >= WINDOW_RECHECK_MS || nowMs < lastCheckMs;
+}

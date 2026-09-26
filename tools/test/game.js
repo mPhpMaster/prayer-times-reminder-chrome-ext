@@ -18,16 +18,19 @@ load("game-windows.js");
 load("game-state.js");
 load("game-tasks.js");
 load("game-sync.js");
+load("game-i18n.js");
 load("notify-plan.js");
 vm.runInContext(
   "this.__m = { normalizeArabic, tokenize, matchRecitation, matchTask, wordSimilarity, chunkText };" +
     "this.__s = { taskWindow, pointsFactor, taskPoints, splitWindowPoints };" +
     "this.__tasks = SPIKE_TASKS;" +
-    "this.__w = { currentWindow, GAME_PRAYERS };" +
-    "this.__st = { emptyGameState, markTaskStarted, markTaskDone, markGiftDone, windowPoints, pointsWithPrefix, allTasksDone, pruneGameState, normalizeGameState };" +
+    "this.__w = { currentWindow, GAME_PRAYERS, needsWindowRefresh, WINDOW_RECHECK_MS };" +
+    "this.__st = { emptyGameState, markTaskStarted, markTaskDone, markGiftDone, windowPoints, pointsWithPrefix, allTasksDone, pruneGameState, normalizeGameState, noteRecognition, savePartial, partialHeard, clearStalePartials };" +
     "this.__cat = { GAME_TASKS, WINDOW_TASKS, tasksForWindow, GIFTS, giftForWindow };" +
-    "this.__sync = { pendingCompletions, markSynced };" +
-    "this.__alerts = { planGameAlerts, GAME_ALERT_ID_BASE };",
+    "this.__sync = { pendingCompletions, markSynced, adoptSyncAccount, syncBatches, SYNC_BATCH };" +
+    "this.__x = { recordDuration, lastDuration, durationKey, resumeTarget, dayJourney, monthCalendar };" +
+    "this.__alerts = { planGameAlerts, GAME_ALERT_ID_BASE };" +
+    "this.__i18n = { GAME_I18N, gameT, gameTaskTitle, SUPPORTED_LANGS };",
   ctx
 );
 const { normalizeArabic, tokenize, matchRecitation, matchTask, chunkText } = ctx.__m;
@@ -138,7 +141,7 @@ eq("short window full at open", taskPoints(300, shortWin, maghrib + 30 * M), 300
 eq("short window floor after full period", taskPoints(300, shortWin, maghrib + 65 * M), 50);
 
 eq("split 300 equally over 4", splitWindowPoints([{}, {}, {}, {}]), [75, 75, 75, 75]);
-eq("split remainder lands on last", splitWindowPoints([{}, {}, {}], 100), [33, 33, 34]);
+eq("split remainder: largest fraction first, ties to the first", splitWindowPoints([{}, {}, {}], 100), [34, 33, 33]);
 eq("split by weight", splitWindowPoints([{ weight: 1 }, { weight: 2 }], 300), [100, 200]);
 
 // ---- game-windows: which window is "now" -----------------------------------------
@@ -232,6 +235,183 @@ eq("falaq: one segment per ayah", chunkText(C.GAME_TASKS["al-falaq"].text).lengt
 ok("every task has id, text, source, review", TASKS.every((t) => t.id && t.text && t.source && t.review));
 ok("task ids unique", new Set(TASKS.map((t) => t.id)).size === TASKS.length);
 ok("every task tokenizes", TASKS.every((t) => tokenize(t.text).length > 0));
+
+// ---- «الحمدلله» written as one word --------------------------------------------------
+eq("joined الحمدلله splits", normalizeArabic("الحمدلله"), "الحمد لله");
+eq("joined والحمدلله splits", normalizeArabic("والحمدلله رب العالمين"), "والحمد لله رب العالمين");
+eq("والله / بالله untouched", normalizeArabic("والله بالله لله"), "والله بالله لله");
+const tahmid = { text: "الْحَمْدُ لِلَّهِ", repeat: 33 };
+const times = (s, n) => Array(n).fill(s).join(" ");
+eq("tahmid x33 spaced", matchTask(times("الحمد لله", 33), tahmid).count, 33);
+eq("tahmid x33 joined", matchTask(times("الحمدلله", 33), tahmid).count, 33);
+eq("tahmid mixed spellings", matchTask(times("الحمدلله الحمد لله", 17), tahmid).count, 33);
+
+// ---- consecutive tasbihat -----------------------------------------------------------
+const tasbih = { text: "سُبْحَانَ اللَّهِ", repeat: 33 };
+eq("33 tasbihat in one breath", matchTask(times("سبحان الله", 33), tasbih).count, 33);
+const finalsSplit = [times("سبحان الله", 10), times("سبحان الله", 12), times("سبحان الله", 11)];
+eq("33 tasbihat across three utterances", matchTask(finalsSplit.join(" "), tasbih).count, 33);
+eq("clipped ones (سبحان alone) are not counted", matchTask(times("سبحان الله سبحان", 10), tasbih).count, 10);
+eq("never more than the target", matchTask(times("سبحان الله", 40), tasbih).count, 33);
+eq("another dhikr doesn't count as tasbih", matchTask(times("الحمد لله", 33), tasbih).count, 0);
+
+// ---- start time = first recognized word (anti-exploit) --------------------------------
+const K = "2026-09-25:Dhuhr";
+const st3 = S.emptyGameState();
+const nothing = matchTask("", tasbih); // mic opened and closed, nothing read
+ok("mic open/close without reading: no start", !S.noteRecognition(st3, K, "tasbih-33", false, nothing, 1000));
+ok("… and no record holds a start time",
+  !(st3.windows[K] && st3.windows[K].tasks["tasbih-33"] && st3.windows[K].tasks["tasbih-33"].startedAt));
+const noise = matchTask("مرحبا كيف الحال", tasbih);
+ok("unrelated speech: no start", !S.noteRecognition(st3, K, "tasbih-33", false, noise, 2000));
+const firstWord = matchTask("سبحان", tasbih);
+ok("first recognized word starts it", S.noteRecognition(st3, K, "tasbih-33", false, firstWord, 5000));
+ok("later words don't move the start", !S.noteRecognition(st3, K, "tasbih-33", false, matchTask("سبحان الله", tasbih), 9000));
+eq("start is the first word's time", st3.windows[K].tasks["tasbih-33"].startedAt, 5000);
+S.noteRecognition(st3, K, "afuwwun", true, matchTask("اللهم", { text: "اللَّهُمَّ إِنَّكَ عَفُوٌّ" }), 7000);
+eq("the gift also starts at its first word", st3.windows[K].gift.startedAt, 7000);
+// Early-lock exploit, end to end: mic opened at minute 31, reading only at minute 200.
+const w3h = taskWindow(0, 210 * M);
+const st4 = S.emptyGameState();
+S.noteRecognition(st4, K, "tasbih-33", false, matchTask("", tasbih), 31 * M);
+S.noteRecognition(st4, K, "tasbih-33", false, matchTask("سبحان الله", tasbih), 200 * M);
+eq("points follow the reading time, not the mic press",
+  taskPoints(58, w3h, st4.windows[K].tasks["tasbih-33"].startedAt), taskPoints(58, w3h, 200 * M));
+ok("… which is less than the early points", taskPoints(58, w3h, 200 * M) < taskPoints(58, w3h, 31 * M));
+
+// ---- partial progress ---------------------------------------------------------------
+const st5 = S.emptyGameState();
+S.savePartial(st5, K, "tasbih-33", false, ["سبحان الله سبحان الله"]);
+eq("partial restored after leaving", S.partialHeard(st5, K, "tasbih-33", false), ["سبحان الله سبحان الله"]);
+eq("restored partial resumes the count", matchTask(S.partialHeard(st5, K, "tasbih-33", false).join(" "), tasbih).count, 2);
+ok("saving a partial does not start the task", !st5.windows[K].tasks["tasbih-33"].startedAt);
+eq("partial for a task with none", S.partialHeard(st5, K, "tahmid-33", false), []);
+S.savePartial(st5, K, "afuwwun", true, ["اللهم"]);
+eq("gift partial", S.partialHeard(st5, K, "afuwwun", true), ["اللهم"]);
+S.markTaskDone(st5, K, "tasbih-33", 58, 10);
+eq("done clears its partial", S.partialHeard(st5, K, "tasbih-33", false), []);
+ok("done removes the stored transcript", !("heard" in st5.windows[K].tasks["tasbih-33"]));
+S.savePartial(st5, K, "tasbih-33", false, ["سبحان"]);
+ok("a done task takes no new partial", !("heard" in st5.windows[K].tasks["tasbih-33"]));
+S.savePartial(st5, K, "tahmid-33", false, ["الحمد لله"]);
+S.clearStalePartials(st5, K);
+eq("current window keeps its partial", S.partialHeard(st5, K, "tahmid-33", false), ["الحمد لله"]);
+S.clearStalePartials(st5, "2026-09-25:Asr");
+eq("window over: partial cleared", S.partialHeard(st5, K, "tahmid-33", false), []);
+eq("window over: gift partial cleared", S.partialHeard(st5, K, "afuwwun", true), []);
+eq("clearing partials keeps banked points", S.windowPoints(st5.windows[K]), 58);
+
+// ---- weighted points -------------------------------------------------------------------
+for (const p of ctx.__w.GAME_PRAYERS) {
+  const ts = C.tasksForWindow(p);
+  const pts = splitWindowPoints(ts);
+  eq(`${p}: points sum to 300`, pts.reduce((a, b) => a + b, 0), 300);
+  ok(`${p}: every task earns something`, pts.every((x) => x >= 1));
+  ok(`${p}: no task listed twice`, new Set(ts.map((t) => t.id)).size === ts.length);
+  ok(`${p}: weight = words x repeat`, ts.every((t) => t.weight === tokenize(t.text).length * t.repeat));
+}
+const dh = C.tasksForWindow("Dhuhr");
+const dhPts = splitWindowPoints(dh);
+const ptsOf = (id) => dhPts[dh.findIndex((t) => t.id === id)];
+ok("more recited words -> more points (tasbih 33 > ayat al-kursi > istighfar)",
+  ptsOf("tasbih-33") > ptsOf("ayat-al-kursi") && ptsOf("ayat-al-kursi") > ptsOf("istighfar-salam"));
+const fj = C.tasksForWindow("Fajr");
+eq("repeat counts in the weight (ikhlas x3 in Fajr)",
+  fj.find((t) => t.id === "al-ikhlas").weight, 3 * tokenize(C.GAME_TASKS["al-ikhlas"].text).length);
+const st6 = S.emptyGameState();
+S.markTaskDone(st6, K, "tasbih-33", 58, 1);
+S.markTaskDone(st6, K, "tasbih-33", 58, 2);
+eq("a task finished twice is banked once", S.windowPoints(st6.windows[K]), 58);
+
+// ---- window refresh cadence -------------------------------------------------------------
+const { needsWindowRefresh, WINDOW_RECHECK_MS } = ctx.__w;
+const cur = { nextPrayerAt: 100 * M };
+ok("no window yet: refresh", needsWindowRefresh(null, 0, 1));
+ok("within the minute: no refresh", !needsWindowRefresh(cur, 10 * M, 10 * M + 59 * 1000));
+ok("a minute later: refresh", needsWindowRefresh(cur, 10 * M, 10 * M + WINDOW_RECHECK_MS));
+ok("reaching the next prayer: refresh at once", needsWindowRefresh(cur, 100 * M - 1000, 100 * M));
+ok("clock moved back: refresh", needsWindowRefresh(cur, 10 * M, 9 * M));
+
+// ---- game translations ----------------------------------------------------------------
+const I = ctx.__i18n;
+const base = I.GAME_I18N.ar;
+for (const l of I.SUPPORTED_LANGS) {
+  const d = I.GAME_I18N[l.code];
+  ok(`game strings exist for ${l.code}`, !!d);
+  if (!d) continue;
+  eq(`${l.code}: every key, same type`, Object.keys(base).filter((k) => typeof d[k] !== typeof base[k]), []);
+  eq(`${l.code}: a name for every task`, Object.keys(C.GAME_TASKS).filter((id) => !d.tasks[id]), []);
+}
+eq("unknown language falls back to Arabic", I.gameT("xx").tabTasks, base.tabTasks);
+eq("task title in English", I.gameTaskTitle("en", C.GAME_TASKS["ayat-al-kursi"]), "Ayat al-Kursi");
+eq("task title in Arabic is the catalog title", I.gameTaskTitle("ar", C.GAME_TASKS["tasbih-33"]), C.GAME_TASKS["tasbih-33"].title);
+const html = fs.readFileSync(path.join(ROOT, "game.html"), "utf8");
+const htmlKeys = [...html.matchAll(/data-g(?:-ph|-aria)?="([^"]+)"/g)].map((m) => m[1]);
+eq("every data-g key in game.html exists", htmlKeys.filter((k) => typeof base[k] !== "string"), []);
+ok("recitation text stays Arabic in the page", /id="text" lang="ar"/.test(html) && /id="chunk" lang="ar"/.test(html));
+
+// ---- religious review stays pending ------------------------------------------------------
+ok("gifts stay review: pending", C.GIFTS.every((g) => g.review === "pending"));
+
+// ---- measured durations (never an estimate) ----------------------------------------
+const X = ctx.__x;
+const sd = S.emptyGameState();
+eq("no measurement -> nothing to show", X.lastDuration(sd, X.durationKey("tasbih-33", 33)), null);
+X.recordDuration(sd, X.durationKey("tasbih-33", 33), 95000);
+eq("last reading time is kept", X.lastDuration(sd, X.durationKey("tasbih-33", 33)), 95000);
+eq("x1 and x3 are measured separately", X.lastDuration(sd, X.durationKey("al-ikhlas", 3)), null);
+X.recordDuration(sd, X.durationKey("tasbih-33", 33), 7 * 3600 * 1000);
+eq("a clock jump is not a reading", X.lastDuration(sd, X.durationKey("tasbih-33", 33)), 95000);
+X.recordDuration(sd, X.durationKey("tasbih-33", 33), -5);
+eq("a negative time is ignored", X.lastDuration(sd, X.durationKey("tasbih-33", 33)), 95000);
+S.pruneGameState(sd, Date.now() + 400 * 86400000);
+eq("durations survive pruning old windows", X.lastDuration(sd, X.durationKey("tasbih-33", 33)), 95000);
+
+// ---- continue target -------------------------------------------------------------
+const ids = ["istighfar-salam", "tasbih-33", "tahmid-33"];
+const sr = S.emptyGameState();
+eq("fresh window: start with the first task", X.resumeTarget(sr.windows[K], ids), { id: "istighfar-salam", partial: false });
+S.markTaskDone(sr, K, "istighfar-salam", 15, 1);
+eq("skips done tasks", X.resumeTarget(sr.windows[K], ids), { id: "tasbih-33", partial: false });
+S.savePartial(sr, K, "tahmid-33", false, ["الحمد لله"], 100);
+S.savePartial(sr, K, "tasbih-33", false, ["سبحان الله"], 50);
+eq("most recent partial wins", X.resumeTarget(sr.windows[K], ids), { id: "tahmid-33", partial: true });
+S.markTaskDone(sr, K, "tasbih-33", 58, 2);
+S.markTaskDone(sr, K, "tahmid-33", 58, 3);
+eq("all done: nothing to continue", X.resumeTarget(sr.windows[K], ids), null);
+
+// ---- journey + calendar --------------------------------------------------------------
+const P5 = ctx.__w.GAME_PRAYERS;
+const tiny = () => ["t1"];
+const sj = S.emptyGameState();
+S.markTaskDone(sj, "2026-09-25:Fajr", "t1", 10, 1);
+S.markTaskStarted(sj, "2026-09-25:Dhuhr", "t1", 1);
+eq("journey statuses", X.dayJourney(sj, "2026-09-25", P5, tiny).map((s) => s.status), ["done", "none", "none", "none", "none"]);
+const two = () => ["t1", "t2"];
+eq("one of two tasks -> some", X.dayJourney(sj, "2026-09-25", P5, two)[0].status, "some");
+for (const p of P5) S.markTaskDone(sj, `2026-09-24:${p}`, "t1", 10, 1);
+const cal = X.monthCalendar(sj, "2026-09", P5, tiny);
+eq("calendar has every day of the month", cal.length, 30);
+eq("all five -> full", cal[23].status, "full");
+eq("some -> some", cal[24].status, "some");
+eq("nothing -> none", cal[0].status, "none");
+eq("february 2028 has 29 days", X.monthCalendar(sj, "2028-02", P5, tiny).length, 29);
+
+// ---- moving local progress to a new account, safely --------------------------------
+const sa = S.emptyGameState();
+for (let d = 1; d <= 25; d++) for (const p of P5) S.markTaskDone(sa, `2026-09-${String(d).padStart(2, "0")}:${p}`, "tasbih-33", 10, d);
+Y.markSynced(sa, Y.pendingCompletions(sa));
+eq("synced to the old account: nothing pending", Y.pendingCompletions(sa).length, 0);
+sa.syncAccount = "old";
+ok("same account: nothing to re-send", !Y.adoptSyncAccount(sa, "old"));
+ok("new account: re-send everything", Y.adoptSyncAccount(sa, "new"));
+eq("all 125 local items are pending for the new account", Y.pendingCompletions(sa).length, 125);
+eq("first sign-in on this device also re-sends", Y.adoptSyncAccount(S.emptyGameState(), "someone"), true);
+const batches = Y.syncBatches(Y.pendingCompletions(sa));
+eq("sent in batches under the server's 500-row limit", Y.syncBatches(Array.from({ length: 450 }, (_, i) => i)).map((b) => b.length), [200, 200, 50]);
+ok("batches cover every row once", batches.flat().length === 125);
+Y.markSynced(sa, batches[0]);
+eq("only acknowledged batches are marked synced", Y.pendingCompletions(sa).length, 125 - batches[0].length);
 
 if (failures.length) {
   console.error(`game: ${failures.length} FAILED, ${passed} passed`);

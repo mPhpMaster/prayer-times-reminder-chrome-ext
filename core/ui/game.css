@@ -74,9 +74,16 @@ button { font: inherit; cursor: pointer; }
   padding: 12px;
   text-align: start;
 }
-.tasks button:disabled { opacity: 0.55; cursor: default; }
+.tasks button.locked { opacity: 0.7; }
+.done-count { margin: 0 0 8px; font-size: 13px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
 .tasks .name { font-family: var(--font-arabic); font-size: 18px; }
 .tasks .meta { display: block; font-size: 12px; color: var(--muted-foreground); margin-top: 2px; }
+/* Task names / headings use the Arabic face only for Arabic-script UIs; the
+   recitation text (lang="ar") keeps it in every language. */
+html:not([lang="ar"]):not([lang="ur"]) .tasks .name,
+html:not([lang="ar"]):not([lang="ur"]) .game-head h1,
+html:not([lang="ar"]):not([lang="ur"]) .reader h2 { font-family: inherit; }
+html:not([lang="ar"]):not([lang="ur"]) .tasks .name { font-size: 16px; font-weight: 600; }
 .tasks .pts { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gold); white-space: nowrap; }
 .tasks .done { border-color: var(--primary); }
 .tasks .done .pts { color: var(--primary); }
@@ -98,6 +105,7 @@ button { font: inherit; cursor: pointer; }
 .reader-points { font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
 .reader h2 { font-family: var(--font-arabic); font-size: 20px; margin: 0; }
 .source { font-size: 12px; color: var(--muted-foreground); margin: 0; }
+.notice.mode { font-size: 13px; }
 .hint { font-size: 12px; color: var(--muted-foreground); text-align: center; margin: 0; }
 
 .chunk {
@@ -163,7 +171,7 @@ button { font: inherit; cursor: pointer; }
   padding: 10px 16px;
   font-weight: 700;
 }
-input[type="search"], #username, #search {
+input[type="search"], #username, #search, #auth input {
   width: 100%;
   font: inherit;
   background: var(--input);
@@ -175,19 +183,29 @@ input[type="search"], #username, #search {
 }
 .muted { color: var(--muted-foreground); font-size: 13px; margin: 0; }
 .board, .people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.board li, .people li {
+.board li.msg, .people li.msg, .row-btn {
   display: flex;
   align-items: center;
   gap: 10px;
   background: var(--secondary);
   border-radius: var(--radius);
   padding: 10px 12px;
-  cursor: pointer;
+}
+/* Rows are real buttons (keyboard + screen reader), styled like the old rows. */
+.row-btn {
+  width: 100%;
+  color: var(--foreground);
+  border: 1px solid transparent;
+  text-align: start;
+}
+.row-btn:focus-visible, .tasks button:focus-visible, .tabs button:focus-visible, .seg button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .board .rank { width: 2em; font-weight: 700; color: var(--gold); text-align: center; }
 .board .name, .people .name { flex: 1; }
 .board .p { font-weight: 700; font-variant-numeric: tabular-nums; }
-.board li.me { border: 1px solid var(--primary); }
+.board li.me .row-btn { border-color: var(--primary); }
 .me-line { font-size: 14px; margin: 0; }
 .row { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.6; }
 #me-view h3 { font-size: 15px; margin: 14px 0 4px; }
@@ -200,4 +218,122 @@ input[type="search"], #username, #search {
   border-radius: var(--radius);
   padding: 10px 16px;
   font-weight: 700;
+}
+
+/* ---- sign-in ---- */
+.auth { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.auth form, #auth-main { display: flex; flex-direction: column; gap: 6px; }
+.google-btn {
+  background: #fff;
+  color: #1f1f1f;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 16px;
+  font-weight: 700;
+}
+.or { text-align: center; font-size: 12px; color: var(--muted-foreground); margin: 6px 0 2px; }
+.link {
+  background: none;
+  border: 0;
+  color: var(--primary);
+  padding: 6px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  align-self: flex-start;
+}
+.ghost.wide { width: 100%; margin-top: 14px; padding: 10px; }
+
+/* ---- the day's journey ---- */
+.journey { background: var(--muted); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; }
+.journey-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.journey h2 { font-size: 15px; margin: 0; }
+.journey-steps { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.step { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--muted-foreground); }
+.step-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+.step.done .step-dot { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+.step.some .step-dot { border-color: var(--primary); background: linear-gradient(to top, var(--primary) 45%, transparent 45%); }
+.step.now .step-dot { border-color: var(--gold); }
+.step.now .step-name { color: var(--foreground); font-weight: 700; }
+.journey-all { margin: 10px 0 0; font-size: 13px; color: var(--primary); text-align: center; }
+.calendar { margin-top: 10px; font-size: 13px; }
+.calendar summary, .rule summary { cursor: pointer; color: var(--muted-foreground); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px; }
+.cal-head { text-align: center; font-size: 10px; color: var(--muted-foreground); }
+.cal-day {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+}
+.cal-day.some { background: color-mix(in srgb, var(--primary) 25%, transparent); color: var(--foreground); }
+.cal-day.full { background: var(--primary); color: var(--primary-foreground); font-weight: 700; }
+.cal-day.today { outline: 1px solid var(--gold); }
+.cal-legend { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 11px; color: var(--muted-foreground); }
+.dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.dot.full { background: var(--primary); }
+.dot.some { background: color-mix(in srgb, var(--primary) 25%, transparent); }
+
+/* ---- points rule, continue, groups ---- */
+.rule { font-size: 13px; line-height: 1.8; margin-bottom: 10px; }
+.rule p { margin: 6px 0 0; }
+.rule-now { color: var(--gold); font-variant-numeric: tabular-nums; }
+.resume {
+  width: 100%;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--foreground);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 11px 12px;
+  font-weight: 700;
+  text-align: start;
+  margin-bottom: 8px;
+}
+.group-title { font-size: 13px; color: var(--muted-foreground); margin: 12px 0 6px; font-weight: 600; }
+
+/* ---- celebration: short and calm; no motion when the system asks for less ---- */
+.celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--background) 60%, transparent);
+}
+.celebrate-card {
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  background: var(--card, var(--secondary));
+  border: 1px solid var(--primary);
+  border-radius: calc(var(--radius) * 2);
+  padding: 22px 18px;
+  box-shadow: 0 0 40px color-mix(in srgb, var(--primary) 35%, transparent);
+  animation: celebrate-in 420ms ease-out both;
+}
+.celebrate-mark { font-size: 30px; color: var(--gold); animation: celebrate-glow 1.6s ease-in-out 2; }
+.celebrate h2 { font-size: 19px; margin: 8px 0; }
+.celebrate p { margin: 0 0 16px; line-height: 1.8; color: var(--muted-foreground); }
+@keyframes celebrate-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes celebrate-glow {
+  50% { opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-card, .celebrate-mark { animation: none; }
+  .progress .fill, .w { transition: none; }
 }

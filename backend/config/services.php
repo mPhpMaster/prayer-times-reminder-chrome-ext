@@ -14,6 +14,12 @@ return [
     |
     */
 
+    // Google sign-in for the game: the OAuth *web* client id the app requests
+    // ID tokens for (a public id, not a secret). Unset = Google sign-in off.
+    'google' => [
+        'client_id' => env('GOOGLE_WEB_CLIENT_ID'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

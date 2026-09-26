@@ -165,22 +165,26 @@
 
   // engine "google": one Google voice dialog per utterance, relaunched until
   // stop() or the user cancels the dialog. Pairs with the 3-word reading chunks.
+  // onState(false, { reason }) says why it ended: "no-speech" (dialog canceled
+  // or nothing heard), "error", or "stopped" (stop() was called).
   async function runGoogleLoop(loop, { lang, getPrompt, onFinal, onState, onError }) {
     onState && onState(true);
+    let reason = "stopped";
     while (loop.active) {
       let r;
       try {
         r = await Speech.recognizeOnce({ lang, prompt: getPrompt ? getPrompt() : undefined });
       } catch (e) {
         onError && onError({ code: -3, message: String(e && e.message || e) });
+        reason = "error";
         break;
       }
       if (!loop.active) break;
       if (r && r.text) onFinal && onFinal(r.text, {});
-      else break; // canceled / nothing heard: stop, the player presses start again
+      else { reason = "no-speech"; break; } // the player presses start again
     }
     loop.active = false;
-    onState && onState(false);
+    onState && onState(false, { reason });
   }
 
   const speech = Speech && {
@@ -226,7 +230,23 @@
       .then((i) => /\.debug$/.test(i.id))
       .catch(() => false);
 
-  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions, speech, devBuild };
+  // "Sign in with Google" (GoogleAuthPlugin, Credential Manager). The client id
+  // comes from the game server at runtime; nothing secret lives in the app.
+  // Rejections carry .code: "canceled" | "no-account" | "failed".
+  const GoogleAuth = P.GoogleAuth;
+  const googleAuth = GoogleAuth && {
+    signIn: (clientId) =>
+      GoogleAuth.signIn({ clientId })
+        .then((r) => r.idToken)
+        .catch((e) => {
+          const err = new Error((e && e.message) || "failed");
+          err.code = (e && e.code) || "failed";
+          throw err;
+        }),
+    signOut: () => GoogleAuth.signOut().catch(() => {}),
+  };
+
+  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions, speech, devBuild, googleAuth };
 
   // --- scheduled prayer notifications (rolling ~7-day window) ----------------
   // Computed offline from prayer-engine + notify-plan, scheduled via
@@ -662,17 +682,33 @@
   window.addEventListener("load", scheduleAll);
   window.addEventListener("load", addPermissionsButton);
   if (CapApp && CapApp.addListener) CapApp.addListener("resume", scheduleAll);
-  // Android hardware back: from Settings go back to the main view (popup.js
-  // hook); already on the main view -> close the app. Registering this listener
-  // replaces Capacitor's default back handling, which otherwise does nothing
-  // useful in a single-page app.
+  // Android back (button or gesture) walks back through the app, never out of
+  // it while there is a previous screen:
+  //   1. the page's own screens first — game.js (__ptBack: reader, tabs,
+  //      profile, dialog) or popup.js (__ptPopupBack: Settings -> main view);
+  //   2. then the page's parent page (Tools -> the game). The WebView's own
+  //      canGoBack is not used: on device it reports false after an in-app
+  //      page change, so the parent is explicit here;
+  //   3. only on the game's home screen, send the app to the background
+  //      (minimize keeps its state; exit is the fallback on old plugins).
+  // Registering this listener replaces Capacitor's default back handling.
+  const PARENT_PAGE = { "popup.html": "game.html", "game-spike.html": "popup.html" };
   if (CapApp && CapApp.addListener) {
     CapApp.addListener("backButton", () => {
-      const handled =
-        typeof window.__ptPopupBack === "function" && window.__ptPopupBack();
-      if (!handled && CapApp.exitApp) CapApp.exitApp();
+      const hook = window.__ptBack || window.__ptPopupBack;
+      if (typeof hook === "function" && hook()) return;
+      const parent = PARENT_PAGE[location.pathname.split("/").pop()];
+      if (parent) {
+        // Came from the parent: step back to it (keeps its screen); otherwise open it.
+        if (document.referrer.split("/").pop() === parent) window.history.back();
+        else location.replace(parent);
+        return;
+      }
+      if (CapApp.minimizeApp) CapApp.minimizeApp();
+      else if (CapApp.exitApp) CapApp.exitApp();
     });
   }
+
   // Re-arm the alarms as soon as their settings change.
   const PERM_TRIGGER_KEYS = ["location", "tabLockEnabled", "silentDuringPrayer", "tasbihEnabled"];
   const LOCK_KEYS = ["location", "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer", "tabLockEnabled"];
