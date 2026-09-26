@@ -136,6 +136,7 @@ Dhikr reminders cannot run on restricted Chrome pages (e.g. `chrome://` or
 | `storage` | Save your location, language, preferences, and cached times locally. |
 | `geolocation` | Optional; only used if you click **Use my location**. |
 | `scripting` | Inject the lock overlay and dhikr card scripts into your open tabs. |
+| `offscreen` | Play the locally packaged prayer alert sound when Chrome's background worker cannot play audio directly. |
 | `identity` | Optional **Continue with Google** in the dhikr game: opens Chrome's Google sign-in window. Not used for anything else; prayer features never need it. |
 | `<all_urls>` (optional) | Inject the tab-lock overlay and the dhikr card on your open website tabs. Requested at runtime when you first enable tab lock or dhikr — **not** granted at install, and you can decline. |
 
@@ -148,3 +149,5 @@ is used solely to place the lock/dhikr overlay on your tabs — never to read th
 ## Contact
 
 Questions about this policy: **mphpmaster@gmail.com**
+
+Terms & Conditions: [TERMS.md](TERMS.md)

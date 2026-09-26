@@ -22,8 +22,14 @@ English, العربية (Arabic), اردو (Urdu), Deutsch, Français, Español,
 🌗 THEMES
 Choose Midnight Emerald (default) or Classic.
 
+🎮 OPTIONAL PRAYER ADHKAR GAME
+Complete verified dhikr and Quran recitation missions, build a local streak, and track points on your device. Prayer times remain the home screen and never require an account.
+
+👤 OPTIONAL ACCOUNT
+Sign in with email/password or Google only if you want leaderboard and following features. Google sign-in uses Chrome Identity. The game can be used locally without signing in.
+
 🔐 PRIVATE BY DESIGN
-No account, no ads, no tracking, no analytics. Your preferences stay on your device. Prayer times are calculated offline on your device.
+No ads, tracking, or analytics. Prayer preferences stay on your device, and prayer times are calculated locally. Only optional game-account and leaderboard data is sent to the game server when you choose to sign in.
 
 🤲 ONGOING CHARITY
 This app is an ongoing charity (sadaqah jariyah) on behalf of:
