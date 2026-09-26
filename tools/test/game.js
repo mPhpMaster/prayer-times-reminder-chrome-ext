@@ -413,6 +413,17 @@ ok("batches cover every row once", batches.flat().length === 125);
 Y.markSynced(sa, batches[0]);
 eq("only acknowledged batches are marked synced", Y.pendingCompletions(sa).length, 125 - batches[0].length);
 
+// ---- bundled Arabic city names (tools/build-city-names.mjs) ------------------------
+const cityDir = path.join(ROOT, "city-ar");
+const cityIndex = JSON.parse(fs.readFileSync(path.join(cityDir, "index.json"), "utf8"));
+ok("city index lists countries", Object.keys(cityIndex).length > 30);
+ok("every indexed country has its file", Object.values(cityIndex).every((cc) => fs.existsSync(path.join(cityDir, `${cc}.json`))));
+const cityValues = Object.values(cityIndex).flatMap((cc) => Object.values(JSON.parse(fs.readFileSync(path.join(cityDir, `${cc}.json`), "utf8"))));
+eq("city names are Arabic script only (no Latin leftovers)", cityValues.filter((v) => /[A-Za-zÀ-ɏ]/.test(v)), []);
+eq("city names carry no harakat", cityValues.filter((v) => /[ً-ْ]/.test(v)), []);
+const egCities = JSON.parse(fs.readFileSync(path.join(cityDir, `${cityIndex.Egypt}.json`), "utf8"));
+eq("Egypt: real names, not letter-by-letter", [egCities.Cairo, egCities.Alexandria, egCities.Helwan], ["القاهرة", "الإسكندرية", "حلوان"]);
+
 if (failures.length) {
   console.error(`game: ${failures.length} FAILED, ${passed} passed`);
   failures.forEach((f) => console.error("  ✗ " + f));
