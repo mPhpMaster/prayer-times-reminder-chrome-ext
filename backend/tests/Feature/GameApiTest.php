@@ -126,6 +126,24 @@ class GameApiTest extends TestCase
         $this->as($t)->getJson('/v1/users?q=z')->assertExactJson(['users' => []]);
     }
 
+    public function test_delete_account_removes_the_user_their_progress_and_follows(): void
+    {
+        $ta = $this->register('leaver');
+        $tb = $this->register('stayer');
+        $this->as($ta)->postJson('/v1/progress', ['completions' => [self::done('2026-09-25:Dhuhr', 't1', 10)]]);
+        $this->as($ta)->putJson('/v1/follows/stayer')->assertOk();
+        $this->as($tb)->putJson('/v1/follows/leaver')->assertOk();
+
+        $this->as($ta)->deleteJson('/v1/me')->assertNoContent();
+
+        $this->assertDatabaseMissing('game_users', ['username' => 'leaver']);
+        $this->assertDatabaseCount('game_completions', 0);
+        $this->assertDatabaseCount('game_follows', 0);
+        $this->as($ta)->getJson('/v1/me')->assertStatus(401); // the token is dead
+        $this->as($tb)->getJson('/v1/follows')->assertExactJson(['users' => []]);
+        $this->postJson('/v1/register', ['username' => 'leaver'])->assertCreated(); // the name is free again
+    }
+
     public function test_unknown_v1_path_is_json_404(): void
     {
         $this->getJson('/v1/nope')->assertStatus(404)->assertJson(['error' => 'not-found']);

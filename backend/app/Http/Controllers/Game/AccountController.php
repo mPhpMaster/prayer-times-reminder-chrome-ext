@@ -8,6 +8,8 @@ use App\Support\GameRules;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class AccountController extends Controller
 {
@@ -55,5 +57,24 @@ class AccountController extends Controller
         $me->save();
 
         return response()->json(['user' => $me->toPublic()]);
+    }
+
+    /**
+     * DELETE /v1/me -> 204. Deletes the account, its progress and every follow
+     * to or from it (Google Play requires in-app account deletion). Deleted
+     * explicitly rather than relying on cascadeOnDelete, which SQLite only
+     * honours when foreign keys are enabled.
+     */
+    public function destroy(Request $request): Response
+    {
+        /** @var GameUser $me */
+        $me = $request->attributes->get('gameUser');
+        DB::transaction(function () use ($me) {
+            DB::table('game_completions')->where('user_id', $me->id)->delete();
+            DB::table('game_follows')->where('follower_id', $me->id)->orWhere('followee_id', $me->id)->delete();
+            $me->delete();
+        });
+
+        return response()->noContent();
     }
 }

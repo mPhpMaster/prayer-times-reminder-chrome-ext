@@ -16,6 +16,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware(GameAuth::class)->group(function () {
         Route::get('me', [AccountController::class, 'show']);
         Route::patch('me', [AccountController::class, 'update']);
+        Route::delete('me', [AccountController::class, 'destroy']);
 
         Route::post('progress', [ProgressController::class, 'store'])->middleware('throttle:60,1');
         Route::get('progress', [ProgressController::class, 'index']);

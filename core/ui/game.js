@@ -456,6 +456,28 @@ async function register() {
   }
 }
 
+// Google Play requires in-app account deletion. Server-side only: the local
+// game history on this device stays, it just stops syncing.
+async function deleteAccount() {
+  if (!confirm(`حذف الحساب «${account.username}» نهائيًا مع نقاطه ومتابعاته من الخادم؟ لا يمكن التراجع.`)) return;
+  $("delete-account").disabled = true;
+  try {
+    await api().deleteMe();
+    await forgetAccount();
+    showNotice("حُذف حسابك من خادم اللعبة.");
+    renderMe();
+  } catch (e) {
+    if (e.status === 401) {
+      await forgetAccount(); // already gone on the server
+      renderMe();
+    } else {
+      showNotice("تعذّر حذف الحساب الآن، تحقق من الاتصال وحاول مجددًا.");
+    }
+  } finally {
+    $("delete-account").disabled = false;
+  }
+}
+
 let searchTimer = 0;
 function onSearch() {
   clearTimeout(searchTimer);
@@ -532,6 +554,7 @@ $("profile-back").addEventListener("click", () => {
   showTab(tab);
 });
 $("profile-follow").addEventListener("click", toggleFollow);
+$("delete-account").addEventListener("click", deleteAccount);
 $("mic").addEventListener("click", () => (listening ? stopListening() : startListening()));
 $("back").addEventListener("click", () => closeReader("back"));
 $("gift").addEventListener("click", () => openReader(giftForWindow(current.key), true));
