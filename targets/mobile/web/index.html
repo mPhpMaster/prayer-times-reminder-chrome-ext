@@ -6,12 +6,12 @@
     <title>Prayer</title>
   </head>
   <body>
-    <!-- Capacitor's webDir entry is index.html. The game is the main screen
-         on Android (docs/GAME-DESIGN-2026-09-25.md); the original app is
-         popup.html, reached from the game's "الأدوات". A hash (e.g. #settings
-         from the onboarding wizard) still goes straight to popup.html. -->
+    <!-- Capacitor's webDir entry is index.html. Prayer times (popup.html) are
+         the home screen and work fully without any account; the optional
+         dhikr game (game.html) is opened from there. A hash (e.g. #settings
+         from the onboarding wizard) is passed through. -->
     <script>
-      location.replace(location.hash ? "popup.html" + location.hash : "game.html");
+      location.replace("popup.html" + location.hash);
     </script>
   </body>
 </html>

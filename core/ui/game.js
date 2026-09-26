@@ -775,7 +775,7 @@ function authErrorText(e) {
     "username-taken": G.usernameTaken,
     "account-conflict": G.accountConflict,
     "google-invalid": G.googleFailed,
-    "google-unavailable": G.googleOff,
+    "google-unavailable": G.googleFailed,
     "bad-code": G.badCode,
     "code-expired": G.codeExpired,
     "too-many-attempts": G.tooMany,
@@ -842,10 +842,10 @@ async function renderMe() {
   if (account && account.legacy) $("legacy-note").textContent = G.legacyNote(account.username);
   if (!signedIn && $("google-name").hidden && $("reset").hidden) showAuthPane("main");
 
-  const cfg = await loadAuthConfig();
-  const googleReady = !!(cfg && cfg.google && Platform.googleAuth);
-  $("google-btn").hidden = !googleReady;
-  $("google-off").hidden = googleReady;
+  // Google sign-in is offered wherever the native plugin exists; its client
+  // id is fetched from the server when the button is pressed.
+  $("google-btn").hidden = !Platform.googleAuth;
+  loadAuthConfig();
 
   if (!account) return;
   $("me-name").textContent = account.username;
@@ -902,7 +902,8 @@ function submitAuth(ev) {
 function signInWithGoogle() {
   withBusy($("google-btn"), async () => {
     const cfg = await loadAuthConfig();
-    if (!cfg || !cfg.google || !Platform.googleAuth) throw { code: "google-unavailable" };
+    if (!cfg) throw { code: "offline" }; // server unreachable: the connection message
+    if (!cfg.google || !Platform.googleAuth) throw { code: "google-unavailable" };
     const idToken = await Platform.googleAuth.signIn(cfg.google.clientId);
     try {
       await signedIn(await gameApi(apiUrl).google(idToken, undefined, legacyToken()));
@@ -1079,7 +1080,15 @@ $("celebrate-ok").addEventListener("click", closeCelebration);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !$("celebrate").hidden) closeCelebration();
 });
-$("tools").addEventListener("click", () => (window.location.href = "popup.html"));
+// Back to prayer times (the home screen): step back if we came from there,
+// so the history stays short; otherwise open it.
+$("tools").addEventListener("click", () => {
+  if (/\/popup\.html$/.test(new URL(document.referrer || "x:", location.href).pathname) && history.length > 1) {
+    history.go(-(depth() + 1));
+  } else {
+    location.replace("popup.html");
+  }
+});
 
 (async function init() {
   await load();
