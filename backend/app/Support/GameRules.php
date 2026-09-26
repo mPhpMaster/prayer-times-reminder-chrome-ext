@@ -35,6 +35,28 @@ final class GameRules
         return preg_match(self::USERNAME, $u) ? $u : null;
     }
 
+    /** A sign-in email, lowercased; fails 400 bad-email. */
+    public static function email(mixed $raw): string
+    {
+        $e = mb_strtolower(trim((string) $raw));
+        if (mb_strlen($e) > 191 || ! filter_var($e, FILTER_VALIDATE_EMAIL)) {
+            self::fail(400, 'bad-email');
+        }
+
+        return $e;
+    }
+
+    /** A new password: 8 to 200 characters; fails 400 weak-password. Stored only as a bcrypt hash. */
+    public static function password(mixed $raw): string
+    {
+        $p = is_string($raw) ? $raw : '';
+        if (mb_strlen($p) < 8 || mb_strlen($p) > 200) {
+            self::fail(400, 'weak-password');
+        }
+
+        return $p;
+    }
+
     public static function month(?string $m, int $nowMs): string
     {
         $m ??= gmdate('Y-m', intdiv($nowMs, 1000));

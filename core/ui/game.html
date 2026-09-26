@@ -6,12 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="stylesheet" href="theme.css" />
     <link rel="stylesheet" href="game.css" />
-    <title>أذكار الصلاة</title>
+    <title data-g="pageTitle">أذكار الصلاة</title>
 </head>
 
-<!-- Phase 1 game screen (docs/GAME-DESIGN-2026-09-25.md): the current prayer
-     window, its tasks read aloud segment by segment, points, and the gift.
-     Local only — no accounts yet. The old app lives behind "الأدوات". -->
+<!-- Game screen (docs/GAME-DESIGN-2026-09-25.md): the current prayer window,
+     its tasks read aloud segment by segment, points, the gift, the day's
+     journey, and the social tabs. Screens are hash routes (#board, #me,
+     #read/<task>, #gift, #profile/<name>) so Android back steps through them.
+     UI strings come from game-i18n.js (data-g = key); the recitation texts stay
+     Arabic (lang="ar") in every language. The old app lives behind "الأدوات". -->
 <body>
     <div class="orb orb-top" aria-hidden="true"></div>
     <div class="orb orb-bottom" aria-hidden="true"></div>
@@ -22,94 +25,179 @@
                 <h1 id="window-title">—</h1>
                 <p class="window-time" id="window-time"></p>
             </div>
-            <button type="button" id="tools" class="ghost">⚙️ الأدوات</button>
+            <button type="button" id="tools" class="ghost" data-g="tools">⚙️ الأدوات</button>
         </header>
 
         <nav class="tabs" role="tablist">
-            <button type="button" role="tab" data-tab="tasks" aria-selected="true">المهمات</button>
-            <button type="button" role="tab" data-tab="board" aria-selected="false">المتصدرون</button>
-            <button type="button" role="tab" data-tab="me" aria-selected="false">حسابي</button>
+            <button type="button" role="tab" data-tab="tasks" aria-selected="true" data-g="tabTasks">المهمات</button>
+            <button type="button" role="tab" data-tab="board" aria-selected="false" data-g="tabBoard">المتصدرون</button>
+            <button type="button" role="tab" data-tab="me" aria-selected="false" data-g="tabMe">حسابي</button>
         </nav>
 
-        <section class="scores" aria-label="النقاط">
-            <div><span id="pts-window">0</span><small>هذه الصلاة</small></div>
-            <div><span id="pts-day">0</span><small>اليوم</small></div>
-            <div><span id="pts-month">0</span><small>هذا الشهر</small></div>
+        <section class="scores" data-g-aria="scoresLabel" aria-label="النقاط">
+            <div><span id="pts-window">0</span><small data-g="ptsWindow">هذه الصلاة</small></div>
+            <div><span id="pts-day">0</span><small data-g="ptsDay">اليوم</small></div>
+            <div><span id="pts-month">0</span><small data-g="ptsMonth">هذا الشهر</small></div>
         </section>
 
-        <p class="notice" id="pre-open" hidden>تُفتح المهمات بعد الصلاة بنصف ساعة. من يبدأ في أول نصف ساعة يأخذ النقاط كاملة، وتقل كلما تأخر.</p>
-        <p class="notice" id="notice" hidden></p>
+        <p class="notice" id="pre-open" data-g="preOpen" hidden></p>
+        <p class="notice" id="notice" role="status" hidden></p>
 
         <!-- Task list -->
         <section id="list-view">
-            <ul class="tasks" id="tasks"></ul>
-            <button type="button" class="gift" id="gift" hidden>🎁 افتح الهدية</button>
+            <!-- The day's journey (optional; "حسابي" toggles it) -->
+            <section class="journey" id="journey" hidden>
+                <div class="journey-head">
+                    <h2 data-g="journeyTitle">رحلتك اليوم</h2>
+                    <span class="muted" id="journey-count"></span>
+                </div>
+                <ol class="journey-steps" id="journey-steps"></ol>
+                <p class="journey-all" id="journey-all" data-g="dayAll" hidden></p>
+                <details class="calendar">
+                    <summary data-g="calTitle">أيامك هذا الشهر</summary>
+                    <div class="cal-grid" id="cal-grid"></div>
+                    <p class="cal-legend"><span class="dot full" aria-hidden="true"></span> <span data-g="calFull"></span>
+                        <span class="dot some" aria-hidden="true"></span> <span data-g="calSome"></span></p>
+                </details>
+            </section>
+
+            <details class="rule">
+                <summary data-g="ruleTitle">لماذا يتغيّر عدد النقاط؟</summary>
+                <p data-g="ruleBody"></p>
+                <p class="rule-now" id="rule-now"></p>
+            </details>
+
+            <button type="button" class="resume" id="resume" hidden></button>
+            <p class="done-count" id="done-count"></p>
+            <div id="task-groups"></div>
+            <button type="button" class="gift" id="gift" data-g="gift" hidden>🎁 افتح الهدية</button>
         </section>
 
-        <!-- Reader -->
+        <!-- Reader. mode: play (points) | practice (not open yet) | missed | done -->
         <section class="reader" id="reader" hidden>
             <div class="reader-head">
-                <button type="button" id="back" class="ghost">→ المهمات</button>
+                <button type="button" id="back" class="ghost" data-g="back">→ المهمات</button>
                 <span class="reader-points" id="reader-points"></span>
             </div>
             <h2 id="reader-title"></h2>
-            <p class="source" id="reader-source"></p>
-            <p class="hint">اقرأ هذا المقطع ثم توقف لحظة</p>
-            <p class="chunk" id="chunk" aria-live="polite"></p>
-            <p class="text" id="text"></p>
+            <p class="source" id="reader-source" lang="ar" dir="rtl"></p>
+            <p class="notice mode" id="reader-mode" hidden></p>
+            <p class="hint" id="reader-hint" data-g="hint">اقرأ هذا المقطع ثم توقف لحظة</p>
+            <p class="chunk" id="chunk" lang="ar" dir="rtl" aria-live="polite"></p>
+            <p class="text" id="text" lang="ar" dir="rtl"></p>
             <div class="progress" aria-hidden="true"><div class="fill" id="fill"></div></div>
             <p class="counter" id="counter"></p>
-            <button type="button" id="mic" class="mic">🎙️ ابدأ القراءة</button>
-            <p class="heard" id="heard" aria-live="polite"></p>
+            <button type="button" id="mic" class="mic" data-g="micStart">🎙️ ابدأ القراءة</button>
+            <p class="heard" id="heard" lang="ar" dir="rtl" aria-live="polite"></p>
         </section>
 
         <!-- Leaderboard (monthly) -->
         <section id="board-view" hidden>
-            <div class="seg" role="group" aria-label="نطاق القائمة">
-                <button type="button" data-scope="all" aria-pressed="true">الكل</button>
-                <button type="button" data-scope="following" aria-pressed="false">من أتابعهم</button>
+            <div class="seg" role="group" data-g-aria="scopeLabel" aria-label="نطاق القائمة">
+                <button type="button" data-scope="all" aria-pressed="true" data-g="scopeAll">الكل</button>
+                <button type="button" data-scope="following" aria-pressed="false" data-g="scopeFollowing">من أتابعهم</button>
             </div>
             <p class="muted" id="board-month"></p>
             <ol class="board" id="board"></ol>
             <p class="me-line" id="board-me"></p>
         </section>
 
-        <!-- Account, follows, hide progress -->
+        <!-- Account: settings, sign-in, follows, sign-out, deletion -->
         <section id="me-view" hidden>
-            <label class="row"><input type="checkbox" id="alerts" /> <span>نبّهني عند فتح المهمات، وقبل الصلاة التالية بنصف ساعة إن لم أكملها</span></label>
-            <div id="account-form">
-                <p>اختر اسم مستخدم لتظهر في لوحة المتصدرين ويتابعك أصدقاؤك. حروف عربية أو إنجليزية وأرقام، من 3 إلى 20.</p>
-                <input id="username" maxlength="20" autocomplete="off" placeholder="اسم المستخدم" />
-                <button type="button" class="primary" id="register">ابدأ</button>
+            <label class="row"><input type="checkbox" id="alerts" /> <span data-g="alerts"></span></label>
+            <label class="row"><input type="checkbox" id="journey-on" /> <span data-g="journeyToggle"></span></label>
+            <label class="row"><input type="checkbox" id="sound-on" /> <span data-g="soundToggle"></span></label>
+
+            <!-- Sign-in (signed out, or a legacy name-only account to link) -->
+            <div class="auth" id="auth" hidden>
+                <p class="notice" id="legacy-note" hidden></p>
+                <p id="auth-intro" data-g="authIntro"></p>
+
+                <div id="auth-main">
+                    <button type="button" class="google-btn" id="google-btn" data-g="google">المتابعة بحساب Google</button>
+                    <p class="note" id="google-off" data-g="googleOff" hidden></p>
+                    <p class="or" data-g="orEmail">أو بالبريد الإلكتروني</p>
+                    <div class="seg" role="group">
+                        <button type="button" id="mode-in" aria-pressed="true" data-g="modeSignIn">تسجيل الدخول</button>
+                        <button type="button" id="mode-up" aria-pressed="false" data-g="modeSignUp">حساب جديد</button>
+                    </div>
+                    <form id="auth-form" novalidate>
+                        <input id="email" type="email" autocomplete="email" inputmode="email" dir="ltr" data-g-ph="emailPh" data-g-aria="emailPh" />
+                        <input id="password" type="password" autocomplete="current-password" dir="ltr" data-g-ph="passwordPh" data-g-aria="passwordPh" />
+                        <div id="name-field" hidden>
+                            <input id="username" maxlength="20" autocomplete="nickname" data-g-ph="namePh" data-g-aria="namePh" />
+                            <p class="note" data-g="nameHint"></p>
+                        </div>
+                        <button type="submit" class="primary" id="auth-submit" data-g="submitSignIn">دخول</button>
+                    </form>
+                    <button type="button" class="link" id="forgot" data-g="forgot">نسيت كلمة المرور؟</button>
+                </div>
+
+                <!-- New Google player: pick a public name -->
+                <form id="google-name" hidden novalidate>
+                    <p data-g="googleNameTitle"></p>
+                    <input id="google-username" maxlength="20" autocomplete="nickname" data-g-ph="namePh" data-g-aria="namePh" />
+                    <p class="note" data-g="nameHint"></p>
+                    <button type="submit" class="primary" data-g="continueBtn">متابعة</button>
+                    <button type="button" class="link" id="google-name-cancel" data-g="cancel">إلغاء</button>
+                </form>
+
+                <!-- Password reset: email -> code + new password -->
+                <form id="reset" hidden novalidate>
+                    <h3 data-g="resetTitle">استعادة كلمة المرور</h3>
+                    <input id="reset-email" type="email" autocomplete="email" inputmode="email" dir="ltr" data-g-ph="emailPh" data-g-aria="emailPh" />
+                    <button type="button" class="primary" id="send-code" data-g="sendCode">أرسل الرمز</button>
+                    <div id="reset-step2" hidden>
+                        <p class="note" data-g="codeSent"></p>
+                        <input id="reset-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr" data-g-ph="codePh" data-g-aria="codePh" />
+                        <input id="reset-password" type="password" autocomplete="new-password" dir="ltr" data-g-ph="newPasswordPh" data-g-aria="newPasswordPh" />
+                        <button type="submit" class="primary" data-g="resetSubmit">غيّر كلمة المرور</button>
+                    </div>
+                    <button type="button" class="link" id="reset-cancel" data-g="cancel">إلغاء</button>
+                </form>
             </div>
+
             <div id="account" hidden>
-                <p class="who">أنت: <b id="me-name"></b></p>
-                <label class="row"><input type="checkbox" id="hide-progress" /> <span>أخفِ تقدمي (لا أظهر في المتصدرين ولا يرى أحد نقاطي)</span></label>
-                <h3>ابحث عن لاعب</h3>
-                <input id="search" maxlength="20" autocomplete="off" placeholder="اكتب أول حروف الاسم" />
+                <p class="who"><span data-g="youAre">أنت:</span> <b id="me-name"></b></p>
+                <p class="muted" id="me-email"></p>
+                <label class="row"><input type="checkbox" id="hide-progress" /> <span data-g="hideProgress"></span></label>
+                <h3 data-g="findPlayer">ابحث عن لاعب</h3>
+                <input id="search" maxlength="20" autocomplete="off" data-g-ph="searchPh" data-g-aria="searchPh" />
                 <ul class="people" id="search-results"></ul>
-                <h3>من أتابعهم</h3>
+                <h3 data-g="followingTitle">من أتابعهم</h3>
                 <ul class="people" id="following"></ul>
-                <h3>حذف الحساب</h3>
-                <p class="note">يحذف اسمك ونقاطك ومتابعاتك من خادم اللعبة نهائيًا. يبقى تقدمك على هذا الجهاز.</p>
-                <button type="button" class="danger" id="delete-account">احذف حسابي</button>
+                <button type="button" class="ghost wide" id="logout" data-g="logout">تسجيل الخروج</button>
+                <h3 data-g="deleteTitle">حذف الحساب</h3>
+                <p class="note" data-g="deleteNote"></p>
+                <button type="button" class="danger" id="delete-account" data-g="deleteBtn">احذف حسابي</button>
             </div>
         </section>
 
         <!-- Another player's profile -->
         <section id="profile-view" hidden>
-            <button type="button" id="profile-back" class="ghost">→ رجوع</button>
+            <button type="button" id="profile-back" class="ghost" data-g="profileBack">→ رجوع</button>
             <h2 id="profile-name"></h2>
             <p id="profile-points"></p>
             <button type="button" class="primary" id="profile-follow"></button>
         </section>
 
-        <p class="privacy">التعرف على الصوت يتم عبر Google؛ لا يحفظ التطبيق صوتك.</p>
+        <p class="privacy" data-g="privacy"></p>
     </main>
+
+    <!-- A short, calm "adhkar complete" card -->
+    <div class="celebrate" id="celebrate" role="dialog" aria-modal="true" aria-labelledby="celebrate-title" hidden>
+        <div class="celebrate-card">
+            <div class="celebrate-mark" aria-hidden="true">✦</div>
+            <h2 id="celebrate-title"></h2>
+            <p id="celebrate-body"></p>
+            <button type="button" class="primary" id="celebrate-ok" data-g="ok">حسنًا</button>
+        </div>
+    </div>
 
     <script src="adapter.js"></script>
     <script src="platform.js"></script>
     <script src="i18n.js"></script>
+    <script src="game-i18n.js"></script>
     <script src="vendor/adhan.js"></script>
     <script src="vendor/tz-lookup.js"></script>
     <script src="prayer-engine.js"></script>

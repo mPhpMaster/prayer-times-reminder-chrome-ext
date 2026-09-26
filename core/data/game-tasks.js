@@ -142,11 +142,14 @@ const WINDOW_REPEAT = {
   Asr: { "al-ikhlas": 3, "al-falaq": 3, "an-nas": 3 },
 };
 
+// weight = words recited in full (word count × repeat): the effort a task
+// takes, which splitWindowPoints() turns into its share of the window's points.
+// Needs tokenize() from recitation-match.js (loaded first).
 function tasksForWindow(prayer) {
   return (WINDOW_TASKS[prayer] || []).map((id) => {
     const t = GAME_TASKS[id];
     const repeat = (WINDOW_REPEAT[prayer] || {})[id] || t.repeat;
-    return { ...t, repeat };
+    return { ...t, repeat, weight: tokenize(t.text).length * repeat };
   });
 }
 

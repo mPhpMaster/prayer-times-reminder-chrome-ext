@@ -45,6 +45,7 @@ const CORE_MAP = [
   ["assets/fonts", "fonts"],
   ["assets/icons", "icons"],
   ["assets/audio", "audio"], // adhan.ogg for the prayer-time sound option
+  ["assets/city-ar", "city-ar"], // Arabic city names per country (tools/build-city-names.mjs)
 ];
 
 function copyTree(src, dst) {

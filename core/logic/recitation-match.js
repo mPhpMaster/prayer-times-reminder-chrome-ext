@@ -28,9 +28,15 @@ function normalizeArabic(text) {
     .replace(/ئ/g, "ي")
     .replace(/ء/g, "")
     .replace(NOT_LETTER, " ")
+    .replace(JOINED_LILLAH, "$1$2 لله")
     .replace(/\s+/g, " ")
     .trim();
 }
+
+// Recognizers often write "الحمد لله" as one word ("الحمدلله"), which then
+// matches neither target word. Split it back — only after حمد, so words that
+// merely end in -لله (والله، بالله) are left alone.
+const JOINED_LILLAH = /(^|\s)([وف]?(?:ال)?حمد)لله(?=\s|$)/g;
 
 function tokenize(text) {
   const n = normalizeArabic(text);

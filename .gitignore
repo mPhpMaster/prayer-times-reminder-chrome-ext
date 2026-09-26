@@ -82,3 +82,5 @@ targets/desktop/msix/layout/*.exe
 store-release/
 **/WebView2Runtime/
 *.msix
+# ---- GeoNames downloads for tools/build-city-names.mjs ----
+tools/.cache/

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
@@ -19,11 +20,15 @@ class GameApiTest extends TestCase
     {
         parent::setUp();
         Carbon::setTestNow(Carbon::parse('2026-09-25 12:00:00', 'UTC'));
+        $this->withoutMiddleware(ThrottleRequests::class); // many sign-ups per test
     }
 
     private function register(string $name): string
     {
-        $res = $this->postJson('/v1/register', ['username' => $name])->assertCreated();
+        $res = $this->postJson('/v1/auth/register', [
+            'email' => 'u'.substr(md5($name), 0, 10).'@example.com',
+            'password' => 'secret-pass-1', 'username' => $name,
+        ])->assertCreated();
 
         return $res->json('token');
     }
@@ -41,15 +46,22 @@ class GameApiTest extends TestCase
             'startedAt' => $now - 60000, 'doneAt' => $now - 1000];
     }
 
-    public function test_register_accepts_arabic_and_rejects_duplicates_and_bad_names(): void
+    public function test_register_accepts_arabic_names_and_rejects_duplicates_and_bad_names(): void
     {
         $token = $this->register('أحمد_1');
         $this->assertMatchesRegularExpression('/^[a-f0-9]{64}$/', $token);
-        $this->postJson('/v1/register', ['username' => 'Ahmed'])->assertCreated();
-        $this->postJson('/v1/register', ['username' => 'AHMED'])->assertStatus(409)->assertJson(['error' => 'username-taken']);
-        $this->postJson('/v1/register', ['username' => 'a b'])->assertStatus(400)->assertJson(['error' => 'bad-username']);
-        $this->postJson('/v1/register', ['username' => 'ab'])->assertStatus(400);
-        $this->assertDatabaseMissing('game_users', ['token_hash' => $token]); // only the hash is stored
+        $reg = fn (string $name, string $email) => $this->postJson('/v1/auth/register', ['email' => $email, 'password' => 'secret-pass-1', 'username' => $name]);
+        $reg('Ahmed', 'a1@example.com')->assertCreated();
+        $reg('AHMED', 'a2@example.com')->assertStatus(409)->assertJson(['error' => 'username-taken']);
+        $reg('a b', 'a3@example.com')->assertStatus(400)->assertJson(['error' => 'bad-username']);
+        $reg('ab', 'a4@example.com')->assertStatus(400);
+        $this->assertDatabaseMissing('game_tokens', ['token_hash' => $token]); // only the hash is stored
+    }
+
+    public function test_name_only_registration_is_gone(): void
+    {
+        $this->assertFalse($this->postJson('/v1/register', ['username' => 'nobody'])->isSuccessful());
+        $this->assertDatabaseCount('game_users', 0);
     }
 
     public function test_missing_or_wrong_token_is_401(): void
@@ -141,7 +153,7 @@ class GameApiTest extends TestCase
         $this->assertDatabaseCount('game_follows', 0);
         $this->as($ta)->getJson('/v1/me')->assertStatus(401); // the token is dead
         $this->as($tb)->getJson('/v1/follows')->assertExactJson(['users' => []]);
-        $this->postJson('/v1/register', ['username' => 'leaver'])->assertCreated(); // the name is free again
+        $this->register('leaver'); // the name is free again
     }
 
     public function test_unknown_v1_path_is_json_404(): void

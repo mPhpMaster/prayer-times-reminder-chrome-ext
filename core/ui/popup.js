@@ -264,15 +264,35 @@ async function loadCityLabelCaches() {
   }
 }
 
+// Real Arabic city names, bundled per country from GeoNames
+// (tools/build-city-names.mjs -> city-ar/<ISO>.json). Loaded when a country's
+// list is shown in Arabic; null = none bundled for that country.
+const bundledCityNames = {};
+let bundledCityIndex = null;
+async function loadBundledCityNames(country) {
+  if (!country) return null;
+  if (country in bundledCityNames) return bundledCityNames[country];
+  try {
+    if (!bundledCityIndex) bundledCityIndex = await (await fetch("city-ar/index.json")).json();
+    const cc = bundledCityIndex[country];
+    bundledCityNames[country] = cc ? await (await fetch(`city-ar/${cc}.json`)).json() : null;
+  } catch {
+    bundledCityNames[country] = null;
+  }
+  return bundledCityNames[country];
+}
+
 function cityLabel(cityEn, countryEn) {
   if (lang !== "ar" || !cityEn) return cityEn;
-  // Accurate cached (geocoded) name wins; otherwise a temporary transliteration
-  // so the list reads in Arabic instead of English.
-  return cityLabelCache[countryEn]?.[cityEn] || transliterateCityToArabic(cityEn);
+  // GeoNames' Arabic name, else one geocoded for a chosen city; with neither,
+  // the original (English) name — never a letter-by-letter guess.
+  return bundledCityNames[countryEn]?.[cityEn] || cityLabelCache[countryEn]?.[cityEn] || cityEn;
 }
 
 async function fetchCityArabicName(city, country) {
   if (!city || !country) return city;
+  const bundled = (await loadBundledCityNames(country))?.[city];
+  if (bundled) return bundled;
   if (cityLabelCache[country]?.[city]) return cityLabelCache[country][city];
 
   try {
@@ -517,11 +537,27 @@ async function loadCities(preselect) {
   }
 
   el.city.appendChild(placeholderOption(T().selectCity));
+  if (lang === "ar") await loadBundledCityNames(country);
+  // In Arabic, sort by the Arabic name; cities with no Arabic name (shown in
+  // English) come after them.
+  // The source lists some places under two spellings (Assiut / Asyūţ); in
+  // Arabic both read "أسيوط", so show it once (keeping the preselected one).
+  const seen = new Set();
+  let rows = cities.map((c) => ({ c, label: cityLabel(c, country) }));
+  if (lang === "ar") {
+    rows = rows
+      .sort((a, b) => Number(b.c === preselect) - Number(a.c === preselect))
+      .filter(({ label }) => (seen.has(label) ? false : seen.add(label)));
+  }
+  if (lang === "ar") {
+    const isAr = (t) => /[؀-ۿ]/.test(t);
+    rows.sort((a, b) => Number(!isAr(a.label)) - Number(!isAr(b.label)) || a.label.localeCompare(b.label, "ar"));
+  }
   const frag = document.createDocumentFragment();
-  for (const c of cities) {
+  for (const { c, label } of rows) {
     const o = document.createElement("option");
     o.value = c;
-    o.textContent = cityLabel(c, country);
+    o.textContent = label;
     frag.appendChild(o);
   }
   el.city.appendChild(frag);
@@ -1084,6 +1120,14 @@ el.aboutLink.addEventListener("click", (e) => {
 // shows in the debug build only.
 if (Platform.speech) {
   document.getElementById("game-link").hidden = false;
+  // Came here from the game ("الأدوات")? Step back to it instead of stacking
+  // another game page, so Android back keeps a short, sensible history.
+  document.getElementById("game-link").addEventListener("click", (e) => {
+    if (/\/game\.html(#.*)?$/.test(document.referrer) && window.history.length > 1) {
+      e.preventDefault();
+      window.history.back();
+    }
+  });
   if (Platform.devBuild) {
     Platform.devBuild().then((dev) => {
       if (dev) document.getElementById("game-spike-link").hidden = false;

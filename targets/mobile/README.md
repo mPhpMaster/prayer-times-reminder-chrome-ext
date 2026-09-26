@@ -73,7 +73,7 @@ re-arms after reboot; requires the "display over other apps" grant
 Scheduling uses `@capacitor/local-notifications` with a rolling ~7-day window
 (5/day ≈ 35), topped up on each `App.resume`, computed from
 `core/logic/scheduler-core.js` + the offline `prayer-engine`. Request
-`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`, a high-importance channel, and a
+`SCHEDULE_EXACT_ALARM`, a high-importance channel, and a
 battery-optimization exemption (Doze).
 
 `AndroidManifest.xml` permissions: `SYSTEM_ALERT_WINDOW`, `FOREGROUND_SERVICE`,
@@ -168,3 +168,22 @@ which follows the phone's language: "مواقيت الصلاة" on an Arabic pho
 - ⛔ **Not built here:** `gradlew assembleDebug` can't run under Git Bash
   ("Unable to establish loopback connection") — build from PowerShell.
 - **TODO (native):** optional Device Admin camera-off.
+
+## Android back
+
+`web/adapter.js` owns the hardware back / back gesture: first the page's own
+screens (`game.js` `__ptBack`: reader, tabs, profile, dialog — hash routes;
+`popup.js` `__ptPopupBack`: Settings), then the page's parent page
+(`PARENT_PAGE`: Tools -> game), and only on the game's home screen
+`App.minimizeApp()`. The WebView's own `canGoBack` is not used — on device it
+reports `false` after an in-app page change.
+
+## Google sign-in (`GoogleAuth`, Java)
+
+`GoogleAuthPlugin` uses Android Credential Manager ("Sign in with Google").
+The OAuth **web** client id comes from the game server (`/v1/auth/config`,
+`GOOGLE_WEB_CLIENT_ID` in the backend `.env`), so nothing is baked into the app;
+the server verifies the ID token's audience. For it to work, the Google Cloud
+project needs Android OAuth clients for `com.mphpmaster.prayer` with the SHA-1
+of the Play app-signing key and the upload key (and `com.mphpmaster.prayer.debug`
+with the debug key for debug builds).

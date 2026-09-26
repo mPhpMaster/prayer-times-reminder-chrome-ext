@@ -23,6 +23,8 @@
 //     .status()                            -> { available, onDevice, permission, whisper }
 //     .start({ lang, preferOffline, engine: "default"|"onDevice"|"whisper",
 //              onPartial, onFinal, onState, onSpeech, onError }) -> { ok, reason? }
+//                                          onState(false, { reason }) when it ends:
+//                                          "no-speech" | "error" | "stopped"
 //     .stop()                              close the mic
 //   Platform.runtime.closeOnboarding()     close the onboarding/welcome surface
 //
