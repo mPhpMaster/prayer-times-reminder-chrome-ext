@@ -66,6 +66,7 @@ function prayerName(key) {
 
 // ---- time helpers ---------------------------------------------------------
 function fmtClock(ms) {
+  if (uses24hClock(lang)) return new Date(ms).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
   return new Date(ms).toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
 }
 function fmtLeft(ms) {
@@ -317,7 +318,7 @@ function renderJourney() {
     const h = document.createElement("span");
     h.className = "cal-head";
     h.setAttribute("aria-hidden", "true");
-    h.textContent = new Date(2026, 8, 6 + i).toLocaleDateString(locale, { weekday: "narrow" }); // 2026-09-06 is a Sunday
+    h.textContent = weekdayLabel(lang, locale, new Date(2026, 8, 6 + i), true); // 2026-09-06 is a Sunday
     grid.appendChild(h);
   }
   const first = new Date(`${month}-01T12:00:00`).getDay(); // 0 = Sunday
@@ -1049,8 +1050,16 @@ function onSearch() {
 }
 
 const fmtNum = (n) => Number(n).toLocaleString(locale);
-const fmtMonth = (ym) => new Date(`${ym}-01T12:00:00`).toLocaleDateString(locale, { month: "long", year: "numeric" });
+const fmtMonth = (ym) => {
+  const d = new Date(`${ym}-01T12:00:00`);
+  if (DATE_NAMES[lang]) return `${monthName(lang, locale, d, true)} ${d.getFullYear()}`;
+  return d.toLocaleDateString(locale, { month: "long", year: "numeric" });
+};
 // The phone's local date: streaks and "today" follow its clock, not the server's.
+const fmtDayMonth = (d) =>
+  DATE_NAMES[lang]
+    ? `${d.getDate()} ${monthName(lang, locale, d)}`
+    : d.toLocaleDateString(locale, { day: "numeric", month: "short" });
 const localDay = () => (current ? current.day : new Date().toLocaleDateString("en-CA"));
 
 async function openProfile(name) {
@@ -1131,7 +1140,7 @@ function renderAchievements(list) {
         b.textContent = title;
         const small = document.createElement("small");
         small.textContent = earned.has(id)
-          ? `${line} ${new Date(earned.get(id)).toLocaleDateString(locale, { day: "numeric", month: "short" })}`
+          ? `${line} ${fmtDayMonth(new Date(earned.get(id)))}`
           : G.achLocked;
         text.append(b, small);
         li.append(mark, text);
@@ -1219,6 +1228,8 @@ document.addEventListener("keydown", (e) => {
 // Back to prayer times (the home screen): step back if we came from there,
 // so the history stays short; otherwise open it.
 $("tools").addEventListener("click", () => {
+  // Desktop: the game has its own window, so bring up the prayer-times popup.
+  if (Platform.game && Platform.game.showPrayerTimes) return Platform.game.showPrayerTimes();
   if (/\/popup\.html$/.test(new URL(document.referrer || "x:", location.href).pathname) && history.length > 1) {
     history.go(-(depth() + 1));
   } else {

@@ -1,6 +1,7 @@
-// speech-web.js — Platform.speech for the Chrome extension, on the browser's
-// Web Speech API (webkitSpeechRecognition). ES module, imported lazily by
-// adapter.js the first time the game opens the mic.
+// speech-web.js — Platform.speech on the Web Speech API (webkitSpeechRecognition),
+// for the shells whose web view has it: the Chrome extension and the desktop
+// app (WebView2). ES module, imported lazily by each shell's adapter.js the
+// first time the game opens the mic. Web API only — no platform calls.
 //
 // Same contract as the Android shell (core/platform/platform.js):
 //   start({ lang, onPartial, onFinal, onState, onError }) -> { ok, reason? }

@@ -14,6 +14,25 @@ npx @tauri-apps/cli dev      # sync-core runs via beforeDevCommand
 npx @tauri-apps/cli build    # NSIS installer (<10 MB target)
 ```
 
+### Microsoft Store package (MSIX)
+
+The Store takes an MSIX built from the release exe plus `msix/layout/`
+(manifest + logos). The Store re-signs it, so it can go up unsigned.
+
+```
+# 1. bump the version in all three: src-tauri/tauri.conf.json, src-tauri/Cargo.toml,
+#    msix/layout/AppxManifest.xml (Version="x.y.z.0")
+# 2. from targets/desktop/src-tauri (rustup's cargo may not be on PATH:
+#    ~/.rustup/toolchains/stable-x86_64-pc-windows-msvc/bin)
+npx @tauri-apps/cli build --no-bundle
+# 3. from targets/desktop/msix
+copy ..\src-tauri\target\release\prayer-desktop.exe layout\
+"C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\makeappx.exe" pack /d layout /p PrayerTimesReminder-x.y.z-x64.msix /o
+```
+
+The exe and `*.msix` are gitignored. The manifest declares `microphone`
+for the dhikr game (Web Speech in WebView2).
+
 `cargo check` validates the Rust without a GUI. `tauri.conf.json` sets
 `withGlobalTauri` (so `window.__TAURI__` is available to `adapter.js`),
 `frontendDist: ../src`, and the hidden tray-launched settings window.
@@ -31,6 +50,7 @@ npx @tauri-apps/cli build    # NSIS installer (<10 MB target)
 | Low-level key hook (`WH_KEYBOARD_LL` + `WH_MOUSE_LL`, swallow Win/Alt+Tab/Alt+F4) | done (`input_block`; strict locks only; `Ctrl+Alt+U` emergency unlock) |
 | Camera disable | done (`camera::disable` — per-user HKCU `ConsentStore\webcam` consent toggle; reversible, no admin, crash-recovery on startup) |
 | Dhikr card window | done (`show_dhikr` → transparent per-monitor `tasbih.html`, reuses `overlay-tasbih.js`) |
+| Dhikr game | done (`open_game` → resizable `game` window; speech = WebView2 Web Speech via shared `speech-web.js`; email sign-in only, no Google on desktop yet) |
 | Run elevated in release (`requireAdministrator`) | done (`build.rs` embeds the manifest for `--release` only; debug stays as-invoker) |
 
 `Ctrl+Alt+Del` is intentionally not blocked (impossible in user mode — accepted).

@@ -224,6 +224,7 @@ function fmtTime(timeStr) {
     const suffix = hh < 12 ? "ص" : "م";
     return `${localizeNum(`${h12}:${mm}`)} ${suffix}`;
   }
+  if (uses24hClock(lang)) return `${String(hh).padStart(2, "0")}:${mm}`;
   const ampm = hh < 12 ? "AM" : "PM";
   return localizeNum(`${h12}:${mm} ${ampm}`);
 }
@@ -469,8 +470,7 @@ function formatGregorianDate(parts, formatId) {
   if (formatId === "readable") return null;
 
   const locale = T().locale || (lang === "ar" ? "ar" : "en");
-  const monthLong = new Date(parts.yy, parts.mm - 1, parts.dd)
-    .toLocaleDateString(locale, { month: "long" });
+  const monthLong = monthName(lang, locale, new Date(parts.yy, parts.mm - 1, parts.dd));
   return formatDateDisplay(parts, formatId, monthLong);
 }
 
@@ -716,7 +716,7 @@ function weekdayName() {
   const parts = gregorianParts(currentDate && currentDate.gregorian);
   const d = parts ? new Date(parts.yy, parts.mm - 1, parts.dd) : new Date();
   const locale = T().locale || (lang === "ar" ? "ar" : "en");
-  return d.toLocaleDateString(locale, { weekday: "long" });
+  return weekdayLabel(lang, locale, d);
 }
 
 // Renders the Hijri line (with weekday) and the Gregorian line, both in the
@@ -1126,6 +1126,12 @@ if (Platform.speech) {
   if (Platform.name === "chrome") {
     document.getElementById("game-link").target = "_blank";
     document.getElementById("game-link").rel = "noopener";
+  } else if (Platform.game) {
+    // Desktop: the popup is a small flyout, so the game gets its own window.
+    document.getElementById("game-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      Platform.game.open();
+    });
   }
   if (Platform.devBuild) {
     Platform.devBuild().then((dev) => {

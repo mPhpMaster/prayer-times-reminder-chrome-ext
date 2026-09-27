@@ -1,0 +1,14 @@
+{
+  "appName": {
+    "message": "Время намаза",
+    "description": "Extension name shown in the Chrome Web Store and toolbar."
+  },
+  "appShortName": {
+    "message": "Намаз",
+    "description": "Short name for space-constrained UI (new tab, app launcher)."
+  },
+  "appDesc": {
+    "message": "Время намаза, блокировка вкладок во время намаза («Перерыв на намаз»), напоминания о зикре и 11 языков.",
+    "description": "Chrome Web Store description."
+  }
+}

@@ -172,10 +172,29 @@
         .catch((e) => ({ ok: false, reason: String(e) })),
   };
 
+  // The dhikr game. Speech is WebView2's Web Speech API (shared speech-web.js,
+  // loaded on first use). The game opens in its own resizable window; its
+  // "prayer times" button brings back the tray popup. No Google sign-in on
+  // desktop yet — the game hides that button when googleAuth is absent.
+  let speechMod = null;
+  const speechModule = () => speechMod || (speechMod = import("./speech-web.js"));
+  const hasRecognizer = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const speech = hasRecognizer
+    ? {
+        status: () => speechModule().then((m) => m.status()),
+        start: (opts) => speechModule().then((m) => m.start(opts)),
+        stop: () => speechModule().then((m) => m.stop()),
+      }
+    : undefined;
+  const game = {
+    open: () => invoke("open_game").then(() => ({ ok: true })).catch((e) => ({ ok: false, reason: String(e) })),
+    showPrayerTimes: () => invoke("show_prayer_times").catch(() => {}),
+  };
+
   // Desktop app feel: no browser context menu on right-click.
   if (typeof document !== "undefined") {
     document.addEventListener("contextmenu", (e) => e.preventDefault());
   }
 
-  globalThis.__PTPlatform = { name: "tauri", store, enforce, dhikr, runtime, geo, permissions, browserExt, autostart };
+  globalThis.__PTPlatform = { name: "tauri", store, enforce, dhikr, runtime, geo, permissions, browserExt, autostart, speech, game };
 })();
