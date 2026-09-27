@@ -558,9 +558,13 @@
   }
 
   let permFlowActive = false;
+  // A trigger that arrives mid-flow (e.g. dhikr switched on while a sheet is
+  // open) re-runs the flow once it ends, instead of being dropped.
+  let permFlowPending = false;
   // force: ignore the "already asked" flags (the Settings button).
   async function runPermissionFlow({ force = false } = {}) {
-    if (permFlowActive || !Lock || !CapApp) return;
+    if (!Lock || !CapApp) return;
+    if (permFlowActive) { if (!force) permFlowPending = true; return; }
     permFlowActive = true;
     try {
       const s = await readSettings([
@@ -595,6 +599,10 @@
       /* best effort — re-tried on next launch / settings change */
     } finally {
       permFlowActive = false;
+      if (permFlowPending) {
+        permFlowPending = false;
+        runPermissionFlow();
+      }
     }
   }
 

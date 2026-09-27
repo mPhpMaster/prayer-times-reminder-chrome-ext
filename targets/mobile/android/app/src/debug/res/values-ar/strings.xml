@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- Debug-only Arabic label: main's values-ar would otherwise override the
+         build type's resValue and give the debug app the release name. -->
+    <string name="app_name">مواقيت الصلاة (تجريبي)</string>
+</resources>

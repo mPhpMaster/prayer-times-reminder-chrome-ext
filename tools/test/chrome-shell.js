@@ -53,7 +53,8 @@ function manifestChecks() {
     ok(`${page}: no remote <script>`, !/<script[^>]+src=["']https?:/i.test(html));
     ok(`${page}: no inline handlers`, !/\son[a-z]+=["']/i.test(html));
     for (const [, src] of html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi)) {
-      ok(`${page}: ships ${src}`, fs.existsSync(path.join(BUILD, src)));
+      // Drop a cache-busting query (game.js?v=225) — the file on disk is game.js.
+      ok(`${page}: ships ${src}`, fs.existsSync(path.join(BUILD, src.split("?")[0])));
     }
   }
   for (const f of ["speech-web.js", "google-auth-chrome.js", "game-alerts.js", "notify-plan.js"]) {
