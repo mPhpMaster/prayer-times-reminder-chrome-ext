@@ -1219,6 +1219,8 @@ document.addEventListener("keydown", (e) => {
 // Back to prayer times (the home screen): step back if we came from there,
 // so the history stays short; otherwise open it.
 $("tools").addEventListener("click", () => {
+  // Desktop: the game has its own window, so bring up the prayer-times popup.
+  if (Platform.game && Platform.game.showPrayerTimes) return Platform.game.showPrayerTimes();
   if (/\/popup\.html$/.test(new URL(document.referrer || "x:", location.href).pathname) && history.length > 1) {
     history.go(-(depth() + 1));
   } else {

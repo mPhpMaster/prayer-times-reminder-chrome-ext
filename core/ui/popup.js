@@ -1126,6 +1126,12 @@ if (Platform.speech) {
   if (Platform.name === "chrome") {
     document.getElementById("game-link").target = "_blank";
     document.getElementById("game-link").rel = "noopener";
+  } else if (Platform.game) {
+    // Desktop: the popup is a small flyout, so the game gets its own window.
+    document.getElementById("game-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      Platform.game.open();
+    });
   }
   if (Platform.devBuild) {
     Platform.devBuild().then((dev) => {

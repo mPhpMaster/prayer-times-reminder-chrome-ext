@@ -24,7 +24,10 @@
 //     .signIn(webClientId)                 -> Google ID token; rejects with .code "canceled" | "failed" | "no-account"
 //     .signOut()
 //   Platform.gameAlerts?                   optional: .refresh() re-plans the game's reminders
-//   Platform.speech?                       optional (Android; Chrome via Web Speech):
+//   Platform.game?                         optional (desktop): the game lives in its own window
+//     .open()                              -> { ok, reason? }   open/focus the game window
+//     .showPrayerTimes()                   bring up the prayer-times popup (the game's home button)
+//   Platform.speech?                       optional (Android; Chrome + desktop via Web Speech):
 //     .status()                            -> { available, onDevice, permission, whisper }
 //     .start({ lang, preferOffline, engine: "default"|"onDevice"|"whisper",
 //              onPartial, onFinal, onState, onSpeech, onError }) -> { ok, reason? }

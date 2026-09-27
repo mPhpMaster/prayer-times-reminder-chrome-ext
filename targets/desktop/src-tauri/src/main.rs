@@ -394,6 +394,39 @@ fn show_popup(app: &tauri::AppHandle) {
     }
 }
 
+// The dhikr game in its own normal, resizable window: the tray popup is a
+// fixed 360x600 flyout that hides on blur, too small for the game. Reuses the
+// window if it's already open. Async: building a window from a sync command
+// can deadlock on Windows.
+#[tauri::command]
+async fn open_game(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(win) = app.get_webview_window("game") {
+        let _ = win.unminimize();
+        let _ = win.show();
+        let _ = win.set_focus();
+        return Ok(());
+    }
+    WebviewWindowBuilder::new(&app, "game", WebviewUrl::App("game.html".into()))
+        .title("مهمات الأذكار — Prayer Times Reminder")
+        .inner_size(480.0, 820.0)
+        .min_inner_size(380.0, 560.0)
+        .resizable(true)
+        .center()
+        .build()
+        .map(|_| ())
+        .map_err(|e| {
+            log_line(&format!("open_game: build ERROR: {e}"));
+            e.to_string()
+        })
+}
+
+// The game's "prayer times" button: bring up the tray popup instead of
+// loading popup.html inside the game window.
+#[tauri::command]
+fn show_prayer_times(app: tauri::AppHandle) {
+    show_popup(&app);
+}
+
 fn hide_popup(app: &tauri::AppHandle) {
     if let Some(win) = app.get_webview_window("settings") {
         let _ = win.hide();
@@ -601,6 +634,8 @@ fn main() {
             open_chrome_store,
             get_autostart,
             set_autostart,
+            open_game,
+            show_prayer_times,
             log_js
         ])
         .setup(|app| {
