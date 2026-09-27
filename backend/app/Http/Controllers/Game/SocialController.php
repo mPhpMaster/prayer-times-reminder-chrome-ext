@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Game;
 use App\Http\Controllers\Controller;
 use App\Models\GameUser;
 use App\Support\GameRules;
+use App\Support\GameStats;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -51,18 +52,42 @@ class SocialController extends Controller
         return response()->json(['users' => $users->map->toPublic()]);
     }
 
-    /** GET /v1/users/{username}?month= -> {user, points|null, following} */
+    /**
+     * GET /v1/users/{username}?month=&today=YYYY-MM-DD ->
+     * {user, self, following, followers, followingCount, joined, points, stats, achievements}
+     *
+     * Everything is computed from stored completions (GameStats). A player who
+     * hides their progress shows others only name, follow state and counts:
+     * points / stats / achievements are null. `today` is the viewer's local
+     * date, so "current streak" follows the phone's clock.
+     */
     public function show(Request $request, string $username): JsonResponse
     {
         $me = $this->me($request);
         $u = $this->target($username);
         $month = GameRules::month($request->query('month'), (int) now()->getTimestampMs());
+        $today = GameRules::day($request->query('today'));
         $self = $u->id === $me->id;
+        $visible = $self || ! $u->hide_progress;
+
+        $stats = null;
+        $achievements = null;
+        if ($visible) {
+            GameStats::award($u->id); // backfills players who synced before achievements existed
+            $stats = GameStats::compute($u->id, $today)['stats'];
+            $achievements = GameStats::achievements($u->id);
+        }
 
         return response()->json([
             'user' => $u->toPublic(),
-            'points' => $self || ! $u->hide_progress ? self::monthPoints($u->id, $month) : null,
+            'self' => $self,
             'following' => $self ? false : self::isFollowing($me->id, $u->id),
+            'followers' => DB::table('game_follows')->where('followee_id', $u->id)->count(),
+            'followingCount' => DB::table('game_follows')->where('follower_id', $u->id)->count(),
+            'joined' => $u->created_at ? $u->created_at->format('Y-m') : null,
+            'points' => $visible ? self::monthPoints($u->id, $month) : null,
+            'stats' => $stats,
+            'achievements' => $achievements,
         ]);
     }
 

@@ -18,6 +18,7 @@ final class GameRules
     private const WINDOW_KEY = '/^\d{4}-\d{2}-\d{2}:(Fajr|Dhuhr|Asr|Maghrib|Isha)$/';
     private const ITEM_ID = '/^[a-z0-9-]{1,64}$/';
     private const MONTH = '/^\d{4}-\d{2}$/';
+    private const DAY = '/^\d{4}-\d{2}-\d{2}$/';
 
     /** The API's error shape: {"error": "code"}. */
     public static function fail(int $status, string $code): never
@@ -55,6 +56,19 @@ final class GameRules
         }
 
         return $p;
+    }
+
+    /** The viewer's local date "YYYY-MM-DD", or null (then the server's UTC date is used). */
+    public static function day(?string $d): ?string
+    {
+        if ($d === null) {
+            return null;
+        }
+        if (! preg_match(self::DAY, $d) || ! checkdate((int) substr($d, 5, 2), (int) substr($d, 8, 2), (int) substr($d, 0, 4))) {
+            self::fail(400, 'bad-day');
+        }
+
+        return $d;
     }
 
     public static function month(?string $m, int $nowMs): string

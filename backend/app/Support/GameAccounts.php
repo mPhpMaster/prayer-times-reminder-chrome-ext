@@ -68,6 +68,9 @@ final class GameAccounts
             }
             self::deleteUser($from);
         });
+        // Re-derived from the merged completions, not copied: an achievement
+        // both accounts had is stored once, dated by the earliest finish.
+        GameStats::rebuild($into->id);
     }
 
     /** Delete an account and everything tied to it (explicitly: SQLite may not cascade). */
@@ -75,6 +78,7 @@ final class GameAccounts
     {
         DB::transaction(function () use ($user) {
             DB::table('game_completions')->where('user_id', $user->id)->delete();
+            DB::table('game_achievements')->where('user_id', $user->id)->delete();
             DB::table('game_follows')->where('follower_id', $user->id)->orWhere('followee_id', $user->id)->delete();
             DB::table('game_tokens')->where('user_id', $user->id)->delete();
             if ($user->email) {

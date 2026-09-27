@@ -436,6 +436,52 @@ ok("no 'Google not enabled' string in any language", Object.values(I.GAME_I18N).
 const popupSrc = fs.readFileSync(path.join(ROOT, "popup.js"), "utf8");
 ok("prayer times never asks for a game account", !/gameAccount|GAME_ACCOUNT_KEY|signIn|\/v1\/auth/.test(popupSrc));
 
+// ---- candidate content catalog: review pending, never published -------------------------
+// content/game-catalog.json lists adhkar awaiting shar'i review. It must stay out
+// of every build and out of the live game until an item is approved and moved
+// into core/data/game-tasks.js by hand.
+const catalog = JSON.parse(fs.readFileSync(path.join(REPO, "content", "game-catalog.json"), "utf8"));
+const citems = catalog.items;
+ok("catalog has items", citems.length >= 10);
+eq("catalog: every item review pending", citems.filter((i) => i.review !== "pending").map((i) => i.id), []);
+eq("catalog: nothing marked published", citems.filter((i) => i.published !== false).map((i) => i.id), []);
+eq("catalog: ids unique and well-formed", citems.map((i) => i.id).filter((id, n, all) => !/^[a-z0-9-]{1,64}$/.test(id) || all.indexOf(id) !== n), []);
+const liveIds = new Set([...Object.keys(C.GAME_TASKS), ...C.GIFTS.map((g) => g.id)]);
+eq("catalog: no item is in the live game", citems.filter((i) => liveIds.has(i.id)).map((i) => i.id), []);
+eq(
+  "catalog: Quran is never typed by hand (reference only)",
+  citems.filter((i) => i.quran && i.text !== null).map((i) => i.id),
+  []
+);
+eq(
+  "catalog: texts are Arabic only",
+  citems.filter((i) => i.text !== null && (/[A-Za-z]/.test(i.text) || !/[؀-ۿ]/.test(i.text))).map((i) => i.id),
+  []
+);
+eq("catalog: repeat is a positive count", citems.filter((i) => !(Number.isInteger(i.repeat) && i.repeat > 0)).map((i) => i.id), []);
+eq("catalog: every item names a source", citems.filter((i) => !i.source).map((i) => i.id), []);
+ok("catalog is not in the extension build", !fs.existsSync(path.join(ROOT, "game-catalog.json")));
+ok("sync-core never copies content/", !/["'`/]content["'`/]/.test(fs.readFileSync(path.join(REPO, "tools", "sync-core.mjs"), "utf8")));
+
+// ---- server stats mirror the app's catalog ------------------------------------------
+// GameStats.php decides "window completed" from the task count per prayer and
+// names achievements by id; both must match what the app ships.
+const statsSrc = fs.readFileSync(path.join(REPO, "backend", "app", "Support", "GameStats.php"), "utf8");
+const serverCounts = Object.fromEntries(
+  [...statsSrc.match(/WINDOW_TASK_COUNT = \[([^\]]+)\]/)[1].matchAll(/'(\w+)' => (\d+)/g)].map((m) => [m[1], Number(m[2])])
+);
+eq(
+  "server task count per window = app catalog",
+  serverCounts,
+  Object.fromEntries(Object.entries(C.WINDOW_TASKS).map(([p, ids]) => [p, ids.length]))
+);
+const serverAch = [...statsSrc.match(/ACHIEVEMENTS = \[([^\]]+)\]/)[1].matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1]);
+ok("server lists achievements", serverAch.length >= 5);
+for (const l of I.SUPPORTED_LANGS) {
+  const d = I.GAME_I18N[l.code];
+  if (d) eq(`${l.code}: a name and a line for every achievement`, serverAch.filter((id) => !(d.ach && d.ach[id] && d.ach[id].length === 2)), []);
+}
+
 if (failures.length) {
   console.error(`game: ${failures.length} FAILED, ${passed} passed`);
   failures.forEach((f) => console.error("  ✗ " + f));

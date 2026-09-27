@@ -113,9 +113,20 @@ html:not([lang="ar"]):not([lang="ur"]) .tasks .name { font-size: 16px; font-weig
 .notice.mode { font-size: 13px; }
 .hint { font-size: 12px; color: var(--muted-foreground); text-align: center; margin: 0; }
 
+/* Part N of M + text size; --reader-scale is set from the A−/A+ buttons. */
+.reader { --reader-scale: 1; }
+.reader-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 30px; }
+.seg-label { font-size: 12px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.size-ctl { display: inline-flex; gap: 4px; } /* dir="ltr": "A−" / "A+" keep their sign order */
+.size-ctl button { padding: 3px 9px; font-size: 13px; line-height: 1.2; min-width: 36px; }
+.size-ctl button:disabled, .chunk-nav button:disabled { opacity: 0.35; }
+.chunk-nav { display: flex; justify-content: space-between; gap: 8px; }
+.chunk-nav button { flex: 1; font-size: 20px; padding: 4px; }
+.text { position: relative; } /* offsetParent for keeping the current part in view */
+
 .chunk {
   font-family: var(--font-arabic);
-  font-size: 32px;
+  font-size: calc(32px * var(--reader-scale));
   line-height: 1.9;
   text-align: center;
   margin: 0;
@@ -126,7 +137,7 @@ html:not([lang="ar"]):not([lang="ur"]) .tasks .name { font-size: 16px; font-weig
 }
 .text {
   font-family: var(--font-arabic);
-  font-size: 17px;
+  font-size: calc(17px * var(--reader-scale));
   line-height: 2;
   margin: 0;
   color: var(--muted-foreground);
@@ -159,6 +170,7 @@ html:not([lang="ar"]):not([lang="ur"]) .tasks .name { font-size: 16px; font-weig
   font-weight: 700;
 }
 .mic.on { background: var(--destructive); color: #fff; }
+.mic-dock { display: flex; justify-content: center; }
 .heard { font-size: 13px; color: var(--muted-foreground); min-height: 1.6em; margin: 0; line-height: 1.7; }
 
 .privacy { font-size: 11px; color: var(--muted-foreground); text-align: center; margin: 0; }
@@ -347,6 +359,37 @@ input[type="search"], #username, #search, #auth input {
   50% { opacity: 0.55; }
 }
 
+/* ---- profile: real stats + achievements ---- */
+#profile-view { display: flex; flex-direction: column; gap: 10px; }
+#profile-view h3 { font-size: 14px; margin: 6px 0; color: var(--muted-foreground); }
+.profile-head h2 { margin: 0; font-size: 20px; }
+.profile-head p { margin: 2px 0 0; font-size: 12px; }
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 0; }
+.stats div { background: var(--muted); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; }
+.stats dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.stats dt { font-size: 11px; color: var(--muted-foreground); line-height: 1.4; }
+.achievements { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.achievements li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--muted);
+}
+.achievements li.earned { border-color: color-mix(in srgb, var(--gold) 45%, var(--border)); }
+.achievements li.locked { opacity: 0.55; }
+.achievements b { display: block; font-size: 14px; }
+.achievements small { font-size: 11px; color: var(--muted-foreground); }
+.ach-mark { width: 1.4em; text-align: center; color: var(--gold); font-size: 18px; }
+
 /* Compact phone layout: keep the active mission and progress above the fold. */
 @media (max-width: 600px) {
   body {
@@ -399,7 +442,7 @@ input[type="search"], #username, #search, #auth input {
   .chunk {
     padding: 10px;
     min-height: 1.65em;
-    font-size: 26px;
+    font-size: calc(26px * var(--reader-scale));
     line-height: 1.65;
     background: color-mix(in srgb, var(--primary) 13%, var(--muted));
     border: 1px solid color-mix(in srgb, var(--primary) 55%, var(--border));
@@ -411,7 +454,7 @@ input[type="search"], #username, #search, #auth input {
     border-radius: var(--radius);
     background: var(--muted);
     color: color-mix(in srgb, var(--foreground) 72%, var(--muted-foreground));
-    font-size: 15px;
+    font-size: calc(15px * var(--reader-scale));
     line-height: 1.85;
   }
   .progress {
@@ -421,6 +464,15 @@ input[type="search"], #username, #search, #auth input {
   }
   .counter { font-size: 16px; }
   .mic { width: 100%; min-width: 0; min-height: 48px; padding: 11px 16px; font-size: 16px; }
+  /* The mic stays under the thumb however long the text above it is. */
+  .mic-dock {
+    position: sticky;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 2;
+    padding-top: 6px;
+    background: linear-gradient(to top, var(--card) 70%, transparent);
+  }
+  .stats dd { font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .celebrate-card, .celebrate-mark, .notice.reward { animation: none; }

@@ -78,7 +78,9 @@ function fmtDuration(ms) {
 
 // ---- load / save ----------------------------------------------------------
 async function load() {
-  const s = await Platform.store.get(["location", "lang", GAME_STORE_KEY, "theme", GAME_ACCOUNT_KEY, GAME_API_KEY, "gameJourney", "gameSound"]);
+  const s = await Platform.store.get(["location", "lang", GAME_STORE_KEY, "theme", GAME_ACCOUNT_KEY, GAME_API_KEY, "gameJourney", "gameSound", "gameFontStep"]);
+  if (Number.isInteger(s.gameFontStep) && FONT_STEPS[s.gameFontStep]) fontStep = s.gameFontStep;
+  applyFontStep();
   applyLanguage(s.lang);
   account = s[GAME_ACCOUNT_KEY] && s[GAME_ACCOUNT_KEY].token ? s[GAME_ACCOUNT_KEY] : null;
   // Accounts saved before real sign-in carry no email: name-only (legacy)
@@ -489,6 +491,8 @@ function openReader(task, isGift) {
   $("reader-title").textContent = isGift ? G.giftTitle : gameTaskTitle(lang, task);
   $("reader-source").textContent = task.source;
   $("text").replaceChildren(...wordSpans(task.text.split(/\s+/).filter(Boolean), 0));
+  $("text").hidden = chunks.length <= 1; // one part: the big card already shows all of it
+  $("text").scrollTop = 0;
   $("heard").textContent = finals.join(" ");
   setMic(false);
 
@@ -537,15 +541,62 @@ function readerPoints() {
 function showChunk(pos) {
   let i = chunks.findIndex((c) => pos < c.to);
   if (i < 0) i = chunks.length - 1;
-  if (i !== shownChunk) {
+  const moved = i !== shownChunk;
+  if (moved) {
     shownChunk = i;
     $("chunk").replaceChildren(...wordSpans(chunks[i].words, chunks[i].from));
   }
   const c = chunks[i];
+  let first = null;
   document.querySelectorAll("#text .w").forEach((s) => {
     const t = s.dataset.t === undefined ? -1 : Number(s.dataset.t);
-    s.classList.toggle("cur", t >= c.from && t < c.to);
+    const cur = t >= c.from && t < c.to;
+    s.classList.toggle("cur", cur);
+    if (cur && !first) first = s;
   });
+  $("segment").textContent = chunks.length > 1 ? G.segment(i + 1, chunks.length) : "";
+  renderChunkNav();
+  // Long texts scroll inside their box: keep the current part in view there,
+  // without moving the page (the mic stays where the thumb is).
+  const box = $("text");
+  if (moved && first && box.scrollHeight > box.clientHeight) {
+    box.scrollTop = Math.max(0, first.offsetTop - box.clientHeight / 3);
+  }
+}
+
+// Practice / review: step through the parts by hand. While reading for
+// points the recognized voice moves the part on, so the buttons are hidden.
+function renderChunkNav() {
+  const manual = reading && reading.mode !== "play" && chunks.length > 1;
+  $("chunk-nav").hidden = !manual;
+  if (!manual) return;
+  const rtl = document.documentElement.dir === "rtl";
+  const prev = $("chunk-prev");
+  const next = $("chunk-next");
+  prev.textContent = rtl ? "›" : "‹"; // "back" points to where reading came from
+  next.textContent = rtl ? "‹" : "›";
+  prev.disabled = shownChunk <= 0;
+  next.disabled = shownChunk >= chunks.length - 1;
+  prev.setAttribute("aria-label", G.segment(Math.max(1, shownChunk), chunks.length));
+  next.setAttribute("aria-label", G.segment(Math.min(chunks.length, shownChunk + 2), chunks.length));
+}
+function stepChunk(delta) {
+  const i = Math.min(chunks.length - 1, Math.max(0, shownChunk + delta));
+  showChunk(chunks[i].from);
+}
+
+// Reader text size: three steps above the default, one below; kept per device.
+const FONT_STEPS = [0.85, 1, 1.15, 1.3, 1.5];
+let fontStep = 1;
+function applyFontStep() {
+  $("reader").style.setProperty("--reader-scale", String(FONT_STEPS[fontStep]));
+  $("font-down").disabled = fontStep <= 0;
+  $("font-up").disabled = fontStep >= FONT_STEPS.length - 1;
+}
+function changeFont(delta) {
+  fontStep = Math.min(FONT_STEPS.length - 1, Math.max(0, fontStep + delta));
+  applyFontStep();
+  Platform.store.set({ gameFontStep: fontStep });
 }
 
 function updateReader({ final = false } = {}) {
@@ -677,12 +728,17 @@ async function syncNow() {
   if (!rows.length) return;
   syncing = true;
   try {
+    const unlocked = [];
     for (const batch of syncBatches(rows)) {
-      await gameApi(apiUrl, token).pushProgress(batch);
+      const res = await gameApi(apiUrl, token).pushProgress(batch);
       if (!account || account.token !== token) return;
       markSynced(state, batch);
       await save();
+      // The server reports an achievement only in the call that earned it,
+      // so a resent batch never repeats the note.
+      unlocked.push(...((res && res.newAchievements) || []).filter((id) => G.ach[id]));
     }
+    if (unlocked.length) showNotice(unlocked.map((id) => G.achUnlocked(G.ach[id][0])).join(" · "), { autoHide: true });
   } catch (e) {
     if (e.status === 401 && account && account.token === token) await forgetAccount(); // token no longer valid
   } finally {
@@ -992,23 +1048,96 @@ function onSearch() {
   }, 350);
 }
 
+const fmtNum = (n) => Number(n).toLocaleString(locale);
+const fmtMonth = (ym) => new Date(`${ym}-01T12:00:00`).toLocaleDateString(locale, { month: "long", year: "numeric" });
+// The phone's local date: streaks and "today" follow its clock, not the server's.
+const localDay = () => (current ? current.day : new Date().toLocaleDateString("en-CA"));
+
 async function openProfile(name) {
   profileName = name;
   $("profile-name").textContent = name;
+  $("profile-meta").textContent = "";
   $("profile-points").textContent = "…";
   $("profile-follow").hidden = true;
+  $("profile-stats").hidden = true;
+  $("profile-ach").hidden = true;
   $("profile-back").focus();
   if (!account) return ($("profile-points").textContent = G.needAccount);
   try {
-    const p = await api().profile(name, month());
+    await syncNow(); // your own numbers include what this phone just finished
+    const p = await api().profile(name, month(), localDay());
+    if (profileName !== name) return; // another profile was opened meanwhile
     $("profile-name").textContent = p.user.displayName;
+    $("profile-meta").textContent = [G.followersN(p.followers), G.followingN(p.followingCount), p.joined ? G.joined(fmtMonth(p.joined)) : ""]
+      .filter(Boolean)
+      .join(" · ");
     $("profile-points").textContent = p.points === null ? G.profileHidden : G.profilePoints(p.points);
-    $("profile-follow").hidden = p.user.username === account.username;
+    $("profile-follow").hidden = p.self;
     $("profile-follow").textContent = p.following ? G.unfollow : G.follow;
     $("profile-follow").dataset.following = String(p.following);
+    renderStats(p.stats, p.points);
+    renderAchievements(p.achievements);
   } catch {
     $("profile-points").textContent = G.profileFail;
   }
+}
+
+function renderStats(s, monthPoints) {
+  $("profile-stats").hidden = !s;
+  if (!s) return;
+  const rows = [
+    [G.statMonth, monthPoints],
+    [G.statTotal, s.totalPoints],
+    [G.statTasks, s.tasks],
+    [G.statWindows, s.windows],
+    [G.statFullDays, s.fullDays],
+    [G.statDays, s.activeDays],
+    [G.statStreak, s.currentStreak],
+    [G.statBest, s.bestStreak],
+  ];
+  $("stats-grid").replaceChildren(
+    ...rows.map(([label, value]) => {
+      const div = document.createElement("div");
+      const dd = document.createElement("dd");
+      dd.textContent = fmtNum(value);
+      const dt = document.createElement("dt");
+      dt.textContent = label;
+      div.append(dd, dt); // number first, big; <dl> > <div> keeps dt/dd paired
+      return div;
+    })
+  );
+}
+
+// Every achievement, earned ones first (in the order earned), the rest dimmed:
+// shows what is possible without ranking anyone.
+function renderAchievements(list) {
+  $("profile-ach").hidden = !list;
+  if (!list) return;
+  const earned = new Map(list.map((a) => [a.id, a.earnedAt]));
+  const ids = [...earned.keys(), ...Object.keys(G.ach).filter((id) => !earned.has(id))];
+  $("ach-list").replaceChildren(
+    ...ids
+      .filter((id) => G.ach[id]) // an id newer than this app: skip until it knows the name
+      .map((id) => {
+        const [title, line] = G.ach[id];
+        const li = document.createElement("li");
+        li.className = earned.has(id) ? "earned" : "locked";
+        const mark = document.createElement("span");
+        mark.className = "ach-mark";
+        mark.setAttribute("aria-hidden", "true");
+        mark.textContent = earned.has(id) ? "✦" : "·";
+        const text = document.createElement("span");
+        const b = document.createElement("b");
+        b.textContent = title;
+        const small = document.createElement("small");
+        small.textContent = earned.has(id)
+          ? `${line} ${new Date(earned.get(id)).toLocaleDateString(locale, { day: "numeric", month: "short" })}`
+          : G.achLocked;
+        text.append(b, small);
+        li.append(mark, text);
+        return li;
+      })
+  );
 }
 
 async function toggleFollow() {
@@ -1073,9 +1202,14 @@ $("hide-progress").addEventListener("change", async (e) => {
 });
 $("profile-back").addEventListener("click", () => goBack({ name: "board" }));
 $("profile-follow").addEventListener("click", toggleFollow);
+$("my-profile").addEventListener("click", () => account && go({ name: "profile", arg: account.username }));
 $("delete-account").addEventListener("click", deleteAccount);
 $("mic").addEventListener("click", () => (listening ? stopListening() : startListening()));
 $("back").addEventListener("click", () => goBack({ name: "tasks" }));
+$("chunk-prev").addEventListener("click", () => stepChunk(-1));
+$("chunk-next").addEventListener("click", () => stepChunk(1));
+$("font-down").addEventListener("click", () => changeFont(-1));
+$("font-up").addEventListener("click", () => changeFont(1));
 $("gift").addEventListener("click", () => go({ name: "gift" }));
 $("resume").addEventListener("click", () => go({ name: "read", arg: $("resume").dataset.id }));
 $("celebrate-ok").addEventListener("click", closeCelebration);
