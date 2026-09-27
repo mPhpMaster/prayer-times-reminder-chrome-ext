@@ -481,6 +481,39 @@
       cont: "Weiter", later: "Nicht jetzt", ok: "OK",
       check: "Berechtigungen prüfen", allSet: ["Alles bereit", "Alle nötigen Berechtigungen sind erteilt."],
     },
+    ru: {
+      notifications: ["Уведомления", "Чтобы вы получали напоминание, когда наступает время каждого намаза."],
+      fullScreen: ["Полноэкранная блокировка", "Позволяет блокировке на время намаза закрывать экран, даже если вы используете другое приложение."],
+
+      exactAlarm: ["Будильники и напоминания", "Чтобы напоминания и блокировка на время намаза срабатывали точно в минуту намаза, а не с опозданием на несколько минут."],
+      dnd: ["Не беспокоить", "Отключает звук телефона, пока действует блокировка на время намаза. Найдите «{app}» в списке и включите."],
+      overlay: ["Поверх других приложений", "Нужно, чтобы показывать напоминание о зикре поверх любого открытого приложения. Найдите «{app}» в списке и разрешите."],
+      battery: ["Работа в фоне", "Не даёт режиму энергосбережения отменять будильники времени намаза."],
+      cont: "Продолжить", later: "Не сейчас", ok: "OK",
+      check: "Проверить разрешения", allSet: ["Всё готово", "Все нужные приложению разрешения предоставлены."],
+    },
+    kk: {
+      notifications: ["Хабарландырулар", "Әр намаз уақыты кіргенде еске салу алып отыру үшін."],
+      fullScreen: ["Толық экранды құлып", "Басқа қолданбаны пайдаланып отырсаңыз да, намаз уақытында құлыптың экранды жабуына мүмкіндік береді."],
+
+      exactAlarm: ["Дабылдар мен еске салғыштар", "Еске салулар мен намаз құлпы бірнеше минут кешікпей, әр намаздың дәл минутында басталуы үшін."],
+      dnd: ["Мазаламау", "Намаз құлпы қосулы кезде телефонды дыбыссыз ұстайды. Тізімнен «{app}» қолданбасын тауып, қосыңыз."],
+      overlay: ["Басқа қолданбалардың үстінен көрсету", "Зікір еске салғышын кез келген ашық қолданбаның үстінен көрсету үшін қажет. Тізімнен «{app}» қолданбасын тауып, рұқсат беріңіз."],
+      battery: ["Фондық режимде жұмыс істеу", "Телефонның батареяны үнемдеу режимі намаз уақыты дабылдарын болдырмай тастауына жол бермейді."],
+      cont: "Жалғастыру", later: "Қазір емес", ok: "Жарайды",
+      check: "Рұқсаттарды тексеру", allSet: ["Бәрі дайын", "Қолданбаға қажет барлық рұқсат берілген."],
+    },
+    uz: {
+      notifications: ["Bildirishnomalar", "Har bir namoz vaqti kirganda eslatma olishingiz uchun."],
+      fullScreen: ["To‘liq ekranli qulf", "Boshqa ilovadan foydalanayotgan bo‘lsangiz ham, namoz vaqtida namoz qulfi ekranni yopishiga imkon beradi."],
+
+      exactAlarm: ["Signallar va eslatmalar", "Eslatmalar va namoz qulfi har bir namozning aynan o‘z daqiqasida, bir necha daqiqa kechikmasdan ishga tushishi uchun."],
+      dnd: ["Bezovta qilinmasin", "Namoz qulfi yoqilganda telefoningizni jim holatda saqlaydi. Ro‘yxatdan “{app}” ilovasini toping va yoqing."],
+      overlay: ["Boshqa ilovalar ustidan ko‘rsatish", "Zikr eslatmasini ochiq turgan har qanday ilova ustida ko‘rsatish uchun kerak. Ro‘yxatdan “{app}” ilovasini toping va ruxsat bering."],
+      battery: ["Fonda ishlash", "Telefonning quvvat tejash rejimi namoz vaqti signallarini bekor qilishining oldini oladi."],
+      cont: "Davom etish", later: "Hozir emas", ok: "OK",
+      check: "Ruxsatlarni tekshirish", allSet: ["Hammasi tayyor", "Ilovaga kerakli barcha ruxsatlar berilgan."],
+    },
   };
 
   async function permissionState() {

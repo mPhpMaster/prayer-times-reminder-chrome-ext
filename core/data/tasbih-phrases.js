@@ -11,6 +11,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah",
         id: "Subhanallah",
         de: "Gepriesen sei Allah",
+        ru: "Пречист Аллах",
+        kk: "Алла пәк",
+        uz: "Alloh pokdir",
         es: "Gloria a Allah"
     },
     {
@@ -20,6 +23,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah",
         id: "Alhamdulillah",
         de: "Alhamdulillah",
+        ru: "Хвала Аллаху",
+        kk: "Аллаға мадақ",
+        uz: "Allohga hamd bo‘lsin",
         es: "Alabado sea Allah"
     },
     {
@@ -29,6 +35,9 @@ const TASBIH_PHRASES = [
         fr: "Allah est le Plus Grand",
         id: "Allahu Akbar",
         de: "Allahu Akbar",
+        ru: "Аллах велик",
+        kk: "Алла ұлы",
+        uz: "Alloh buyukdir",
         es: "Allah es el Más Grande"
     },
     {
@@ -38,6 +47,9 @@ const TASBIH_PHRASES = [
         fr: "Il n'y a de divinité qu'Allah",
         id: "La ilaha illallah",
         de: "La ilaha illallah",
+        ru: "Нет божества, кроме Аллаха",
+        kk: "Алладан басқа тәңір жоқ",
+        uz: "Allohdan o‘zga iloh yo‘q",
         es: "No hay divinidad salvo Allah"
     },
     {
@@ -47,6 +59,9 @@ const TASBIH_PHRASES = [
         fr: "Il n'y a de force ni de puissance qu'en Allah",
         id: "La hawla wa la quwwata illa billah",
         de: "La hawla wa la quwwata illa billah",
+        ru: "Нет мощи и нет силы ни у кого, кроме Аллаха",
+        kk: "Күш те, қуат та тек Аллада",
+        uz: "Kuch ham, quvvat ham faqat Alloh bilandir",
         es: "No hay fuerza ni poder sino en Allah"
     },
     {
@@ -56,6 +71,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, accorde Tes prières à Muhammad",
         id: "Ya Allah, limpahkanlah shalawat kepada Muhammad",
         de: "O Allah, segne Muhammad",
+        ru: "О Аллах, благослови Мухаммада",
+        kk: "Уа, Алла, Мұхаммедке салауат жаудыр",
+        uz: "Allohim, Muhammadga salavot yo‘llagin",
         es: "Oh Allah, concede Tus bendiciones a Muhammad"
     },
     {
@@ -65,6 +83,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, bénis Muhammad",
         id: "Ya Allah, berkahilah Muhammad",
         de: "O Allah, segne Muhammad mit Segen",
+        ru: "О Аллах, даруй благодать Мухаммаду",
+        kk: "Уа, Алла, Мұхаммедке береке бер",
+        uz: "Allohim, Muhammadga baraka bergin",
         es: "Oh Allah, bendice a Muhammad"
     },
     {
@@ -74,6 +95,9 @@ const TASBIH_PHRASES = [
         fr: "Que la paix et les bénédictions d'Allah soient sur lui",
         id: "Shalawat dan salam Allah atas beliau",
         de: "Allahs Segen und Frieden sei mit ihm",
+        ru: "Да благословит его Аллах и приветствует",
+        kk: "Оған Алланың салауаты мен сәлемі болсын",
+        uz: "Unga Allohning salavoti va salomi bo‘lsin",
         es: "Que la paz y las bendiciones de Allah sean con él"
     },
     {
@@ -83,6 +107,9 @@ const TASBIH_PHRASES = [
         fr: "Au nom d'Allah",
         id: "Bismillah",
         de: "Bismillah",
+        ru: "С именем Аллаха",
+        kk: "Алланың атымен",
+        uz: "Alloh nomi bilan",
         es: "En el nombre de Allah"
     },
     {
@@ -92,6 +119,9 @@ const TASBIH_PHRASES = [
         fr: "Au nom d'Allah, le Tout Miséricordieux, le Très Miséricordieux",
         id: "Bismillahirrahmanirrahim",
         de: "Im Namen Allahs, des Allerbarmers, des Barmherzigen",
+        ru: "С именем Аллаха, Милостивого, Милосердного",
+        kk: "Аса қамқор, ерекше мейірімді Алланың атымен",
+        uz: "Mehribon va rahmli Alloh nomi bilan",
         es: "En el nombre de Allah, el Compasivo, el Misericordioso"
     },
     {
@@ -101,6 +131,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, exauce",
         id: "Ya Allah, kabulkanlah",
         de: "O Allah, erhöre uns",
+        ru: "О Аллах, внемли",
+        kk: "Уа, Алла, қабыл ет",
+        uz: "Allohim, ijobat qilgin",
         es: "Oh Allah, acepta nuestra súplica"
     },
     {
@@ -110,6 +143,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah",
         id: "Ya Allah",
         de: "O Allah",
+        ru: "О Аллах",
+        kk: "Уа, Алла",
+        uz: "Ey Alloh",
         es: "Oh Allah"
     },
     {
@@ -119,6 +155,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Seigneur",
         id: "Ya Rabb",
         de: "O Herr",
+        ru: "О Господь мой",
+        kk: "Уа, Раббым",
+        uz: "Ey Robbim",
         es: "Oh Señor"
     },
     {
@@ -128,6 +167,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Tout Miséricordieux",
         id: "Ya Ar-Rahman",
         de: "O Allerbarmer",
+        ru: "О Милостивый",
+        kk: "Уа, Аса қамқор",
+        uz: "Ey Mehribon",
         es: "Oh Misericordioso"
     },
     {
@@ -137,6 +179,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Très Miséricordieux",
         id: "Ya Ar-Rahim",
         de: "O Barmherziger",
+        ru: "О Милосердный",
+        kk: "Уа, Ерекше мейірімді",
+        uz: "Ey Rahmli",
         es: "Oh Muy Misericordioso"
     },
 
@@ -148,6 +193,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah et louange à Lui",
         id: "Subhanallah wa bihamdihi",
         de: "Gepriesen sei Allah und gelobt sei Er",
+        ru: "Пречист Аллах, и хвала Ему",
+        kk: "Алла пәк әрі Оған мадақ",
+        uz: "Alloh pokdir va Unga hamd bo‘lsin",
         es: "Gloria a Allah y alabanza a Él"
     },
     {
@@ -157,6 +205,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah, le Magnifique",
         id: "Subhanallah al-Azhim",
         de: "Gepriesen sei Allah, der Erhabene",
+        ru: "Пречист Аллах Великий",
+        kk: "Ұлы Алла пәк",
+        uz: "Ulug‘ Alloh pokdir",
         es: "Gloria a Allah, el Grandioso"
     },
     {
@@ -166,6 +217,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah et louange à Lui; gloire à Allah le Magnifique",
         id: "Subhanallah wa bihamdihi, Subhanallah al-Azhim",
         de: "Gepriesen sei Allah und gelobt sei Er; gepriesen sei Allah, der Erhabene",
+        ru: "Пречист Аллах, и хвала Ему; пречист Аллах Великий",
+        kk: "Алла пәк әрі Оған мадақ; ұлы Алла пәк",
+        uz: "Alloh pokdir va Unga hamd bo‘lsin; ulug‘ Alloh pokdir",
         es: "Gloria a Allah y alabanzas a Él; gloria a Allah el Grandioso"
     },
     {
@@ -175,6 +229,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah et louange à Allah",
         id: "Subhanallah walhamdulillah",
         de: "Gepriesen sei Allah und gelobt sei Allah",
+        ru: "Пречист Аллах, и хвала Аллаху",
+        kk: "Алла пәк, Аллаға мадақ",
+        uz: "Alloh pokdir va Allohga hamd bo‘lsin",
         es: "Gloria a Allah y alabado sea Allah"
     },
     {
@@ -184,6 +241,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah, louange à Allah, nul n'est digne d'adoration sauf Allah, Allah est le Plus Grand",
         id: "Subhanallah, Alhamdulillah, La ilaha illallah, Allahu Akbar",
         de: "Gepriesen sei Allah, gelobt sei Allah, es gibt keinen Gott außer Allah, Allah ist der Größte",
+        ru: "Пречист Аллах, хвала Аллаху, нет божества, кроме Аллаха, и Аллах велик",
+        kk: "Алла пәк, Аллаға мадақ, Алладан басқа тәңір жоқ, Алла ұлы",
+        uz: "Alloh pokdir, Allohga hamd bo‘lsin, Allohdan o‘zga iloh yo‘q, Alloh buyukdir",
         es: "Gloria a Allah, alabado sea Allah, no hay divinidad salvo Allah, Allah es el Más Grande"
     },
     {
@@ -193,6 +253,9 @@ const TASBIH_PHRASES = [
         fr: "Il n'y a de divinité qu'Allah, Seul, sans associé",
         id: "La ilaha illallah wahdahu la sharika lah",
         de: "Es gibt keinen Gott außer Allah, Er allein, ohne Teilhaber",
+        ru: "Нет божества, кроме одного Аллаха, у Которого нет сотоварища",
+        kk: "Алладан басқа тәңір жоқ, Ол жалғыз, Оның серігі жоқ",
+        uz: "Allohdan o‘zga iloh yo‘q, U yagonadir, Uning sherigi yo‘q",
         es: "No hay divinidad salvo Allah, Único, sin asociado"
     },
     {
@@ -202,6 +265,9 @@ const TASBIH_PHRASES = [
         fr: "Il n'y a de divinité qu'Allah, Muhammad est le Messager d'Allah",
         id: "La ilaha illallah, Muhammadun Rasulullah",
         de: "Es gibt keinen Gott außer Allah, Muhammad ist Allahs Gesandter",
+        ru: "Нет божества, кроме Аллаха, Мухаммад — посланник Аллаха",
+        kk: "Алладан басқа тәңір жоқ, Мұхаммед — Алланың елшісі",
+        uz: "Allohdan o‘zga iloh yo‘q, Muhammad Allohning Rasulidir",
         es: "No hay divinidad salvo Allah, Muhammad es el Mensajero de Allah"
     },
     {
@@ -211,6 +277,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah, Seigneur des mondes",
         id: "Alhamdulillahi Rabbil alamin",
         de: "Gelobt sei Allah, der Herr der Welten",
+        ru: "Хвала Аллаху, Господу миров",
+        kk: "Әлемдердің Раббы Аллаға мадақ",
+        uz: "Olamlar Robbi Allohga hamd bo‘lsin",
         es: "Alabado sea Allah, Señor de los mundos"
     },
     {
@@ -220,6 +289,9 @@ const TASBIH_PHRASES = [
         fr: "Louange abondante, pure et bénie à Allah",
         id: "Alhamdulillahi hamdan katsiran thayyiban mubarakan fih",
         de: "Reichlicher, reiner und gesegneter Lobpreis sei Allah",
+        ru: "Хвала Аллаху — хвала обильная, благая и благословенная",
+        kk: "Аллаға көп, пәк әрі берекелі мадақ болсын",
+        uz: "Allohga ko‘p, pokiza va barakali hamd bo‘lsin",
         es: "Alabanzas abundantes, puras y benditas para Allah"
     },
     {
@@ -229,6 +301,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah par la grâce de qui les bonnes œuvres s'accomplissent",
         id: "Alhamdulillah alladzi bini'matihi tatimmush shalihat",
         de: "Gelobt sei Allah, durch dessen Gunst die guten Taten vollendet werden",
+        ru: "Хвала Аллаху, по милости Которого свершаются благие дела",
+        kk: "Нығметі арқылы игі істер кемеліне жететін Аллаға мадақ",
+        uz: "Ne’mati bilan solih ishlar komil bo‘ladigan Allohga hamd bo‘lsin",
         es: "Alabado sea Allah, por cuyo favor se completan las buenas obras"
     },
     {
@@ -238,6 +313,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah en toute situation",
         id: "Alhamdulillah 'ala kulli hal",
         de: "Gelobt sei Allah in jeder Lage",
+        ru: "Хвала Аллаху при любых обстоятельствах",
+        kk: "Әр жағдайда Аллаға мадақ",
+        uz: "Har qanday holda Allohga hamd bo‘lsin",
         es: "Alabado sea Allah en toda situación"
     },
     {
@@ -247,6 +325,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah qui nous a nourris et abreuvés",
         id: "Alhamdulillah alladzi ath'amana wa saqana",
         de: "Gelobt sei Allah, der uns speiste und tränkte",
+        ru: "Хвала Аллаху, Который накормил нас и напоил",
+        kk: "Бізді тамақтандырып, сусындатқан Аллаға мадақ",
+        uz: "Bizni yedirgan va ichirgan Allohga hamd bo‘lsin",
         es: "Alabado sea Allah que nos alimentó y nos dio de beber"
     },
     {
@@ -256,6 +337,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah qui nous a guidés vers cela",
         id: "Alhamdulillah alladzi hadana lihadza",
         de: "Gelobt sei Allah, der uns dazu geführt hat",
+        ru: "Хвала Аллаху, Который привёл нас к этому",
+        kk: "Бізді осыған жеткізген Аллаға мадақ",
+        uz: "Bizni bunga hidoyat qilgan Allohga hamd bo‘lsin",
         es: "Alabado sea Allah que nos guio a esto"
     },
     {
@@ -265,6 +349,9 @@ const TASBIH_PHRASES = [
         fr: "Allah est immensément Grand",
         id: "Allahu Akbar kabira",
         de: "Allah ist sehr groß",
+        ru: "Аллах велик — поистине велик",
+        kk: "Алла аса ұлы",
+        uz: "Alloh nihoyatda buyukdir",
         es: "Allah es inmensamente Grande"
     },
     {
@@ -274,6 +361,9 @@ const TASBIH_PHRASES = [
         fr: "Allah est le Plus Grand, Allah est le Plus Grand, nul n'est digne d'adoration sauf Allah",
         id: "Allahu Akbar, Allahu Akbar, La ilaha illallah",
         de: "Allah ist der Größte, Allah ist der Größte, es gibt keinen Gott außer Allah",
+        ru: "Аллах велик, Аллах велик, нет божества, кроме Аллаха",
+        kk: "Алла ұлы, Алла ұлы, Алладан басқа тәңір жоқ",
+        uz: "Alloh buyukdir, Alloh buyukdir, Allohdan o‘zga iloh yo‘q",
         es: "Allah es el Más Grande, Allah es el Más Grande, no hay divinidad salvo Allah"
     },
     {
@@ -283,6 +373,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à mon Seigneur le Magnifique",
         id: "Subhana Rabbiyal Azhim",
         de: "Gepriesen sei mein Herr, der Erhabene",
+        ru: "Пречист мой Господь Великий",
+        kk: "Ұлы Раббым пәк",
+        uz: "Ulug‘ Robbim pokdir",
         es: "Gloria a mi Señor, el Grandioso"
     },
     {
@@ -292,6 +385,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à mon Seigneur le Très Haut",
         id: "Subhana Rabbiyal A'la",
         de: "Gepriesen sei mein Herr, der Allerhöchste",
+        ru: "Пречист мой Господь Всевышний",
+        kk: "Ең жоғары Раббым пәк",
+        uz: "Oliy Robbim pokdir",
         es: "Gloria a mi Señor, el Altísimo"
     },
     {
@@ -301,6 +397,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Toi, ô Allah, et louange à Toi",
         id: "Subhanakallahumma wa bihamdik",
         de: "Gepriesen seist Du, o Allah, und gelobt seist Du",
+        ru: "Пречист Ты, о Аллах, и хвала Тебе",
+        kk: "Уа, Алла, Сен пәксің әрі Саған мадақ",
+        uz: "Allohim, Sen poksan va Senga hamd bo‘lsin",
         es: "Gloria a Ti, oh Allah, y alabanzas a Ti"
     },
     {
@@ -310,6 +409,9 @@ const TASBIH_PHRASES = [
         fr: "Béni est Ton Nom et exaltée est Ta Majesté",
         id: "Tabarakasmuka wa ta'ala jadduk",
         de: "Gesegnet ist Dein Name und erhaben ist Deine Majestät",
+        ru: "Благословенно имя Твоё, и возвышено величие Твоё",
+        kk: "Сенің есімің берекелі, ұлылығың биік",
+        uz: "Isming muborakdir, shoning oliydir",
         es: "Bendito es Tu Nombre y exaltada es Tu Majestad"
     },
     {
@@ -319,6 +421,9 @@ const TASBIH_PHRASES = [
         fr: "Nulle divinité sauf Toi. Gloire à Toi. J'ai été parmi les injustes",
         id: "La ilaha illa Anta, Subhanaka inni kuntu minaz zalimin",
         de: "Es gibt keinen Gott außer Dir. Gepriesen seist Du. Ich gehörte zu den Ungerechten",
+        ru: "Нет божества, кроме Тебя. Пречист Ты! Поистине, я был из несправедливых",
+        kk: "Сенен басқа тәңір жоқ, Сен пәксің, шынында мен залымдардан болдым",
+        uz: "Sendan o‘zga iloh yo‘q, Sen poksan, men zolimlardan bo‘ldim",
         es: "No hay divinidad salvo Tú. Gloria a Ti. Fui de los injustos"
     },
 
@@ -330,6 +435,9 @@ const TASBIH_PHRASES = [
         fr: "Je demande pardon à Allah",
         id: "Astaghfirullah",
         de: "Ich bitte Allah um Vergebung",
+        ru: "Прошу прощения у Аллаха",
+        kk: "Алладан кешірім сұраймын",
+        uz: "Allohdan kechirim so‘rayman",
         es: "Pido perdón a Allah"
     },
     {
@@ -339,6 +447,9 @@ const TASBIH_PHRASES = [
         fr: "Je demande pardon à Allah le Magnifique",
         id: "Astaghfirullah al-Azhim",
         de: "Ich bitte Allah, den Erhabenen, um Vergebung",
+        ru: "Прошу прощения у Аллаха Великого",
+        kk: "Ұлы Алладан кешірім сұраймын",
+        uz: "Ulug‘ Allohdan kechirim so‘rayman",
         es: "Pido perdón a Allah, el Grandioso"
     },
     {
@@ -348,6 +459,9 @@ const TASBIH_PHRASES = [
         fr: "Je demande pardon à Allah, mon Seigneur, et je me repens à Lui",
         id: "Astaghfirullaha Rabbi wa atubu ilayh",
         de: "Ich bitte Allah, meinen Herrn, um Vergebung und wende mich Ihm zu",
+        ru: "Прошу прощения у Аллаха, моего Господа, и приношу Ему покаяние",
+        kk: "Раббым Алладан кешірім сұраймын және Оған тәубе етемін",
+        uz: "Robbim Allohdan kechirim so‘rayman va Unga tavba qilaman",
         es: "Pido perdón a Allah, mi Señor, y me arrepiento ante Él"
     },
     {
@@ -357,6 +471,9 @@ const TASBIH_PHRASES = [
         fr: "Je demande pardon à Allah et je me repens à Lui",
         id: "Astaghfirullah wa atubu ilayh",
         de: "Ich bitte Allah um Vergebung und wende mich Ihm zu",
+        ru: "Прошу прощения у Аллаха и приношу Ему покаяние",
+        kk: "Алладан кешірім сұраймын және Оған тәубе етемін",
+        uz: "Allohdan kechirim so‘rayman va Unga tavba qilaman",
         es: "Pido perdón a Allah y me arrepiento ante Él"
     },
     {
@@ -366,6 +483,9 @@ const TASBIH_PHRASES = [
         fr: "Seigneur, pardonne-moi",
         id: "Ya Rabb, ampunilah aku",
         de: "Herr, vergib mir",
+        ru: "Господь мой, прости меня",
+        kk: "Раббым, мені кешір",
+        uz: "Robbim, meni kechirgin",
         es: "Señor, perdóname"
     },
     {
@@ -375,6 +495,9 @@ const TASBIH_PHRASES = [
         fr: "Seigneur, pardonne-moi et accepte mon repentir",
         id: "Ya Rabb, ampunilah aku dan terimalah taubatku",
         de: "Herr, vergib mir und nimm meine Reue an",
+        ru: "Господь мой, прости меня и прими моё покаяние",
+        kk: "Раббым, мені кешір және тәубемді қабыл ет",
+        uz: "Robbim, meni kechirgin va tavbamni qabul qilgin",
         es: "Señor, perdóname y acepta mi arrepentimiento"
     },
     {
@@ -384,6 +507,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, pardonne-nous nos péchés",
         id: "Ya Rabb kami, ampunilah dosa-dosa kami",
         de: "Unser Herr, vergib uns unsere Sünden",
+        ru: "Господь наш, прости нам наши грехи",
+        kk: "Раббымыз, күнәларымызды кешір",
+        uz: "Robbimiz, gunohlarimizni kechirgin",
         es: "Señor nuestro, perdónanos nuestros pecados"
     },
     {
@@ -393,6 +519,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, pardonne-nous et à nos frères",
         id: "Ya Rabb kami, ampunilah kami dan saudara-saudara kami",
         de: "Unser Herr, vergib uns und unseren Brüdern",
+        ru: "Господь наш, прости нас и наших братьев",
+        kk: "Раббымыз, бізді және бауырларымызды кешір",
+        uz: "Robbimiz, bizni va birodarlarimizni kechirgin",
         es: "Señor nuestro, perdónanos y a nuestros hermanos"
     },
     {
@@ -402,6 +531,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, pardonne-moi",
         id: "Ya Allah, ampunilah aku",
         de: "O Allah, vergib mir",
+        ru: "О Аллах, прости меня",
+        kk: "Уа, Алла, мені кешір",
+        uz: "Allohim, meni kechirgin",
         es: "Oh Allah, perdóname"
     },
     {
@@ -411,6 +543,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, pardonne-moi tous mes péchés",
         id: "Ya Allah, ampunilah semua dosaku",
         de: "O Allah, vergib mir alle meine Sünden",
+        ru: "О Аллах, прости мне все мои грехи",
+        kk: "Уа, Алла, барлық күнәмді кешір",
+        uz: "Allohim, barcha gunohlarimni kechirgin",
         es: "Oh Allah, perdóname todos mis pecados"
     },
     {
@@ -420,6 +555,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, Tu es Pardonneur, Tu aimes le pardon, alors pardonne-moi",
         id: "Ya Allah, sesungguhnya Engkau Maha Pemaaf, Engkau menyukai maaf, maka maafkanlah aku",
         de: "O Allah, Du bist der Vergebende, Du liebst die Vergebung, so vergib mir",
+        ru: "О Аллах, Ты Прощающий, любишь прощать, так прости же меня",
+        kk: "Уа, Алла, Сен Кешірімдісің, кешіруді жақсы көресің, мені кешір",
+        uz: "Allohim, Sen afv etuvchisan, afvni sevasan, meni afv etgin",
         es: "Oh Allah, Tú eres Perdonador, amas el perdón, así que perdóname"
     },
     {
@@ -429,6 +567,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, pardonne-moi et fais-moi miséricorde",
         id: "Ya Allah, ampunilah aku dan rahmatilah aku",
         de: "O Allah, vergib mir und erbarme Dich meiner",
+        ru: "О Аллах, прости меня и помилуй меня",
+        kk: "Уа, Алла, мені кешір және маған рақым ет",
+        uz: "Allohim, meni kechirgin va menga rahm qilgin",
         es: "Oh Allah, perdóname y ten misericordia de mí"
     },
     {
@@ -438,6 +579,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, pardonne-moi et guide-moi",
         id: "Ya Allah, ampunilah aku dan berilah petunjuk kepadaku",
         de: "O Allah, vergib mir und leite mich",
+        ru: "О Аллах, прости меня и наставь меня на прямой путь",
+        kk: "Уа, Алла, мені кешір және тура жолға сал",
+        uz: "Allohim, meni kechirgin va meni hidoyat qilgin",
         es: "Oh Allah, perdóname y guíame"
     },
     {
@@ -447,6 +591,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, pardonne-moi et accorde-moi la santé",
         id: "Ya Allah, ampunilah aku dan berilah kesehatan kepadaku",
         de: "O Allah, vergib mir und gewähre mir Gesundheit",
+        ru: "О Аллах, прости меня и даруй мне благополучие",
+        kk: "Уа, Алла, мені кешір және маған саулық бер",
+        uz: "Allohim, meni kechirgin va menga ofiyat bergin",
         es: "Oh Allah, perdóname y concédeme bienestar"
     },
     {
@@ -456,6 +603,9 @@ const TASBIH_PHRASES = [
         fr: "Je demande pardon à Allah, en dehors de qui il n'y a pas de divinité",
         id: "Astaghfirullah alladzi la ilaha illa Huwa",
         de: "Ich bitte Allah um Vergebung, außer dem es keinen Gott gibt",
+        ru: "Прошу прощения у Аллаха, кроме Которого нет божества",
+        kk: "Одан басқа тәңір жоқ Алладан кешірім сұраймын",
+        uz: "O‘zidan o‘zga iloh yo‘q Allohdan kechirim so‘rayman",
         es: "Pido perdón a Allah, fuera de quien no hay divinidad"
     },
 
@@ -467,6 +617,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah, Seigneur des mondes, le Tout Miséricordieux, le Très Miséricordieux",
         id: "Alhamdulillahi Rabbil alamin ar-Rahman ar-Rahim",
         de: "Gelobt sei Allah, der Herr der Welten, der Allerbarmer, der Barmherzige",
+        ru: "Хвала Аллаху, Господу миров, Милостивому, Милосердному",
+        kk: "Әлемдердің Раббы, Аса қамқор, ерекше мейірімді Аллаға мадақ",
+        uz: "Olamlar Robbi, mehribon va rahmli Allohga hamd bo‘lsin",
         es: "Alabado sea Allah, Señor de los mundos, el Compasivo, el Misericordioso"
     },
     {
@@ -476,6 +629,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah qui n'a pas pris d'enfant",
         id: "Alhamdulillah alladzi lam yattakhidz walada",
         de: "Gelobt sei Allah, Der sich kein Kind genommen hat",
+        ru: "Хвала Аллаху, Который не взял Себе сына",
+        kk: "Бала иемденбеген Аллаға мадақ",
+        uz: "Farzand tutmagan Allohga hamd bo‘lsin",
         es: "Alabado sea Allah que no ha tomado hijo"
     },
     {
@@ -485,6 +641,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah qui a fait descendre le Livre sur Son serviteur",
         id: "Alhamdulillah alladzi anzala 'ala 'abdihil kitab",
         de: "Gelobt sei Allah, Der das Buch auf Seinen Diener herabgesandt hat",
+        ru: "Хвала Аллаху, Который ниспослал Своему рабу Писание",
+        kk: "Құлына Кітапты түсірген Аллаға мадақ",
+        uz: "Bandasiga Kitobni nozil qilgan Allohga hamd bo‘lsin",
         es: "Alabado sea Allah que reveló el Libro a Su siervo"
     },
     {
@@ -494,6 +653,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah, Créateur des cieux et de la terre",
         id: "Alhamdulillahi fatiris samawati wal ard",
         de: "Gelobt sei Allah, dem Schöpfer der Himmel und der Erde",
+        ru: "Хвала Аллаху, Творцу небес и земли",
+        kk: "Көктер мен жердің Жаратушысы Аллаға мадақ",
+        uz: "Osmonlar va yerning yaratuvchisi Allohga hamd bo‘lsin",
         es: "Alabado sea Allah, Creador de los cielos y de la tierra"
     },
     {
@@ -503,6 +665,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah qui a créé les cieux et la terre",
         id: "Alhamdulillah alladzi khalaqas samawati wal ard",
         de: "Gelobt sei Allah, Der die Himmel und die Erde erschuf",
+        ru: "Хвала Аллаху, Который сотворил небеса и землю",
+        kk: "Көктер мен жерді жаратқан Аллаға мадақ",
+        uz: "Osmonlar va yerni yaratgan Allohga hamd bo‘lsin",
         es: "Alabado sea Allah que creó los cielos y la tierra"
     },
     {
@@ -512,6 +677,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah qui nous a guidés vers cela; sans Lui nous n'aurions pas été guidés",
         id: "Alhamdulillah alladzi hadana lihadza wa ma kunna linahtadi",
         de: "Gelobt sei Allah, der uns dazu geführt hat; ohne Ihn wären wir nicht rechtgeleitet worden",
+        ru: "Хвала Аллаху, Который привёл нас к этому; мы не нашли бы пути сами",
+        kk: "Бізді осыған жеткізген Аллаға мадақ; Ол жеткізбегенде, біз тура жолды таппас едік",
+        uz: "Bizni bunga hidoyat qilgan Allohga hamd bo‘lsin; U hidoyat qilmaganida, biz hidoyat topmas edik",
         es: "Alabado sea Allah que nos guio a esto; sin Él no habríamos sido guiados"
     },
     {
@@ -521,6 +689,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah, Seigneur des cieux et Seigneur de la terre",
         id: "Alhamdulillahi Rabbis samawati wa Rabbil ard",
         de: "Gelobt sei Allah, der Herr der Himmel und der Herr der Erde",
+        ru: "Хвала Аллаху, Господу небес и Господу земли",
+        kk: "Көктердің Раббы әрі жердің Раббы Аллаға мадақ",
+        uz: "Osmonlar Robbi va yer Robbi Allohga hamd bo‘lsin",
         es: "Alabado sea Allah, Señor de los cielos y Señor de la tierra"
     },
     {
@@ -530,6 +701,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah, sans ingratitude",
         id: "Alhamdulillahi ghayra makfur",
         de: "Gelobt sei Allah, ohne Undankbarkeit",
+        ru: "Хвала Аллаху, без неблагодарности к Нему",
+        kk: "Аллаға мадақ, шүкірсіздік етпей",
+        uz: "Allohga noshukrlik qilinmagan hamd bo‘lsin",
         es: "Alabado sea Allah, sin ingratitud"
     },
     {
@@ -539,6 +713,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah jusqu'à ce que Tu sois satisfait",
         id: "Alhamdulillah hatta tardha",
         de: "Gelobt sei Allah, bis Du zufrieden bist",
+        ru: "Хвала Аллаху, пока Ты не будешь доволен",
+        kk: "Сен разы болғанша Аллаға мадақ",
+        uz: "Sen rozi bo‘lguningcha Allohga hamd bo‘lsin",
         es: "Alabado sea Allah hasta que estés complacido"
     },
     {
@@ -548,6 +725,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah et gratitude à Allah",
         id: "Alhamdulillah wash-shukru lillah",
         de: "Gelobt sei Allah und Dank sei Allah",
+        ru: "Хвала Аллаху и благодарность Аллаху",
+        kk: "Аллаға мадақ және Аллаға шүкір",
+        uz: "Allohga hamd va shukr bo‘lsin",
         es: "Alabado sea Allah y gracias a Allah"
     },
     {
@@ -557,6 +737,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah qui nous a redonné la vie après nous avoir fait mourir",
         id: "Alhamdulillah alladzi ahyana ba'da ma amatana",
         de: "Gelobt sei Allah, Der uns nach dem Tod wieder zum Leben erweckte",
+        ru: "Хвала Аллаху, Который оживил нас после того, как умертвил нас",
+        kk: "Бізді өлтіргеннен кейін тірілткен Аллаға мадақ",
+        uz: "Bizni o‘ldirganidan keyin tiriltirgan Allohga hamd bo‘lsin",
         es: "Alabado sea Allah que nos dio vida después de habernos hecho morir"
     },
     {
@@ -566,6 +749,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah qui ne nous a pas faits parmi les associateurs",
         id: "Alhamdulillah alladzi lam yaj'alna minal musyrikin",
         de: "Gelobt sei Allah, Der uns nicht zu den Götzendienern machte",
+        ru: "Хвала Аллаху, Который не сделал нас многобожниками",
+        kk: "Бізді серік қосушылардан етпеген Аллаға мадақ",
+        uz: "Bizni mushriklardan qilmagan Allohga hamd bo‘lsin",
         es: "Alabado sea Allah que no nos hizo de los idólatras"
     },
     {
@@ -575,6 +761,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah pour le bienfait de l'islam",
         id: "Alhamdulillah 'ala ni'matil Islam",
         de: "Gelobt sei Allah für die Gnade des Islam",
+        ru: "Хвала Аллаху за милость ислама",
+        kk: "Ислам нығметі үшін Аллаға мадақ",
+        uz: "Islom ne’mati uchun Allohga hamd bo‘lsin",
         es: "Alabado sea Allah por la bendición del islam"
     },
     {
@@ -584,6 +773,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah pour le bienfait du Coran",
         id: "Alhamdulillah 'ala ni'matil Quran",
         de: "Gelobt sei Allah für die Gnade des Korans",
+        ru: "Хвала Аллаху за милость Корана",
+        kk: "Құран нығметі үшін Аллаға мадақ",
+        uz: "Qur’on ne’mati uchun Allohga hamd bo‘lsin",
         es: "Alabado sea Allah por la bendición del Corán"
     },
     {
@@ -593,6 +785,9 @@ const TASBIH_PHRASES = [
         fr: "Louange à Allah pour le bienfait de la prière",
         id: "Alhamdulillah 'ala ni'matish shalat",
         de: "Gelobt sei Allah für die Gnade des Gebets",
+        ru: "Хвала Аллаху за милость намаза",
+        kk: "Намаз нығметі үшін Аллаға мадақ",
+        uz: "Namoz ne’mati uchun Allohga hamd bo‘lsin",
         es: "Alabado sea Allah por la bendición de la oración"
     },
 
@@ -604,6 +799,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, accorde Tes prières à Muhammad et à la famille de Muhammad",
         id: "Ya Allah, limpahkanlah shalawat kepada Muhammad dan keluarga Muhammad",
         de: "O Allah, segne Muhammad und die Familie Muhammads",
+        ru: "О Аллах, благослови Мухаммада и семейство Мухаммада",
+        kk: "Уа, Алла, Мұхаммедке және Мұхаммедтің әулетіне салауат жаудыр",
+        uz: "Allohim, Muhammadga va Muhammadning oilasiga salavot yo‘llagin",
         es: "Oh Allah, concede Tus bendiciones a Muhammad y a la familia de Muhammad"
     },
     {
@@ -613,6 +811,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, accorde Tes prières à Muhammad, à ses épouses et à sa descendance",
         id: "Ya Allah, limpahkanlah shalawat kepada Muhammad, istri-istrinya, dan keturunannya",
         de: "O Allah, segne Muhammad, seine Gattinnen und seine Nachkommen",
+        ru: "О Аллах, благослови Мухаммада, его жён и его потомство",
+        kk: "Уа, Алла, Мұхаммедке, оның жұбайлары мен ұрпағына салауат жаудыр",
+        uz: "Allohim, Muhammadga, uning ayollari va zurriyotiga salavot yo‘llagin",
         es: "Oh Allah, concede Tus bendiciones a Muhammad, a sus esposas y a su descendencia"
     },
     {
@@ -622,6 +823,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, prie et accorde la paix à notre Prophète Muhammad",
         id: "Ya Allah, limpahkanlah shalawat dan salam kepada Nabi kami Muhammad",
         de: "O Allah, segne und schenke Frieden unserem Propheten Muhammad",
+        ru: "О Аллах, благослови и приветствуй нашего пророка Мухаммада",
+        kk: "Уа, Алла, Пайғамбарымыз Мұхаммедке салауат пен сәлем жаудыр",
+        uz: "Allohim, Payg‘ambarimiz Muhammadga salavot va salom yo‘llagin",
         es: "Oh Allah, bendice y concede paz a nuestro Profeta Muhammad"
     },
     {
@@ -631,6 +835,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, bénis Muhammad et la famille de Muhammad",
         id: "Ya Allah, berkahilah Muhammad dan keluarga Muhammad",
         de: "O Allah, segne Muhammad und die Familie Muhammads",
+        ru: "О Аллах, даруй благодать Мухаммаду и семейству Мухаммада",
+        kk: "Уа, Алла, Мұхаммедке және Мұхаммедтің әулетіне береке бер",
+        uz: "Allohim, Muhammadga va Muhammadning oilasiga baraka bergin",
         es: "Oh Allah, bendice a Muhammad y a la familia de Muhammad"
     },
     {
@@ -640,6 +847,9 @@ const TASBIH_PHRASES = [
         fr: "Que la paix et les bénédictions d'Allah soient sur lui, sa famille et ses compagnons",
         id: "Shalawat Allah atas beliau, keluarganya, dan para sahabatnya",
         de: "Allahs Segen und Frieden sei mit ihm, seiner Familie und seinen Gefährten",
+        ru: "Да благословит Аллах его, его семейство и сподвижников и приветствует",
+        kk: "Оған, оның әулеті мен сахабаларына Алланың салауаты мен сәлемі болсын",
+        uz: "Unga, uning oilasi va sahobalariga Allohning salavoti va salomi bo‘lsin",
         es: "Que la paz y las bendiciones de Allah sean con él, su familia y sus compañeros"
     },
     {
@@ -649,6 +859,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, accorde Tes prières à Muhammad, Ton serviteur et Ton messager",
         id: "Ya Allah, limpahkanlah shalawat kepada Muhammad, hamba dan utusan-Mu",
         de: "O Allah, segne Muhammad, Deinen Diener und Gesandten",
+        ru: "О Аллах, благослови Мухаммада, Твоего раба и посланника",
+        kk: "Уа, Алла, құлың әрі елшің Мұхаммедке салауат жаудыр",
+        uz: "Allohim, bandang va Rasuling Muhammadga salavot yo‘llagin",
         es: "Oh Allah, concede Tus bendiciones a Muhammad, Tu siervo y Tu mensajero"
     },
     {
@@ -658,6 +871,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, accorde Tes prières à Muhammad ainsi qu'aux croyants et aux croyantes",
         id: "Ya Allah, limpahkanlah shalawat kepada Muhammad dan orang-orang beriman laki-laki dan perempuan",
         de: "O Allah, segne Muhammad und die gläubigen Männer und Frauen",
+        ru: "О Аллах, благослови Мухаммада, а также верующих мужчин и женщин",
+        kk: "Уа, Алла, Мұхаммедке және мүмін ерлер мен мүмін әйелдерге салауат жаудыр",
+        uz: "Allohim, Muhammadga hamda mo‘min va mo‘minalarga salavot yo‘llagin",
         es: "Oh Allah, concede Tus bendiciones a Muhammad y a los creyentes y las creyentes"
     },
     {
@@ -667,6 +883,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, place Tes prières et Ta paix sur Muhammad",
         id: "Ya Allah, limpahkanlah shalawat dan salam-Mu kepada Muhammad",
         de: "O Allah, lege Deinen Segen und Frieden auf Muhammad",
+        ru: "О Аллах, ниспошли Твоё благословение и мир Мухаммаду",
+        kk: "Уа, Алла, салауатың мен сәлеміңді Мұхаммедке арна",
+        uz: "Allohim, salavoting va salomingni Muhammadga yo‘llagin",
         es: "Oh Allah, concede Tu bendición y Tu paz a Muhammad"
     },
     {
@@ -676,6 +895,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, prie sur lui et accorde-lui une paix complète",
         id: "Ya Allah, limpahkanlah shalawat dan salam yang sempurna kepadanya",
         de: "O Allah, segne ihn und schenke ihm vollkommenen Frieden",
+        ru: "О Аллах, благослови его и приветствуй совершенным приветствием",
+        kk: "Уа, Алла, оған салауат жаудыр және толық сәлем бер",
+        uz: "Allohim, unga salavot va to‘kis salom yo‘llagin",
         es: "Oh Allah, bendícelo y concédele una paz completa"
     },
 
@@ -687,6 +909,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, accorde-nous un bien ici-bas et un bien dans l'au-delà",
         id: "Ya Rabb kami, berilah kami kebaikan di dunia dan kebaikan di akhirat",
         de: "Unser Herr, gib uns Gutes in dieser Welt und Gutes im Jenseits",
+        ru: "Господь наш, даруй нам благо в этом мире и благо в Последней жизни",
+        kk: "Раббымыз, бізге дүниеде де жақсылық, ақыретте де жақсылық бер",
+        uz: "Robbimiz, bizga bu dunyoda ham yaxshilik, oxiratda ham yaxshilik bergin",
         es: "Señor nuestro, concédenos bien en esta vida y bien en la otra"
     },
     {
@@ -696,6 +921,9 @@ const TASBIH_PHRASES = [
         fr: "Allah nous suffit, quel excellent Garant",
         id: "Hasbunallahu wa ni'mal wakil",
         de: "Allah genügt uns, und Er ist der beste Sachwalter",
+        ru: "Достаточно нам Аллаха, и как прекрасен Он как Попечитель",
+        kk: "Бізге Алла жеткілікті, Ол қандай жақсы Уәкіл",
+        uz: "Bizga Alloh kifoya, U naqadar yaxshi vakildir",
         es: "Allah nos basta, y qué excelente Protector"
     },
     {
@@ -705,6 +933,9 @@ const TASBIH_PHRASES = [
         fr: "Nulle divinité sauf Toi, gloire à Toi",
         id: "La ilaha illa Anta, Subhanaka",
         de: "Es gibt keinen Gott außer Dir, gepriesen seist Du",
+        ru: "Нет божества, кроме Тебя, пречист Ты",
+        kk: "Сенен басқа тәңір жоқ, Сен пәксің",
+        uz: "Sendan o‘zga iloh yo‘q, Sen poksan",
         es: "No hay divinidad salvo Tú, gloria a Ti"
     },
     {
@@ -714,6 +945,9 @@ const TASBIH_PHRASES = [
         fr: "Seigneur, augmente-moi en science",
         id: "Ya Rabb, tambahkanlah ilmu kepadaku",
         de: "Herr, mehre mein Wissen",
+        ru: "Господь мой, приумножь мои знания",
+        kk: "Раббым, білімімді арттыр",
+        uz: "Robbim, ilmimni ziyoda qilgin",
         es: "Señor, auméntame en conocimiento"
     },
     {
@@ -723,6 +957,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, ne dévie pas nos cœurs après nous avoir guidés",
         id: "Ya Rabb kami, janganlah Engkau condongkan hati kami setelah Engkau memberi petunjuk",
         de: "Unser Herr, lasse unsere Herzen nicht abirren, nachdem Du uns rechtgeleitet hast",
+        ru: "Господь наш, не уклоняй наши сердца после того, как Ты наставил нас",
+        kk: "Раббымыз, бізді тура жолға салғаннан кейін жүректерімізді бұрма",
+        uz: "Robbimiz, bizni hidoyat qilganingdan keyin qalblarimizni og‘dirmagin",
         es: "Señor nuestro, no desvíes nuestros corazones después de habernos guiado"
     },
     {
@@ -732,6 +969,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, accorde-nous en nos épouses et nos descendants la joie des yeux",
         id: "Ya Rabb kami, anugerahkanlah kepada kami pasangan dan keturunan yang menyenangkan pandangan",
         de: "Unser Herr, schenke uns an unseren Gattinnen und Nachkommen Freude für die Augen",
+        ru: "Господь наш, даруй нам в наших супругах и потомках отраду для глаз",
+        kk: "Раббымыз, бізге жұбайларымыз бен ұрпақтарымыздан көз қуанышын нәсіп ет",
+        uz: "Robbimiz, bizga juftlarimiz va zurriyotlarimizdan ko‘z quvonchini ato etgin",
         es: "Señor nuestro, concédenos en nuestras esposas y descendientes el consuelo de los ojos"
     },
     {
@@ -741,6 +981,9 @@ const TASBIH_PHRASES = [
         fr: "Seigneur, ouvre-moi la poitrine",
         id: "Ya Rabb, lapangkanlah dadaku",
         de: "Herr, weite mir meine Brust",
+        ru: "Господь мой, раскрой мне мою грудь",
+        kk: "Раббым, көкірегімді кеңейт",
+        uz: "Robbim, ko‘ksimni keng qilgin",
         es: "Señor, ensancha mi pecho"
     },
     {
@@ -750,6 +993,9 @@ const TASBIH_PHRASES = [
         fr: "Seigneur, je cherche refuge auprès de Toi contre les incitations des diables",
         id: "Ya Rabb, aku berlindung kepada-Mu dari bisikan setan",
         de: "Herr, ich suche Zuflucht bei Dir vor den Einflüsterungen der Teufel",
+        ru: "Господь мой, прибегаю к Тебе от наущений дьяволов",
+        kk: "Раббым, шайтандардың азғыруларынан Саған сыйынамын",
+        uz: "Robbim, shaytonlarning vasvasalaridan Sendan panoh so‘rayman",
         es: "Señor, me refugio en Ti de las insinuaciones de los demonios"
     },
     {
@@ -759,6 +1005,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, accepte de nous, car Tu es l'Audient, l'Omniscient",
         id: "Ya Rabb kami, terimalah dari kami, sesungguhnya Engkau Maha Mendengar, Maha Mengetahui",
         de: "Unser Herr, nimm von uns an, denn Du bist der Allhörende, der Allwissende",
+        ru: "Господь наш, прими от нас, ведь Ты — Слышащий, Знающий",
+        kk: "Раббымыз, бізден қабыл ет, шынында Сен бәрін Естушісің, бәрін Білушісің",
+        uz: "Robbimiz, bizdan qabul qilgin, albatta, Sen eshituvchi va biluvchisan",
         es: "Señor nuestro, acepta de nosotros, pues Tú eres el Oyente, el Omnisciente"
     },
     {
@@ -768,6 +1017,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, pardonne-nous ainsi qu'à nos frères qui nous ont précédés dans la foi",
         id: "Ya Rabb kami, ampunilah kami dan saudara-saudara kami yang lebih dahulu beriman",
         de: "Unser Herr, vergib uns und unseren Brüdern, die uns im Glauben vorausgingen",
+        ru: "Господь наш, прости нас и наших братьев, которые опередили нас в вере",
+        kk: "Раббымыз, бізді және бізден бұрын иман келтірген бауырларымызды кешір",
+        uz: "Robbimiz, bizni va bizdan oldin iymon bilan o‘tgan birodarlarimizni kechirgin",
         es: "Señor nuestro, perdónanos y a nuestros hermanos que nos precedieron en la fe"
     },
     {
@@ -777,6 +1029,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, ne nous blâme pas si nous oublions ou commettons une erreur",
         id: "Ya Rabb kami, janganlah Engkau menghukum kami jika kami lupa atau khilaf",
         de: "Unser Herr, strafe uns nicht, wenn wir vergessen oder irren",
+        ru: "Господь наш, не наказывай нас, если мы забыли или ошиблись",
+        kk: "Раббымыз, ұмытсақ не қателессек, бізді жазалама",
+        uz: "Robbimiz, agar unutsak yoki xato qilsak, bizni jazolamagin",
         es: "Señor nuestro, no nos culpes si olvidamos o erramos"
     },
     {
@@ -786,6 +1041,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, ne fais pas peser sur nous un fardeau comme Tu l'as fait sur ceux d'avant nous",
         id: "Ya Rabb kami, janganlah Engkau bebankan kepada kami beban seperti yang Engkau bebankan kepada orang sebelum kami",
         de: "Unser Herr, lege uns keine Last auf wie die, die Du denen vor uns auferlegtest",
+        ru: "Господь наш, не возлагай на нас бремя, которое Ты возложил на наших предшественников",
+        kk: "Раббымыз, бізден бұрынғыларға артқандай бізге ауыр жүк артпа",
+        uz: "Robbimiz, bizdan oldingilarga yuklaganingdek, bizga og‘ir yuk yuklamagin",
         es: "Señor nuestro, no nos impongas una carga como la que impusiste a los de antes"
     },
     {
@@ -795,6 +1053,9 @@ const TASBIH_PHRASES = [
         fr: "Nous croyons en Allah et en ce qui nous a été révélé",
         id: "Kami beriman kepada Allah dan apa yang diturunkan kepada kami",
         de: "Wir glauben an Allah und das, was zu uns herabgesandt wurde",
+        ru: "Мы уверовали в Аллаха и в то, что ниспослано нам",
+        kk: "Аллаға және бізге түсірілгенге иман келтірдік",
+        uz: "Allohga va bizga nozil qilingan narsaga iymon keltirdik",
         es: "Creemos en Allah y en lo que nos fue revelado"
     },
     {
@@ -804,6 +1065,9 @@ const TASBIH_PHRASES = [
         fr: "Ma réussite ne vient que d'Allah",
         id: "Taufikku hanya dari Allah",
         de: "Mein Erfolg kommt nur von Allah",
+        ru: "Мой успех зависит только от Аллаха",
+        kk: "Менің сәттілігім тек Алла арқылы",
+        uz: "Muvaffaqiyatim faqat Alloh bilandir",
         es: "Mi éxito solo proviene de Allah"
     },
     {
@@ -813,6 +1077,9 @@ const TASBIH_PHRASES = [
         fr: "Nous appartenons à Allah et c'est à Lui que nous retournons",
         id: "Inna lillahi wa inna ilayhi raji'un",
         de: "Wir gehören Allah und zu Ihm kehren wir zurück",
+        ru: "Поистине, мы принадлежим Аллаху, и к Нему мы вернёмся",
+        kk: "Шынында біз Алланікіміз және шынында Оған қайтамыз",
+        uz: "Albatta, biz Allohnikimiz va albatta, Unga qaytuvchimiz",
         es: "Ciertamente pertenecemos a Allah y a Él retornamos",
         randomReminder: false
     },
@@ -825,6 +1092,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah autant que le nombre de Ses créatures",
         id: "Subhanallahi 'adada khalqih",
         de: "Gepriesen sei Allah so oft wie die Zahl Seiner Geschöpfe",
+        ru: "Пречист Аллах — столько раз, сколько Его творений",
+        kk: "Жаратқандарының санынша Алла пәк",
+        uz: "Maxluqotlari soni qadar Alloh pokdir",
         es: "Gloria a Allah según el número de Sus criaturas"
     },
     {
@@ -834,6 +1104,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah et louange à Lui autant que le nombre de Ses créatures",
         id: "Subhanallahi wa bihamdihi 'adada khalqih",
         de: "Gepriesen sei Allah und gelobt sei Er so oft wie die Zahl Seiner Geschöpfe",
+        ru: "Пречист Аллах, и хвала Ему — столько раз, сколько Его творений",
+        kk: "Жаратқандарының санынша Алла пәк әрі Оған мадақ",
+        uz: "Maxluqotlari soni qadar Alloh pokdir va Unga hamd bo‘lsin",
         es: "Gloria a Allah y alabanzas a Él según el número de Sus criaturas"
     },
     {
@@ -843,6 +1116,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je Te demande le pardon et la préservation",
         id: "Ya Allah, aku memohon ampunan dan kesejahteraan kepada-Mu",
         de: "O Allah, ich bitte Dich um Vergebung und Wohlergehen",
+        ru: "О Аллах, прошу Тебя о прощении и благополучии",
+        kk: "Уа, Алла, Сенен кешірім мен амандық сұраймын",
+        uz: "Allohim, Sendan afv va ofiyat so‘rayman",
         es: "Oh Allah, te pido perdón y bienestar"
     },
     {
@@ -852,6 +1128,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je cherche refuge auprès de Toi contre le souci et la tristesse",
         id: "Ya Allah, aku berlindung kepada-Mu dari kegelisahan dan kesedihan",
         de: "O Allah, ich suche Zuflucht bei Dir vor Sorge und Trauer",
+        ru: "О Аллах, прибегаю к Тебе от тревоги и печали",
+        kk: "Уа, Алла, уайым мен қайғыдан Саған сыйынамын",
+        uz: "Allohim, g‘am va qayg‘udan Sendan panoh so‘rayman",
         es: "Oh Allah, me refugio en Ti de la preocupación y la tristeza"
     },
     {
@@ -861,6 +1140,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je cherche refuge auprès de Toi contre l'incapacité et la paresse",
         id: "Ya Allah, aku berlindung kepada-Mu dari kelemahan dan kemalasan",
         de: "O Allah, ich suche Zuflucht bei Dir vor Schwäche und Faulheit",
+        ru: "О Аллах, прибегаю к Тебе от бессилия и лени",
+        kk: "Уа, Алла, дәрменсіздік пен жалқаулықтан Саған сыйынамын",
+        uz: "Allohim, ojizlik va dangasalikdan Sendan panoh so‘rayman",
         es: "Oh Allah, me refugio en Ti de la incapacidad y la pereza"
     },
     {
@@ -870,6 +1152,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, aide-moi à T'évoquer, à Te remercier et à T'adorer de la meilleure manière",
         id: "Ya Allah, bantulah aku dalam mengingat-Mu, bersyukur kepada-Mu, dan beribadah dengan baik",
         de: "O Allah, hilf mir, Dich zu gedenken, Dir zu danken und Dich gut anzubeten",
+        ru: "О Аллах, помоги мне поминать Тебя, благодарить Тебя и должным образом поклоняться Тебе",
+        kk: "Уа, Алла, Сені еске алуға, Саған шүкір етуге және Саған көркем құлшылық етуге жәрдем бер",
+        uz: "Allohim, Seni zikr qilishimga, Senga shukr qilishimga va Senga go‘zal ibodat qilishimga yordam bergin",
         es: "Oh Allah, ayúdame a recordarte, agradecerte y adorarte de la mejor manera"
     },
     {
@@ -879,6 +1164,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Vivant, ô Subsistant, je cherche secours par Ta miséricorde",
         id: "Ya Hayyu Ya Qayyum, dengan rahmat-Mu aku memohon pertolongan",
         de: "O Lebendiger, o Beständiger, ich bitte um Hilfe durch Deine Barmherzigkeit",
+        ru: "О Живой, о Вседержитель, к Твоей милости взываю о помощи",
+        kk: "Уа, Тірі, уа, Бәрін Меңгеруші, рақымыңнан жәрдем тілеймін",
+        uz: "Ey Barhayot, ey Qayyum, rahmating bilan madad so‘rayman",
         es: "Oh Viviente, oh Sustentador, busco auxilio en Tu misericordia"
     },
     {
@@ -888,6 +1176,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, rends-moi suffisant par Ton licite face à Ton illicite",
         id: "Ya Allah, cukupkanlah aku dengan yang halal dari yang haram-Mu",
         de: "O Allah, mache mich mit dem Erlaubten zufrieden gegenüber dem Verbotenen",
+        ru: "О Аллах, избавь меня дозволенным Тобою от запретного Тобою",
+        kk: "Уа, Алла, адалыңмен мені харамыңнан мұқтажсыз ет",
+        uz: "Allohim, halolingni menga kifoya qilib, haromingdan behojat qilgin",
         es: "Oh Allah, hazme suficiente con Tu lícito frente a Tu ilícito"
     },
     {
@@ -897,6 +1188,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je Te demande la guidée et la piété",
         id: "Ya Allah, aku memohon petunjuk dan ketakwaan kepada-Mu",
         de: "O Allah, ich bitte Dich um Rechtleitung und Gottesfurcht",
+        ru: "О Аллах, прошу Тебя о верном пути и богобоязненности",
+        kk: "Уа, Алла, Сенен тура жол мен тақуалық сұраймын",
+        uz: "Allohim, Sendan hidoyat va taqvo so‘rayman",
         es: "Oh Allah, te pido guía y piedad"
     },
     {
@@ -906,6 +1200,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, fais de moi parmi ceux qui se repentent et parmi ceux qui se purifient",
         id: "Ya Allah, jadikanlah aku termasuk orang yang bertaubat dan orang yang menyucikan diri",
         de: "O Allah, mache mich zu den Reuevollen und zu den sich Reinigenden",
+        ru: "О Аллах, сделай меня из кающихся и сделай меня из очищающихся",
+        kk: "Уа, Алла, мені тәубе етушілерден және тазаланушылардан ет",
+        uz: "Allohim, meni tavba qiluvchilardan qilgin va meni poklanuvchilardan qilgin",
         es: "Oh Allah, hazme de los que se arrepienten y de los que se purifican"
     },
 
@@ -917,6 +1214,9 @@ const TASBIH_PHRASES = [
         fr: "Je cherche refuge auprès d'Allah contre Satan le lapidé",
         id: "A'udzu billahi minasy syaithanir rajim",
         de: "Ich suche Zuflucht bei Allah vor dem verfluchten Satan",
+        ru: "Прибегаю к Аллаху от побиваемого камнями шайтана",
+        kk: "Қуылған шайтаннан Аллаға сыйынамын",
+        uz: "Quvilgan shaytondan Allohdan panoh so‘rayman",
         es: "Me refugio en Allah del demonio maldito"
     },
     {
@@ -926,6 +1226,9 @@ const TASBIH_PHRASES = [
         fr: "Je cherche refuge dans les paroles parfaites d'Allah contre le mal de ce qu'Il a créé",
         id: "Aku berlindung dengan kalimat-kalimat Allah yang sempurna dari kejahatan makhluk-Nya",
         de: "Ich suche Zuflucht in den vollkommenen Worten Allahs vor dem Übel dessen, was Er erschuf",
+        ru: "Прибегаю к совершенным словам Аллаха от зла того, что Он сотворил",
+        kk: "Алланың кемел сөздеріне Ол жаратқан нәрселердің жамандығынан сыйынамын",
+        uz: "Allohning mukammal kalimalari bilan U yaratgan narsalarning yomonligidan panoh so‘rayman",
         es: "Me refugio en las palabras perfectas de Allah del mal de lo que ha creado"
     },
     {
@@ -935,6 +1238,9 @@ const TASBIH_PHRASES = [
         fr: "Au nom d'Allah, avec le nom de qui rien ne peut nuire",
         id: "Dengan nama Allah yang dengan nama-Nya tidak ada sesuatu pun yang membahayakan",
         de: "Im Namen Allahs, mit dessen Namen nichts schaden kann",
+        ru: "С именем Аллаха, с именем Которого ничто не причинит вреда",
+        kk: "Есімімен бірге еш нәрсе зиян бере алмайтын Алланың атымен",
+        uz: "Ismi bilan hech narsa zarar yetkaza olmaydigan Alloh nomi bilan",
         es: "En el nombre de Allah, con cuyo nombre nada puede dañar"
     },
     {
@@ -944,6 +1250,9 @@ const TASBIH_PHRASES = [
         fr: "Allah me suffit, nulle divinité sauf Lui",
         id: "Cukuplah Allah bagiku, tiada tuhan selain Dia",
         de: "Allah genügt mir, es gibt keinen Gott außer Ihm",
+        ru: "Достаточно мне Аллаха, нет божества, кроме Него",
+        kk: "Маған Алла жеткілікті, Одан басқа тәңір жоқ",
+        uz: "Menga Alloh kifoya, Undan o‘zga iloh yo‘q",
         es: "Allah me basta, no hay divinidad salvo Él"
     },
     {
@@ -953,6 +1262,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, protège-moi de devant moi et de derrière moi",
         id: "Ya Allah, jagalah aku dari depan dan dari belakangku",
         de: "O Allah, beschütze mich von vorn und von hinten",
+        ru: "О Аллах, защити меня спереди и сзади",
+        kk: "Уа, Алла, мені алдымнан да, артымнан да қорға",
+        uz: "Allohim, meni oldimdan va ortimdan muhofaza qilgin",
         es: "Oh Allah, protégeme por delante y por detrás"
     },
     {
@@ -962,6 +1274,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je cherche refuge auprès de Toi contre le mal de moi-même",
         id: "Ya Allah, aku berlindung kepada-Mu dari kejahatan diriku",
         de: "O Allah, ich suche Zuflucht bei Dir vor dem Übel meiner selbst",
+        ru: "О Аллах, прибегаю к Тебе от зла моей души",
+        kk: "Уа, Алла, нәпсімнің жамандығынан Саған сыйынамын",
+        uz: "Allohim, nafsimning yomonligidan Sendan panoh so‘rayman",
         es: "Oh Allah, me refugio en Ti del mal de mí mismo"
     },
     {
@@ -971,6 +1286,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je cherche refuge auprès de Toi contre le châtiment de la tombe",
         id: "Ya Allah, aku berlindung kepada-Mu dari azab kubur",
         de: "O Allah, ich suche Zuflucht bei Dir vor der Strafe des Grabes",
+        ru: "О Аллах, прибегаю к Тебе от мучений могилы",
+        kk: "Уа, Алла, қабір азабынан Саған сыйынамын",
+        uz: "Allohim, qabr azobidan Sendan panoh so‘rayman",
         es: "Oh Allah, me refugio en Ti del castigo de la tumba"
     },
     {
@@ -980,6 +1298,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je cherche refuge auprès de Toi contre la disparition de Ton bienfait",
         id: "Ya Allah, aku berlindung kepada-Mu dari hilangnya nikmat-Mu",
         de: "O Allah, ich suche Zuflucht bei Dir vor dem Verlust Deiner Gnade",
+        ru: "О Аллах, прибегаю к Тебе от исчезновения Твоей милости",
+        kk: "Уа, Алла, нығметіңнің кетуінен Саған сыйынамын",
+        uz: "Allohim, ne’matingning zavol topishidan Sendan panoh so‘rayman",
         es: "Oh Allah, me refugio en Ti de la desaparición de Tu favor"
     },
     {
@@ -989,6 +1310,9 @@ const TASBIH_PHRASES = [
         fr: "Seigneur, je cherche refuge auprès de Toi contre leur présence",
         id: "Ya Rabb, aku berlindung kepada-Mu dari kehadiran mereka",
         de: "Herr, ich suche Zuflucht bei Dir vor ihrer Gegenwart",
+        ru: "Господь мой, прибегаю к Тебе, чтобы они не приближались ко мне",
+        kk: "Раббым, олардың қасыма келуінен Саған сыйынамын",
+        uz: "Robbim, ularning huzurimga kelishidan Sendan panoh so‘rayman",
         es: "Señor, me refugio en Ti de su presencia"
     },
     {
@@ -998,6 +1322,9 @@ const TASBIH_PHRASES = [
         fr: "Je cherche refuge auprès du Seigneur de l'aube",
         id: "Aku berlindung kepada Tuhan yang menguasai subuh",
         de: "Ich suche Zuflucht beim Herrn des Tagesanbruchs",
+        ru: "Прибегаю к Господу рассвета",
+        kk: "Таңның Раббысына сыйынамын",
+        uz: "Tong Robbidan panoh so‘rayman",
         es: "Me refugio en el Señor del alba"
     },
 
@@ -1009,6 +1336,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je Te demande le Paradis",
         id: "Ya Allah, aku memohon surga kepada-Mu",
         de: "O Allah, ich bitte Dich um das Paradies",
+        ru: "О Аллах, прошу Тебя о Рае",
+        kk: "Уа, Алла, Сенен жәннат сұраймын",
+        uz: "Allohim, Sendan jannatni so‘rayman",
         es: "Oh Allah, te pido el Paraíso"
     },
     {
@@ -1018,6 +1348,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, préserve-moi du Feu",
         id: "Ya Allah, lindungilah aku dari api neraka",
         de: "O Allah, bewahre mich vor dem Feuer",
+        ru: "О Аллах, защити меня от Огня",
+        kk: "Уа, Алла, мені тозақтан сақта",
+        uz: "Allohim, meni do‘zaxdan asragin",
         es: "Oh Allah, líbrame del Fuego"
     },
     {
@@ -1027,6 +1360,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je Te demande Ton agrément et le Paradis",
         id: "Ya Allah, aku memohon keridhaan-Mu dan surga",
         de: "O Allah, ich bitte Dich um Dein Wohlgefallen und das Paradies",
+        ru: "О Аллах, прошу Тебя о Твоём довольстве и о Рае",
+        kk: "Уа, Алла, Сенен ризалығыңды және жәннатты сұраймын",
+        uz: "Allohim, Sendan roziligingni va jannatni so‘rayman",
         es: "Oh Allah, te pido Tu complacencia y el Paraíso"
     },
     {
@@ -1036,6 +1372,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, affermis mon cœur sur Ta religion",
         id: "Ya Allah, teguhkanlah hatiku di atas agama-Mu",
         de: "O Allah, festige mein Herz in Deiner Religion",
+        ru: "О Аллах, укрепи моё сердце в Твоей религии",
+        kk: "Уа, Алла, жүрегімді дініңде берік ет",
+        uz: "Allohim, qalbimni diningda sobit qilgin",
         es: "Oh Allah, afirma mi corazón en Tu religión"
     },
     {
@@ -1045,6 +1384,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, améliore pour moi ma religion",
         id: "Ya Allah, perbaikilah agamaku untukku",
         de: "O Allah, mache meine Religion für mich gut",
+        ru: "О Аллах, исправь для меня мою религию",
+        kk: "Уа, Алла, дінімді түзе",
+        uz: "Allohim, dinimni isloh qilgin",
         es: "Oh Allah, mejora para mí mi religión"
     },
     {
@@ -1054,6 +1396,9 @@ const TASBIH_PHRASES = [
         fr: "Seigneur, accorde-moi la sagesse et fais-moi rejoindre les vertueux",
         id: "Ya Rabb, anugerahkanlah kepadaku hikmah dan pertemukanlah aku dengan orang-orang saleh",
         de: "Herr, schenke mir Weisheit und geselle mich zu den Rechtschaffenen",
+        ru: "Господь мой, даруй мне мудрость и присоедини меня к праведникам",
+        kk: "Раббым, маған даналық бер және мені ізгілерге қос",
+        uz: "Robbim, menga hikmat ato etgin va meni solihlarga qo‘shgin",
         es: "Señor, concédeme sabiduría y reúneme con los virtuosos"
     },
     {
@@ -1063,6 +1408,9 @@ const TASBIH_PHRASES = [
         fr: "Seigneur, fais de moi un accomplisseur de la prière",
         id: "Ya Rabb, jadikanlah aku orang yang mendirikan shalat",
         de: "Herr, mache mich zu einem, der das Gebet verrichtet",
+        ru: "Господь мой, сделай меня совершающим намаз",
+        kk: "Раббым, мені намазды толық орындаушы ет",
+        uz: "Robbim, meni namozni to‘kis ado etuvchi qilgin",
         es: "Señor, hazme de los que cumplen la oración"
     },
     {
@@ -1072,6 +1420,9 @@ const TASBIH_PHRASES = [
         fr: "Notre Seigneur, accepte mon invocation",
         id: "Ya Rabb kami, terimalah doaku",
         de: "Unser Herr, nimm mein Bittgebet an",
+        ru: "Господь наш, прими мою мольбу",
+        kk: "Раббымыз, дұғамды қабыл ет",
+        uz: "Robbimiz, duoimni qabul qilgin",
         es: "Señor nuestro, acepta mi súplica"
     },
     {
@@ -1081,6 +1432,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, bénis-nous dans ce que Tu nous as accordé",
         id: "Ya Allah, berkahilah kami pada apa yang Engkau rezekikan kepada kami",
         de: "O Allah, segne für uns das, was Du uns beschert hast",
+        ru: "О Аллах, благослови нас в том, чем Ты наделил нас",
+        kk: "Уа, Алла, бізге берген ризығыңа береке бер",
+        uz: "Allohim, bizga rizq qilib bergan narsangga baraka bergin",
         es: "Oh Allah, bendícenos en lo que nos has provisto"
     },
     {
@@ -1090,6 +1444,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je Te demande Ton amour",
         id: "Ya Allah, aku memohon cinta-Mu",
         de: "O Allah, ich bitte Dich um Deine Liebe",
+        ru: "О Аллах, прошу Тебя о любви к Тебе",
+        kk: "Уа, Алла, Сенен махаббатыңды сұраймын",
+        uz: "Allohim, Sendan muhabbatingni so‘rayman",
         es: "Oh Allah, te pido Tu amor"
     },
 
@@ -1101,6 +1458,9 @@ const TASBIH_PHRASES = [
         fr: "Nulle divinité sauf Allah, le Souverain, la Vérité manifeste",
         id: "Tiada tuhan selain Allah, Raja Yang Maha Benar lagi Maha Nyata",
         de: "Es gibt keinen Gott außer Allah, dem König, der offenkundigen Wahrheit",
+        ru: "Нет божества, кроме Аллаха, Царя, Истины явной",
+        kk: "Алладан басқа тәңір жоқ, Ол — Патша, анық Ақиқат",
+        uz: "Allohdan o‘zga iloh yo‘q, U Podshoh, ochiq Haqdir",
         es: "No hay divinidad salvo Allah, el Soberano, la Verdad manifiesta"
     },
     {
@@ -1110,6 +1470,9 @@ const TASBIH_PHRASES = [
         fr: "Nulle divinité sauf Allah, Seul, sans associé; à Lui la royauté, à Lui la louange, et Il est Omnipotent",
         id: "Tiada tuhan selain Allah semata, tiada sekutu bagi-Nya; milik-Nya kerajaan dan milik-Nya pujian, dan Dia Mahakuasa atas segala sesuatu",
         de: "Es gibt keinen Gott außer Allah, Er allein, ohne Teilhaber; Sein ist die Herrschaft und Sein ist das Lob, und Er hat Macht über alle Dinge",
+        ru: "Нет божества, кроме одного Аллаха, у Которого нет сотоварища; Ему принадлежит власть, Ему хвала, и Он властен над всем",
+        kk: "Алладан басқа тәңір жоқ, Ол жалғыз, Оның серігі жоқ; билік те Онікі, мадақ та Оған тән, Ол әр нәрсеге құдіретті",
+        uz: "Allohdan o‘zga iloh yo‘q, U yagona, sherigi yo‘q; mulk Unikidir, hamd Unikidir va U har narsaga qodirdir",
         es: "No hay divinidad salvo Allah, Único, sin asociado; Suyo es el reino y Suya es la alabanza, y Él es Todopoderoso"
     },
     {
@@ -1119,6 +1482,9 @@ const TASBIH_PHRASES = [
         fr: "Nulle divinité sauf Allah, l'Immense, le Très Indulgent",
         id: "Tiada tuhan selain Allah Yang Maha Agung lagi Maha Penyantun",
         de: "Es gibt keinen Gott außer Allah, dem Gewaltigen, dem Nachsichtigen",
+        ru: "Нет божества, кроме Аллаха, Великого, Кроткого",
+        kk: "Алладан басқа тәңір жоқ, Ол Ұлы, аса Жұмсақ",
+        uz: "Allohdan o‘zga iloh yo‘q, U Ulug‘ va Halimdir",
         es: "No hay divinidad salvo Allah, el Inmenso, el Indulgente"
     },
     {
@@ -1128,6 +1494,9 @@ const TASBIH_PHRASES = [
         fr: "Nulle divinité sauf Toi, Seul, sans associé",
         id: "Tiada tuhan selain Engkau semata, tiada sekutu bagi-Mu",
         de: "Es gibt keinen Gott außer Dir allein, ohne Teilhaber",
+        ru: "Нет божества, кроме Тебя одного, у Тебя нет сотоварища",
+        kk: "Сенен басқа тәңір жоқ, Сен жалғызсың, Сенің серігің жоқ",
+        uz: "Sendan o‘zga iloh yo‘q, Sen yagonasan, sheriging yo‘q",
         es: "No hay divinidad salvo Tú, Único, sin asociado"
     },
     {
@@ -1137,6 +1506,9 @@ const TASBIH_PHRASES = [
         fr: "Nulle divinité sauf Allah, Seigneur du Trône immense",
         id: "Tiada tuhan selain Allah, Tuhan 'Arsy yang agung",
         de: "Es gibt keinen Gott außer Allah, dem Herrn des gewaltigen Throns",
+        ru: "Нет божества, кроме Аллаха, Господа великого Трона",
+        kk: "Алладан басқа тәңір жоқ, Ол — ұлы Аршының Раббы",
+        uz: "Allohdan o‘zga iloh yo‘q, U ulug‘ Arshning Robbidir",
         es: "No hay divinidad salvo Allah, Señor del Trono inmenso"
     },
 
@@ -1148,6 +1520,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah et louange à Lui, autant que le nombre de Ses créatures et autant que Sa satisfaction",
         id: "Subhanallah wa bihamdihi sebanyak makhluk-Nya dan seridha diri-Nya",
         de: "Gepriesen sei Allah und gelobt sei Er, so oft wie die Zahl Seiner Geschöpfe und so wie Sein Wohlgefallen",
+        ru: "Пречист Аллах, и хвала Ему — столько раз, сколько Его творений, и сколько Ему угодно",
+        kk: "Жаратқандарының санынша және Өзі разы болғанынша Алла пәк әрі Оған мадақ",
+        uz: "Maxluqotlari soni qadar va O‘zi rozi bo‘ladigan qadar Alloh pokdir va Unga hamd bo‘lsin",
         es: "Gloria a Allah y alabanzas a Él, según el número de Sus criaturas y según Su complacencia"
     },
     {
@@ -1157,6 +1532,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire au Détenteur de la majesté et de la générosité",
         id: "Maha Suci Pemilik keagungan dan kemuliaan",
         de: "Gepriesen sei der Besitzer der Erhabenheit und Ehre",
+        ru: "Пречист Обладатель величия и щедрости",
+        kk: "Ұлылық пен құрмет Иесі пәк",
+        uz: "Ulug‘lik va ikrom Sohibi pokdir",
         es: "Gloria al Poseedor de la majestad y la generosidad"
     },
     {
@@ -1166,6 +1544,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire au Souverain, le Très Saint",
         id: "Maha Suci Sang Raja Yang Maha Suci",
         de: "Gepriesen sei der König, der Heilige",
+        ru: "Пречист Царь, Святой",
+        kk: "Патша, аса Киелі пәк",
+        uz: "Podshoh va Muqaddas Zot pokdir",
         es: "Gloria al Soberano, el Santísimo"
     },
     {
@@ -1175,6 +1556,9 @@ const TASBIH_PHRASES = [
         fr: "Glorifié, Saint, Seigneur des anges et de l'Esprit",
         id: "Maha Suci, Maha Kudus, Tuhan para malaikat dan ruh",
         de: "Hochheilig, Heilig, Herr der Engel und des Geistes",
+        ru: "Пречистый, Святой, Господь ангелов и Духа",
+        kk: "Пәк, аса Киелі, періштелер мен Рухтың Раббы",
+        uz: "Farishtalar va Ruhning Robbi pok va muqaddasdir",
         es: "Glorificado, Santo, Señor de los ángeles y del Espíritu"
     },
     {
@@ -1184,6 +1568,9 @@ const TASBIH_PHRASES = [
         fr: "Gloire à Allah autant que le poids de la balance",
         id: "Maha Suci Allah sepenuh timbangan",
         de: "Gepriesen sei Allah, die Waage füllend",
+        ru: "Пречист Аллах — так, чтобы наполнились Весы",
+        kk: "Таразыны толтырарлықтай Алла пәк",
+        uz: "Mezonni to‘ldiradigan qadar Alloh pokdir",
         es: "Gloria a Allah cuanto llene la balanza"
     },
 
@@ -1195,6 +1582,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, c'est par Toi que nous entrons dans le matin et par Toi dans le soir",
         id: "Ya Allah, dengan-Mu kami memasuki pagi dan dengan-Mu kami memasuki petang",
         de: "O Allah, mit Dir erleben wir den Morgen und mit Dir den Abend",
+        ru: "О Аллах, благодаря Тебе мы дожили до утра и благодаря Тебе дожили до вечера",
+        kk: "Уа, Алла, Сенімен таңға жеттік, Сенімен кешке жеттік",
+        uz: "Allohim, Sen bilan tongga kirdik va Sen bilan kechga kirdik",
         es: "Oh Allah, contigo amanecemos y contigo anochecemos"
     },
     {
@@ -1204,6 +1594,9 @@ const TASBIH_PHRASES = [
         fr: "Nous voici au matin et la royauté appartient à Allah",
         id: "Kami memasuki pagi dan kerajaan adalah milik Allah",
         de: "Wir erleben den Morgen, und die Herrschaft gehört Allah",
+        ru: "Мы дожили до утра, и власть принадлежит Аллаху",
+        kk: "Таңға жеттік, бүкіл билік Аллаға тән болған күйде",
+        uz: "Biz tongga kirdik, mulk ham Allohniki bo‘lib tongga kirdi",
         es: "Amanecemos y el reino pertenece a Allah"
     },
     {
@@ -1213,6 +1606,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, tout bienfait qui m'atteint ce matin vient de Toi",
         id: "Ya Allah, nikmat apa pun yang ada padaku di pagi ini berasal dari-Mu",
         de: "O Allah, jede Gnade, die mich am Morgen erreicht, kommt von Dir",
+        ru: "О Аллах, любая милость, что есть у меня этим утром, — от Тебя",
+        kk: "Уа, Алла, осы таңда маған жеткен әр нығмет Сенен",
+        uz: "Allohim, bu tongda menga yetgan har qanday ne’mat Sendandir",
         es: "Oh Allah, todo favor que amanece conmigo proviene de Ti"
     },
     {
@@ -1222,6 +1618,9 @@ const TASBIH_PHRASES = [
         fr: "Je suis satisfait d'Allah comme Seigneur, de l'islam comme religion et de Muhammad comme prophète",
         id: "Aku ridha Allah sebagai Tuhan, Islam sebagai agama, dan Muhammad sebagai nabi",
         de: "Ich bin zufrieden mit Allah als Herrn, dem Islam als Religion und Muhammad als Propheten",
+        ru: "Я доволен Аллахом как Господом, исламом как религией и Мухаммадом как пророком",
+        kk: "Алланы Раббым, Исламды дінім, Мұхаммедті пайғамбарым деп разы болдым",
+        uz: "Allohni Robb, Islomni din va Muhammadni payg‘ambar deb rozi bo‘ldim",
         es: "Me complace Allah como Señor, el islam como religión y Muhammad como profeta"
     },
     {
@@ -1231,6 +1630,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, Tu es mon Seigneur, nulle divinité sauf Toi; Tu m'as créé et je suis Ton serviteur",
         id: "Ya Allah, Engkau Tuhanku, tiada tuhan selain Engkau; Engkau menciptakanku dan aku hamba-Mu",
         de: "O Allah, Du bist mein Herr, es gibt keinen Gott außer Dir; Du hast mich erschaffen und ich bin Dein Diener",
+        ru: "О Аллах, Ты мой Господь, нет божества, кроме Тебя; Ты сотворил меня, и я Твой раб",
+        kk: "Уа, Алла, Сен менің Раббымсың, Сенен басқа тәңір жоқ; Сен мені жараттың, мен Сенің құлыңмын",
+        uz: "Allohim, Sen mening Robbimsan, Sendan o‘zga iloh yo‘q, meni Sen yaratding va men Sening bandangman",
         es: "Oh Allah, Tú eres mi Señor, no hay divinidad salvo Tú; Tú me creaste y soy Tu siervo"
     },
     {
@@ -1240,6 +1642,9 @@ const TASBIH_PHRASES = [
         fr: "Je place ma confiance en Allah",
         id: "Aku bertawakal kepada Allah",
         de: "Ich vertraue auf Allah",
+        ru: "Уповаю на Аллаха",
+        kk: "Аллаға тәуекел еттім",
+        uz: "Allohga tavakkal qildim",
         es: "Pongo mi confianza en Allah"
     },
     {
@@ -1249,6 +1654,9 @@ const TASBIH_PHRASES = [
         fr: "Ce qu'Allah veut; il n'y a de force qu'en Allah",
         id: "Apa yang Allah kehendaki; tiada kekuatan kecuali dengan Allah",
         de: "Was Allah will; es gibt keine Kraft außer durch Allah",
+        ru: "Так пожелал Аллах, нет силы ни у кого, кроме Аллаха",
+        kk: "Алла қалағаны болады; күш тек Алла арқылы",
+        uz: "Alloh xohlagani bo‘ladi; quvvat faqat Alloh bilandir",
         es: "Lo que Allah quiera; no hay fuerza sino en Allah"
     },
     {
@@ -1258,6 +1666,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, rien n'est facile sauf ce que Tu rends facile",
         id: "Ya Allah, tidak ada yang mudah kecuali yang Engkau jadikan mudah",
         de: "O Allah, nichts ist leicht außer dem, was Du leicht machst",
+        ru: "О Аллах, нет лёгкого, кроме того, что Ты сделал лёгким",
+        kk: "Уа, Алла, Сен жеңіл еткеннен басқа еш нәрсе жеңіл емес",
+        uz: "Allohim, Sen oson qilgan narsadan boshqa oson narsa yo‘q",
         es: "Oh Allah, nada es fácil salvo lo que Tú haces fácil"
     },
     {
@@ -1267,6 +1678,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, guide-moi et rends-moi droit",
         id: "Ya Allah, berilah aku petunjuk dan keluruskanlah aku",
         de: "O Allah, leite mich recht und mache mich aufrichtig",
+        ru: "О Аллах, наставь меня на прямой путь и направь меня верно",
+        kk: "Уа, Алла, мені тура жолға сал және түзу ет",
+        uz: "Allohim, meni hidoyat qilgin va to‘g‘ri yo‘lda sobit qilgin",
         es: "Oh Allah, guíame y hazme recto"
     },
     {
@@ -1276,6 +1690,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je Te demande le Firdaws le plus élevé",
         id: "Ya Allah, aku memohon kepada-Mu surga Firdaus yang tertinggi",
         de: "O Allah, ich bitte Dich um das höchste Paradies Firdaus",
+        ru: "О Аллах, прошу Тебя о высшем Фирдаусе",
+        kk: "Уа, Алла, Сенен ең жоғары Фирдаусты сұраймын",
+        uz: "Allohim, Sendan eng oliy Firdavsni so‘rayman",
         es: "Oh Allah, te pido el Firdaus más elevado"
     },
     // Hisn al-Muslim additions (13)
@@ -1286,6 +1703,9 @@ const TASBIH_PHRASES = [
         fr: "Allah me suffit, il n'y a de divinité que Lui",
         id: "Cukuplah Allah bagiku, tiada tuhan selain Dia",
         de: "Allah genügt mir, es gibt keinen Gott außer Ihm",
+        ru: "Достаточно мне Аллаха, нет божества, кроме Него",
+        kk: "Маған Алла жеткілікті, Одан басқа тәңір жоқ",
+        uz: "Menga Alloh kifoya, Undan o‘zga iloh yo‘q",
         es: "Allah me basta, no hay más dios que Él"
     },
     {
@@ -1295,6 +1715,9 @@ const TASBIH_PHRASES = [
         fr: "J'agrée Allah comme Seigneur, l'islam comme religion et Muhammad comme Messager",
         id: "Aku ridha Allah sebagai Tuhan, Islam sebagai agama, dan Muhammad sebagai Rasul",
         de: "Ich bin zufrieden mit Allah als Herrn, dem Islam als Religion und Muhammad als Gesandtem",
+        ru: "Я доволен Аллахом как Господом, исламом как религией и Мухаммадом как посланником",
+        kk: "Алланы Раббым, Исламды дінім, Мұхаммедті елшім деп разы болдым",
+        uz: "Allohni Robb, Islomni din va Muhammadni Rasul deb rozi bo‘ldim",
         es: "Acepto a Allah como Señor, al Islam como religión y a Muhammad como Mensajero"
     },
     {
@@ -1304,6 +1727,9 @@ const TASBIH_PHRASES = [
         fr: "Au nom d'Allah, avec le nom de Qui rien ne peut nuire sur terre ni au ciel",
         id: "Dengan nama Allah yang bersama nama-Nya tidak ada sesuatu pun di bumi dan langit yang membahayakan",
         de: "Im Namen Allahs, mit dessen Namen nichts auf Erden und im Himmel schaden kann",
+        ru: "С именем Аллаха, с именем Которого ничто не причинит вреда ни на земле, ни на небе",
+        kk: "Есімімен бірге жерде де, көкте де еш нәрсе зиян бере алмайтын Алланың атымен",
+        uz: "Ismi bilan yerda ham, osmonda ham hech narsa zarar yetkaza olmaydigan Alloh nomi bilan",
         es: "En el nombre de Allah, con cuyo nombre nada puede dañar en la tierra ni en el cielo"
     },
     {
@@ -1313,6 +1739,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, nul ne peut empêcher ce que Tu donnes ni donner ce que Tu refuses",
         id: "Ya Allah, tiada yang mampu menghalangi apa yang Engkau beri dan tiada yang memberi apa yang Engkau tahan",
         de: "O Allah, niemand kann verwehren, was Du gibst, noch geben, was Du verwehrst",
+        ru: "О Аллах, никто не лишит того, что Ты дал, и никто не даст того, чего Ты лишил",
+        kk: "Уа, Алла, Сен бергенді тоса алатын да, Сен тосқанды бере алатын да ешкім жоқ",
+        uz: "Allohim, Sen bergan narsani to‘suvchi yo‘q, Sen to‘sgan narsani beruvchi yo‘q",
         es: "Oh Allah, nadie puede impedir lo que Tú das ni dar lo que Tú niegas"
     },
     {
@@ -1322,6 +1751,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Toi qui fais tourner les cœurs, affermis mon cœur sur Ta religion",
         id: "Wahai Zat yang membolak-balikkan hati, teguhkanlah hatiku pada agama-Mu",
         de: "O Wender der Herzen, festige mein Herz in Deiner Religion",
+        ru: "О Изменяющий сердца, укрепи моё сердце в Твоей религии",
+        kk: "Уа, жүректерді өзгертуші, жүрегімді дініңде берік ет",
+        uz: "Ey qalblarni o‘zgartiruvchi Zot, qalbimni diningda sobit qilgin",
         es: "Oh Tú que trastocas los corazones, afirma mi corazón en Tu religión"
     },
     {
@@ -1331,6 +1763,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je cherche refuge auprès de Toi contre la mécréance et la pauvreté",
         id: "Ya Allah, aku berlindung kepada-Mu dari kekufuran dan kefakiran",
         de: "O Allah, ich suche Zuflucht bei Dir vor Unglauben und Armut",
+        ru: "О Аллах, прибегаю к Тебе от неверия и бедности",
+        kk: "Уа, Алла, күпірлік пен кедейліктен Саған сыйынамын",
+        uz: "Allohim, kufr va faqirlikdan Sendan panoh so‘rayman",
         es: "Oh Allah, me refugio en Ti de la incredulidad y la pobreza"
     },
     {
@@ -1340,6 +1775,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, bénis-nous dans ce que Tu nous accordes et préserve-nous du châtiment du Feu",
         id: "Ya Allah, berkahilah rezeki yang Engkau berikan kepada kami dan lindungilah kami dari azab neraka",
         de: "O Allah, segne für uns, was Du uns beschert hast, und bewahre uns vor der Strafe des Feuers",
+        ru: "О Аллах, благослови нас в том, чем Ты наделил нас, и защити нас от мучений Огня",
+        kk: "Уа, Алла, бізге берген ризығыңа береке бер және бізді тозақ азабынан сақта",
+        uz: "Allohim, bizga rizq qilib bergan narsangga baraka bergin va bizni do‘zax azobidan saqlagin",
         es: "Oh Allah, bendice lo que nos has provisto y presérvanos del castigo del Fuego"
     },
     {
@@ -1349,6 +1787,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, accorde la santé à mon corps",
         id: "Ya Allah, sehatkanlah tubuhku",
         de: "O Allah, schenke meinem Körper Gesundheit",
+        ru: "О Аллах, даруй здоровье моему телу",
+        kk: "Уа, Алла, тәніме саулық бер",
+        uz: "Allohim, badanimga ofiyat bergin",
         es: "Oh Allah, concede salud a mi cuerpo"
     },
     {
@@ -1358,6 +1799,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, réforme pour moi ma religion qui est la sauvegarde de mon affaire",
         id: "Ya Allah, perbaikilah agamaku yang menjadi penjaga urusanku",
         de: "O Allah, bessere für mich meine Religion, die der Schutz meiner Angelegenheit ist",
+        ru: "О Аллах, исправь для меня мою религию, которая — защита всех моих дел",
+        kk: "Уа, Алла, ісімнің қорғанышы болған дінімді түзе",
+        uz: "Allohim, ishimning himoyasi bo‘lgan dinimni isloh qilgin",
         es: "Oh Allah, corrige para mí mi religión, que es la salvaguarda de mi asunto"
     },
     {
@@ -1367,6 +1811,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, Tu es la Paix et de Toi vient la paix, béni sois-Tu, ô Détenteur de la majesté et de la générosité",
         id: "Ya Allah, Engkau Mahasejahtera dan dari-Mu kesejahteraan, Mahaberkah Engkau wahai Pemilik keagungan dan kemuliaan",
         de: "O Allah, Du bist der Friede und von Dir kommt der Friede, gesegnet bist Du, o Besitzer der Majestät und Ehre",
+        ru: "О Аллах, Ты — Мир, и от Тебя мир, благословен Ты, о Обладатель величия и щедрости",
+        kk: "Уа, Алла, Сен Сәламсың, сәлем Сенен, Сен берекелісің, уа, ұлылық пен құрмет Иесі",
+        uz: "Allohim, Sen Salomsan, salomatlik Sendandir, Sen muboraksan, ey ulug‘lik va ikrom Sohibi",
         es: "Oh Allah, Tú eres la Paz y de Ti viene la paz, bendito seas, oh Poseedor de la majestad y la generosidad"
     },
     {
@@ -1376,6 +1823,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, je Te demande le Paradis et cherche refuge auprès de Toi contre le Feu",
         id: "Ya Allah, aku memohon surga kepada-Mu dan berlindung kepada-Mu dari neraka",
         de: "O Allah, ich bitte Dich um das Paradies und suche Zuflucht bei Dir vor dem Feuer",
+        ru: "О Аллах, прошу Тебя о Рае и прибегаю к Тебе от Огня",
+        kk: "Уа, Алла, Сенен жәннат сұраймын және тозақтан Саған сыйынамын",
+        uz: "Allohim, Sendan jannatni so‘rayman va do‘zaxdan Sendan panoh so‘rayman",
         es: "Oh Allah, te pido el Paraíso y me refugio en Ti del Fuego"
     },
     {
@@ -1385,6 +1835,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, accorde-moi Ton amour et l'amour de celui dont l'amour me profite auprès de Toi",
         id: "Ya Allah, karuniakanlah aku cinta-Mu dan cinta orang yang cintanya bermanfaat bagiku di sisi-Mu",
         de: "O Allah, gewähre mir Deine Liebe und die Liebe dessen, dessen Liebe mir bei Dir nützt",
+        ru: "О Аллах, даруй мне любовь к Тебе и любовь к тем, чья любовь принесёт мне пользу пред Тобой",
+        kk: "Уа, Алла, маған Өз махаббатыңды және Сенің алдыңда махаббаты маған пайда беретін жанның махаббатын нәсіп ет",
+        uz: "Allohim, menga muhabbatingni va huzuringda muhabbati menga foyda beradigan kishining muhabbatini nasib etgin",
         es: "Oh Allah, concédeme Tu amor y el amor de quien su amor me beneficie ante Ti"
     },
     {
@@ -1394,6 +1847,9 @@ const TASBIH_PHRASES = [
         fr: "Ô Allah, aide-moi et ne fais pas qu'on m'accable",
         id: "Ya Allah, tolonglah aku dan jangan jadikan (orang) menang atasku",
         de: "O Allah, hilf mir und lass nicht zu, dass man mich überwältigt",
+        ru: "О Аллах, помоги мне и не помогай никому против меня",
+        kk: "Уа, Алла, маған жәрдем бер, маған қарсы жәрдем берме",
+        uz: "Allohim, menga yordam bergin, menga qarshi yordam bermagin",
         es: "Oh Allah, ayúdame y no dejes que nadie prevalezca contra mí"
     }
 ];

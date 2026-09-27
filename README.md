@@ -10,7 +10,7 @@ A Manifest V3 Chrome extension that:
 - 🔒 **Optional tab lock** — when prayer time arrives, blocks **all open browser tabs** for a configurable duration (1–120 minutes, default 5) with a countdown overlay; tabs you open or navigate to during the lock are covered too; optional manual unlock by tapping the lock screen.
 - 🕌 **Shows the full daily prayer schedule** for your city/country, with a live countdown to the next prayer.
 - 🌍 **Country & city dropdowns** — pick a country, and the city list loads automatically.
-- 🌐 **8 languages** — switch from the popup header or **Settings → Language** (see [Supported languages](#supported-languages)).
+- 🌐 **11 languages** — switch from the popup header or **Settings → Language** (see [Supported languages](#supported-languages)).
 - 🌗 **Theme** — Midnight Emerald (default) or Classic — selectable in Settings.
 - 📅 **Date format** — choose how both the Hijri and Gregorian dates are displayed (e.g. `10-04-2026`, `10 April 2026`, long text).
 - 🌙 **Hijri date** shown alongside the Gregorian date.
@@ -81,8 +81,11 @@ The UI, notifications, lock overlay, dhikr card, and welcome page are localized.
 | `id` | Bahasa Indonesia | LTR | |
 | `fr` | Français (French) | LTR | |
 | `es` | Español (Spanish) | LTR | |
+| `ru` | Русский (Russian) | LTR | |
+| `kk` | Қазақша (Kazakh) | LTR | Cyrillic script |
+| `uz` | Oʻzbekcha (Uzbek) | LTR | Latin script |
 
-Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `tasbih-phrases.js` include Arabic with per-language labels where available.
+Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `tasbih-phrases.js` include Arabic with a translation per language (Hindi shows the English line; no Hindi translations yet).
 
 ## Files
 
