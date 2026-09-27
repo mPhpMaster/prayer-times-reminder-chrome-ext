@@ -574,7 +574,7 @@ const I18N = {
         themeMidnightEmerald: "Esmeralda de medianoche",
         prayers: {
             Fajr: "Fajr",
-            Sunrise: "Amanecer",
+            Sunrise: "Salida del sol",
             Duha: "Duha",
             Dhuhr: "Dhuhr",
             Jumuah: "Yumu'a",
@@ -1039,7 +1039,7 @@ const I18N = {
         prayers: {
             Fajr: "Фаджр",
             Sunrise: "Восход",
-            Duha: "Духа",
+            Duha: "Ад-Духа",
             Dhuhr: "Зухр",
             Jumuah: "Джума",
             Asr: "Аср",
@@ -1155,7 +1155,7 @@ const I18N = {
         prayers: {
             Fajr: "Таң",
             Sunrise: "Күн шығуы",
-            Duha: "Дұха",
+            Duha: "Сәске",
             Dhuhr: "Бесін",
             Jumuah: "Жұма",
             Asr: "Екінті",
