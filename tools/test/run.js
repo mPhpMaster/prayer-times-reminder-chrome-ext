@@ -17,7 +17,8 @@ vm.createContext(ctx);
 // Append exports so we can read the lexical `const` data arrays off the context.
 vm.runInContext(
   fs.readFileSync(path.join(ROOT, "i18n.js"), "utf8") +
-    "\nthis.__METHODS = METHODS; this.__DATE_FORMATS = DATE_FORMATS;",
+    "\nthis.__METHODS = METHODS; this.__DATE_FORMATS = DATE_FORMATS;" +
+    "\nthis.__I18N = I18N; this.__LANGS = SUPPORTED_LANGS; this.__POSITIONS = TASBIH_POSITIONS;",
   ctx
 );
 
@@ -126,6 +127,40 @@ const T = 1_700_000_000_000;
 eq("alarm ~on time -> not late", alarmFiredLate(T - 30_000, T, 120_000), false);
 eq("alarm hours late -> late", alarmFiredLate(T - 3_600_000, T, 120_000), true);
 eq("alarm missing scheduledTime -> late", alarmFiredLate(undefined, T, 120_000), true);
+
+// ---- every supported language is complete ----------------------------------
+// Same keys and value types as English (nested objects included), a label for
+// every dhikr position, and a translation line for every dhikr phrase.
+{
+  const { __I18N: I18N, __LANGS: LANGS, __POSITIONS: POSITIONS } = ctx;
+  const shape = (o) =>
+    o && typeof o === "object"
+      ? Object.keys(o).sort().map((k) => k + ":" + shape(o[k])).join("|")
+      : typeof o;
+  const phrases = new vm.Script(fs.readFileSync(path.join(ROOT, "tasbih-phrases.js"), "utf8") + ";TASBIH_PHRASES")
+    .runInNewContext({});
+  for (const { code } of LANGS) {
+    ok(`${code}: I18N block exists`, !!I18N[code]);
+    if (!I18N[code]) continue;
+    eq(`${code}: same keys/types as en`, shape(I18N[code]) === shape(I18N.en), true);
+    eq(`${code}: position labels`, POSITIONS.filter((p) => typeof p[code] !== "string" && code !== "en" && code !== "ar").map((p) => p.key), []);
+    // Hindi has no dhikr translations yet; formatTasbihDisplay falls back to
+    // the English line for it.
+    if (code !== "ar" && code !== "en" && code !== "hi") {
+      eq(`${code}: every dhikr translated`, phrases.filter((p) => !p[code]).length, 0);
+    }
+  }
+  const { monthName, weekdayLabel, uses24hClock } = ctx;
+  const sep28 = new Date(2026, 8, 28); // a Monday
+  eq("ru month after a day is genitive", monthName("ru", "ru-RU", sep28), "сентября");
+  eq("ru month alone is nominative", monthName("ru", "ru-RU", sep28, true), "сентябрь");
+  eq("kk month from our table", monthName("kk", "kk-KZ", sep28), "қыркүйек");
+  eq("kk weekday from our table", weekdayLabel("kk", "kk-KZ", sep28), "дүйсенбі");
+  eq("uz narrow weekday", weekdayLabel("uz", "uz-Latn-UZ", sep28, true), "D");
+  eq("en still uses Intl", monthName("en", "en", sep28), "September");
+  eq("24h clock only for ru/kk/uz", ["ru", "kk", "uz", "en", "de", "ar"].map(uses24hClock), [true, true, true, false, false, false]);
+  eq("ru dhikr shows translation + Arabic", formatTasbihDisplay({ ar: "سبحان الله", en: "Subhan Allah", ru: "Пречист Аллах" }, "ru").lines.map((l) => l.variant), ["translation", "arabic"]);
+}
 
 if (failures.length) {
   console.error(`\n${passed} passed, ${failures.length} FAILED:`);
