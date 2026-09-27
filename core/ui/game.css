@@ -59,6 +59,11 @@ button { font: inherit; cursor: pointer; }
   font-size: 14px;
   line-height: 1.7;
 }
+.notice.reward { animation: reward-arrive 480ms ease-out both; }
+@keyframes reward-arrive {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
+}
 
 .tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .tasks button {
@@ -132,7 +137,15 @@ html:not([lang="ar"]):not([lang="ur"]) .tasks .name { font-size: 16px; font-weig
 
 .progress { height: 6px; border-radius: 3px; background: var(--progress-track-bg); overflow: hidden; }
 .progress .fill { height: 100%; width: 0; background: var(--progress-fill); transition: width 0.25s; }
-.counter { font-size: 18px; font-weight: 700; text-align: center; margin: 0; font-variant-numeric: tabular-nums; }
+.counter {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
 
 .mic {
   align-self: center;
@@ -333,7 +346,83 @@ input[type="search"], #username, #search, #auth input {
 @keyframes celebrate-glow {
   50% { opacity: 0.55; }
 }
+
+/* Compact phone layout: keep the active mission and progress above the fold. */
+@media (max-width: 600px) {
+  body {
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+  }
+  .card.game {
+    max-width: none;
+    padding: 12px;
+    gap: 10px;
+    border-radius: 16px;
+  }
+  .game-head { align-items: center; }
+  .game-head h1 { font-size: 20px; line-height: 1.25; }
+  .window-time { margin-top: 2px; font-size: 11px; }
+  .game-head .ghost { padding: 5px 8px; font-size: 13px; }
+  .tabs { gap: 4px; }
+  .tabs button { padding: 7px 4px; font-size: 12px; }
+  .scores { gap: 5px; }
+  .scores div { padding: 6px 4px; border-radius: 10px; }
+  .scores span { font-size: 18px; line-height: 1.15; }
+  .scores small { font-size: 10px; }
+  .notice { padding: 8px 10px; font-size: 13px; }
+  .journey {
+    padding: 9px;
+    margin-bottom: 4px;
+    border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  }
+  .journey h2 { font-size: 14px; }
+  .journey-steps { margin-top: 7px; }
+  .step { gap: 3px; font-size: 10px; }
+  .step-dot { width: 23px; height: 23px; font-size: 11px; }
+  .rule { font-size: 12px; line-height: 1.6; margin-bottom: 5px; }
+  .group-title { margin: 8px 0 4px; font-size: 12px; }
+  .done-count { margin-bottom: 5px; font-size: 12px; }
+  .tasks { gap: 6px; }
+  .tasks button { padding: 9px 10px; gap: 8px; }
+  .tasks .name { font-size: 16px; line-height: 1.45; }
+  .tasks .meta { font-size: 11px; }
+  .tasks .pts { font-size: 14px; }
+  .gift { margin-top: 4px; padding: 11px; font-size: 16px; }
+  .reader-active .tabs,
+  .reader-active .scores { display: none; }
+  .reader-active .card.game { gap: 8px; }
+  .reader { gap: 8px; }
+  .reader h2 { font-size: 18px; line-height: 1.45; }
+  .reader-points { font-size: 14px; }
+  .source, .hint, .heard, .privacy { color: color-mix(in srgb, var(--foreground) 68%, var(--muted-foreground)); }
+  .source { font-size: 11px; }
+  .hint { font-size: 11px; }
+  .chunk {
+    padding: 10px;
+    min-height: 1.65em;
+    font-size: 26px;
+    line-height: 1.65;
+    background: color-mix(in srgb, var(--primary) 13%, var(--muted));
+    border: 1px solid color-mix(in srgb, var(--primary) 55%, var(--border));
+  }
+  .text {
+    max-height: 27dvh;
+    overflow-y: auto;
+    padding: 9px 10px;
+    border-radius: var(--radius);
+    background: var(--muted);
+    color: color-mix(in srgb, var(--foreground) 72%, var(--muted-foreground));
+    font-size: 15px;
+    line-height: 1.85;
+  }
+  .progress {
+    height: 10px;
+    border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
+    border-radius: 6px;
+  }
+  .counter { font-size: 16px; }
+  .mic { width: 100%; min-width: 0; min-height: 48px; padding: 11px 16px; font-size: 16px; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .celebrate-card, .celebrate-mark { animation: none; }
+  .celebrate-card, .celebrate-mark, .notice.reward { animation: none; }
   .progress .fill, .w { transition: none; }
 }

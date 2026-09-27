@@ -163,6 +163,7 @@ function render(r) {
   const tab = isTab(r) ? r.name : r.name === "profile" ? currentTab() : "tasks";
   for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === tab));
   const onTasks = r.name === "tasks" || r.name === "read" || r.name === "gift";
+  document.body.classList.toggle("reader-active", r.name === "read" || r.name === "gift");
   document.querySelector(".scores").hidden = !onTasks;
   $("list-view").hidden = r.name !== "tasks";
   $("reader").hidden = !(r.name === "read" || r.name === "gift");
@@ -406,6 +407,7 @@ function showNotice(text, { autoHide = false } = {}) {
   clearTimeout(noticeTimer);
   $("notice").hidden = !text;
   $("notice").textContent = text || "";
+  $("notice").classList.toggle("reward", Boolean(text && autoHide));
   if (text && autoHide) noticeTimer = setTimeout(() => showNotice(""), NOTICE_HIDE_MS);
 }
 
