@@ -15,6 +15,7 @@ A Manifest V3 Chrome extension that:
 - 📅 **Date format** — choose how both the Hijri and Gregorian dates are displayed (e.g. `10-04-2026`, `10 April 2026`, long text).
 - 🌙 **Hijri date** shown alongside the Gregorian date.
 - 📿 **Periodic dhikr** — optional floating reminder with 151 unique phrases on your open tabs; tap to dismiss or auto-hide after 10 seconds.
+- 🎙️ **Prayer Adhkar game (optional)** — opens in its own tab from the popup's Settings: read each prayer's adhkar aloud, Chrome's speech recognition follows along, and you earn points per prayer, day and month. Plays without an account; email or Google sign-in only for the leaderboard and following friends. Prayer times never need an account.
 
 ## Translations
 
@@ -99,6 +100,7 @@ Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `t
 | `icons/` | Extension icons (crescent + star). |
 | `scripts/make_icons.py` | Regenerates the PNG icons (dev-only, not needed at runtime). |
 | `PRIVACY.md` | Privacy policy for the extension. |
+| `TERMS.md` | Terms and conditions for the extension and companion apps. |
 
 ## How it works
 
@@ -115,6 +117,7 @@ The settings dropdown exposes common AlAdhan methods — ISNA (North America), M
 ## Privacy
 
 See [PRIVACY.md](PRIVACY.md) for what data is stored locally and which third-party APIs are contacted.
+See [TERMS.md](TERMS.md) for the terms that apply to prayer-time calculations, the optional game, and game accounts.
 
 ## License
 

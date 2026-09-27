@@ -67,13 +67,11 @@ function applyLanguage() {
 }
 
 // Extension-only: surface the packaged version (e.g. "v2.1.2"). Other shells
-// don't expose chrome.runtime, so the line stays hidden there.
+// don't provide Platform.runtime.version, so the line stays hidden there.
 function showVersion() {
   let version = "";
   try {
-    if (typeof chrome !== "undefined" && chrome.runtime?.getManifest) {
-      version = chrome.runtime.getManifest().version || "";
-    }
+    version = (Platform.runtime.version && Platform.runtime.version()) || "";
   } catch {
     version = "";
   }

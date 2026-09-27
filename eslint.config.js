@@ -16,7 +16,7 @@ module.exports = [
   {
     // Generated sync-core outputs + non-core tooling are not linted as sources.
     ignores: [
-      "dist/**", "node_modules/**", "tools/**", "scripts/**",
+      "dist/**", "node_modules/**", "backend/**", "tools/**", "scripts/**",
       "targets/extension/build/**", "targets/desktop/src/**", "targets/mobile/www/**",
       "core/platform/vendor/**", // vendored third-party (adhan, tz-lookup)
       "targets/mobile/android/**", "targets/desktop/src-tauri/**" // generated native projects
@@ -31,6 +31,11 @@ module.exports = [
       "prefer-const": "warn",
       eqeqeq: ["warn", "smart"]
     }
+  },
+  {
+    // The extension's lazily imported ES modules (adapter.js loads them on first use).
+    files: ["targets/extension/speech-web.js", "targets/extension/google-auth-chrome.js"],
+    languageOptions: { sourceType: "module", globals: { ...sharedGlobals, crypto: "readonly", atob: "readonly" } }
   },
   {
     // Architectural guard: core/ must be platform-agnostic. Platform calls

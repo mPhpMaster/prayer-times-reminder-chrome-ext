@@ -3,10 +3,10 @@
     "default_locale": "en",
     "name": "__MSG_appName__",
     "short_name": "__MSG_appShortName__",
-    "version": "2.2.4",
+    "version": "2.3.0",
     "description": "__MSG_appDesc__",
     "minimum_chrome_version": "111",
-    "permissions": ["alarms", "notifications", "storage", "geolocation", "scripting", "offscreen"],
+    "permissions": ["alarms", "notifications", "storage", "geolocation", "scripting", "offscreen", "identity"],
     "optional_host_permissions": ["<all_urls>"],
     "background": {
         "service_worker": "background.js"

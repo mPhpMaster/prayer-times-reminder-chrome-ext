@@ -106,12 +106,12 @@ def render(w: int, h: int, spec: dict) -> Image.Image:
 MARQUEE = dict(
     tile=330, pad=110, gap=80, wm=112, wm_lh=1.02, wm_y=110,
     ul_gap=28, ul_w=120, ul_h=10, tag_gap=34, tag=46, feat_gap=22, feat_sz=30,
-    feat="Reminders · Daily schedule · Tab lock · Dhikr · 8 languages",
+    feat="Prayer alerts · Tab break · Dhikr reminders · Dhikr game",
 )
 SMALL = dict(
     tile=150, pad=28, gap=26, wm=36, wm_lh=1.05, wm_y=48,
     ul_gap=14, ul_w=54, ul_h=6, tag_gap=16, tag=22, feat_gap=10, feat_sz=15,
-    feat="Reminders · Schedule · Tab lock",
+    feat="Prayer alerts · Tab break · Dhikr",
 )
 
 
