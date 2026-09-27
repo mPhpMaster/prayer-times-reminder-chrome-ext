@@ -17,6 +17,7 @@
 //   Platform.enforce.clear()               -> { ok }            end any active lock
 //   Platform.dhikr.test()                  -> { ok, reason? }   show a test dhikr now
 //   Platform.runtime.getURL(path)          -> string   (sync)
+//   Platform.runtime.version?()            -> string   optional (Chrome): packaged version (sync)
 //   Platform.devBuild?()                   -> boolean   optional (Android): true only in the
 //                                            debug build; gates developer-only screens
 //   Platform.googleAuth?                   optional (Android, Chrome): Google sign-in for the game

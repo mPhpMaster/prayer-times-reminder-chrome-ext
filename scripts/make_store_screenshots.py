@@ -11,8 +11,13 @@ For each language this script:
   3. Screenshots it with headless Chrome at devicePixelRatio 2, then downscales
      to 1280x800 with Lanczos for crisp text.
 
+It also renders the optional dhikr game page (game.html) as the extension shows
+it — in its own tab — on the tasks tab and on the account tab (sign-in options),
+and writes the Chrome Web Store set for the listing's two languages (en, ar).
+
 Run:  python scripts/make_store_screenshots.py
 Output: screenshots/<lang>.png (popup) and screenshots/welcome-<lang>.png
+        store-release/assets/chrome/screenshots/<lang>-{1-prayer-times,2-game-tasks,3-game-account,4-welcome}.png
 """
 
 from __future__ import annotations
@@ -27,6 +32,8 @@ from PIL import Image
 
 REPO = Path(__file__).resolve().parents[1]
 OUT = REPO / "screenshots"
+STORE_OUT = REPO / "store-release" / "assets" / "chrome" / "screenshots"
+STORE_LANGS = ["en", "ar"]  # the Chrome Web Store listing's languages
 # Post-restructure the runnable page (popup.html/welcome.html + its flat assets:
 # theme.css, i18n.js, vendor/, fonts/) lives in the assembled extension build,
 # not at the repo root. Source from there and drop the transient harness there
@@ -58,18 +65,22 @@ def find_chrome() -> str:
     raise SystemExit("Could not find Chrome — set CHROME_CANDIDATES.")
 
 
-# A fixed Friday afternoon in Riyadh: next prayer is Maghrib, countdown 03:18:42.
+# A fixed Friday afternoon in Riyadh (16:05:18, UTC+3): next prayer is Maghrib,
+# and the Asr game tasks are open.
 MOCK = r"""
 <script>
 (function(){
   var LANG="__LANG__", ARABIC_DIGITS=__ARABIC__;
-  var _D=Date, FIXED=new _D(2026,5,26,15,26,18,0).getTime();
+  var _D=Date, FIXED=_D.UTC(2026,5,26,13,5,18,0);
   function D(){ if(arguments.length===0) return new _D(FIXED);
     return new (Function.prototype.bind.apply(_D,[null].concat([].slice.call(arguments)))); }
   D.prototype=_D.prototype; D.now=function(){return FIXED;}; D.parse=_D.parse; D.UTC=_D.UTC;
   window.Date=D;
   var store={ lang:LANG, theme:"midnight-emerald", arabicDigits:ARABIC_DIGITS,
-    location:{mode:"city", city:"Riyadh", country:"Saudi Arabia", method:4} };
+    location:{mode:"city", city:"Riyadh", country:"Saudi Arabia", method:4,
+      latitude:24.7136, longitude:46.6753},
+    // The Arabic city label the popup caches after its first lookup.
+    cityLabelsIndex:["Saudi Arabia"], "cityLabels:Saudi Arabia":{"Riyadh":"الرياض"} };
   function get(keys){
     if(keys==null) return Object.assign({},store);
     if(typeof keys==="string") return (keys in store)?(function(){var o={};o[keys]=store[keys];return o;})():{};
@@ -82,7 +93,9 @@ MOCK = r"""
     remove:function(k){[].concat(k).forEach(function(x){delete store[x];});return Promise.resolve();},
     clear:function(){for(var k in store)delete store[k];return Promise.resolve();}
   }}, tabs:{ getCurrent:function(cb){cb&&cb(null);}, remove:function(){} },
-  runtime:{ sendMessage:function(){return Promise.resolve({ok:true});}, lastError:null, onMessage:{addListener:function(){}} } };
+  runtime:{ sendMessage:function(){return Promise.resolve({ok:true});}, lastError:null, onMessage:{addListener:function(){}},
+    getURL:function(p){return p;}, getManifest:function(){return {version:"0"};} },
+  identity:{ getRedirectURL:function(){return "https://example.chromiumapp.org/";}, launchWebAuthFlow:function(){} } };
   var RESP={ code:200, status:"OK", data:{
     timings:{Fajr:"03:34",Sunrise:"05:06",Dhuhr:"11:56",Asr:"15:17",Maghrib:"18:45",Isha:"20:15",Imsak:"03:24",Midnight:"00:09"},
     date:{ readable:"26 Jun 2026", gregorian:{date:"26-06-2026", weekday:{en:"Friday"}, month:{number:6,en:"June"}, year:"2026"},
@@ -145,9 +158,18 @@ FIT = """
 """
 
 # Per-kind: (source page, fit selector, vertical margin px reserved for the glow)
+# The game opens in its own browser tab, so it is shown full-size as the tab
+# page (no fit/scale); only the scrollbar and overflow are suppressed.
+STAGE_GAME = """
+  html{ width:1280px; height:800px; overflow:hidden; }
+  body{ margin:0; box-sizing:border-box; width:100%; height:800px; overflow:hidden; }
+"""
+
 KINDS = {
     "popup":   {"src": "popup.html",   "stage": STAGE_POPUP,   "sel": "#main-view", "margin": 52},
     "welcome": {"src": "welcome.html", "stage": STAGE_WELCOME, "sel": ".card",      "margin": 58},
+    "game":    {"src": "game.html",    "stage": STAGE_GAME,    "sel": None, "margin": 0, "hash": "#tasks", "common": False},
+    "account": {"src": "game.html",    "stage": STAGE_GAME,    "sel": None, "margin": 0, "hash": "#me", "common": False},
 }
 
 
@@ -158,8 +180,9 @@ def build_harness(kind: str, lang: str) -> None:
     mock = MOCK.replace("__LANG__", lang).replace(
         "__ARABIC__", "true" if lang in ARABIC_DIGIT_LANGS else "false"
     )
-    fit = FIT.replace("__SEL__", cfg["sel"]).replace("__MARGIN__", str(cfg["margin"]))
-    style = f"<style>{STAGE_COMMON}{cfg['stage']}</style>"
+    fit = FIT.replace("__SEL__", cfg["sel"]).replace("__MARGIN__", str(cfg["margin"])) if cfg["sel"] else ""
+    common = STAGE_COMMON if cfg.get("common", True) else ""
+    style = f"<style>{common}{cfg['stage']}</style>"
 
     html = html.replace("<body>", "<body>\n" + mock, 1)
     html = html.replace("</head>", style + "\n</head>", 1)
@@ -180,7 +203,7 @@ def capture(chrome: str, profile: str, kind: str, lang: str) -> Image.Image:
         "--virtual-time-budget=4000",
         "--run-all-compositor-stages-before-draw",
         f"--screenshot={shot}",
-        HARNESS.as_uri(),
+        HARNESS.as_uri() + KINDS[kind].get("hash", ""),
     ]
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     img = Image.open(shot).convert("RGB")
@@ -207,6 +230,13 @@ def main() -> None:
             welcome = capture(chrome, profile, "welcome", lang)
             welcome.save(OUT / f"welcome-{lang}.png", "PNG", optimize=True)
             print(f"welcome-{lang}.png")
+            if lang in STORE_LANGS:
+                STORE_OUT.mkdir(parents=True, exist_ok=True)
+                shots = [("1-prayer-times", popup), ("2-game-tasks", capture(chrome, profile, "game", lang)),
+                         ("3-game-account", capture(chrome, profile, "account", lang)), ("4-welcome", welcome)]
+                for name, img in shots:
+                    img.save(STORE_OUT / f"{lang}-{name}.png", "PNG", optimize=True)
+                    print(f"store: {lang}-{name}.png")
     finally:
         HARNESS.unlink(missing_ok=True)
         shutil.rmtree(profile, ignore_errors=True)

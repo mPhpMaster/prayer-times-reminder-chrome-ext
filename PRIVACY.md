@@ -23,9 +23,10 @@ The extension stores the following **locally on your device** using Chrome's
   interval (fixed or random range), and on-screen position.
 - A **cache** of today's prayer times and the city list for your country, so the
   popup loads quickly.
-
-- Your **dhikr game** progress (tasks finished, points, times) and game
-  settings, if you play the optional game.
+- If you play the optional **dhikr game**: your progress (tasks finished,
+  points, times), game settings, the recognized text of a task you have not
+  finished yet (so you can resume it; it is removed when the task is done), and,
+  if you sign in, your username, email address and this device's access token.
 
 This data never leaves your device except as described below, and the developer
 has **no access** to it. Prayer times, prayer alerts and every prayer setting
@@ -55,26 +56,39 @@ identifiers, accounts, or contact details are sent to these services.
 
 ## Optional dhikr game and game account
 
-The popup's **Prayer Adhkar** link opens an optional game page. Playing works
+The **Prayer Adhkar** link in the popup's settings opens an optional game page in its own tab. Playing works
 entirely in the extension, and your progress stays on your device.
 
-- **Voice.** When you tap the microphone to recite, the page uses Chrome's
-  built-in speech recognition, which asks for microphone permission the first
-  time. Your voice is processed by that service under
+- **Voice.** When you tap **Start reading**, the game page uses Chrome's
+  built-in speech recognition (the Web Speech API). Chrome asks for microphone
+  permission the first time; the microphone is not an extension permission and
+  you can revoke it in Chrome's site settings. Chrome sends the audio to
+  Google's speech service to turn it into text, under
   [Google's privacy policy](https://policies.google.com/privacy). The extension
-  only receives the recognized text, compares it with the dhikr locally, and
-  does not store or send your voice or the text to the developer.
+  does not record or keep your voice. It receives only the recognized text and
+  compares it with the dhikr on your device; the text is never sent to the
+  developer and stays on your device only until that task is finished.
 - **Game account (optional, only for the leaderboard and follows).** You can
   sign in with an **email address and password**, or with **Google** (Chrome's
   own sign-in window, via the `identity` permission — the extension receives
-  only the sign-in token Google issues for the game). The game server
-  (`prayer-times.sarhsoft.com`, HTTPS) then stores your email, a one-way hash of
-  your password (never the password), Google's account ID if you use Google,
-  your public username, the dhikr tasks you finish (task, points, start and
-  finish times), the players you follow, and whether you hid your progress.
-  Your location, city and prayer times are never sent. You can delete the
-  account at any time from **My account › Delete my account**; see
-  [the full policy](https://github.com/mPhpMaster/prayer-times-reminder-chrome-ext/blob/main/docs/privacy.html).
+  only the sign-in token Google issues for the game, and passes it to the game
+  server, which checks it with Google). The game server
+  (`prayer-times.sarhsoft.com`, HTTPS) then stores your email, a one-way bcrypt
+  hash of your password (never the password), Google's account ID if you use
+  Google (not your Google name or photo), your public username and optional
+  display name, the dhikr tasks you finish (task, points, start and finish
+  times), the players you follow, whether you hid your progress, and for each
+  signed-in device a hash of its access token and when it was last used. If you
+  ask for a password reset, a code valid for 15 minutes is emailed to you and
+  only its hash is stored.
+- **What other players see.** Your username, display name and monthly points
+  appear on the leaderboard and your profile for other signed-in players,
+  unless you turn on **Hide my progress**. Your email is never shown.
+- Your location, city and prayer times are never sent to the game server. You
+  can sign out (which revokes that device's token) or delete the account at any
+  time from **My account › Delete my account**; this removes your account,
+  points, follows and sign-in links from the server at once. Without the
+  extension, see [how to request deletion](https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/delete-account.html).
 
 ## Tab lock and page access
 
@@ -132,11 +146,11 @@ Dhikr reminders cannot run on restricted Chrome pages (e.g. `chrome://` or
 | Permission | Why it is needed |
 |------------|------------------|
 | `alarms` | Schedule reminders at each prayer time; refresh after midnight. |
-| `notifications` | Show prayer-time alerts in your system notification area. |
-| `storage` | Save your location, language, preferences, and cached times locally. |
+| `notifications` | Show prayer-time alerts in your system notification area (and the game's optional "tasks are open" reminders). |
+| `storage` | Save your location, language, preferences, cached times, and game progress locally. |
 | `geolocation` | Optional; only used if you click **Use my location**. |
 | `scripting` | Inject the lock overlay and dhikr card scripts into your open tabs. |
-| `offscreen` | Play the locally packaged prayer alert sound when Chrome's background worker cannot play audio directly. |
+| `offscreen` | Play the adhan or chime packaged with the extension; Chrome's background worker cannot play audio directly. |
 | `identity` | Optional **Continue with Google** in the dhikr game: opens Chrome's Google sign-in window. Not used for anything else; prayer features never need it. |
 | `<all_urls>` (optional) | Inject the tab-lock overlay and the dhikr card on your open website tabs. Requested at runtime when you first enable tab lock or dhikr — **not** granted at install, and you can decline. |
 
@@ -150,4 +164,5 @@ is used solely to place the lock/dhikr overlay on your tabs — never to read th
 
 Questions about this policy: **mphpmaster@gmail.com**
 
-Terms & Conditions: [TERMS.md](TERMS.md)
+Terms & Conditions: [TERMS.md](TERMS.md) · Web version of this policy:
+<https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/privacy.html>

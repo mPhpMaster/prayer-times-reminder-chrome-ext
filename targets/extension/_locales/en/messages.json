@@ -8,7 +8,7 @@
     "description": "Short name for space-constrained UI (new tab, app launcher)."
   },
   "appDesc": {
-    "message": "Prayer Times Break: locks your tabs at prayer time so you can pray — plus reminders, daily schedule, dhikr, themes, and 8 languages.",
+    "message": "Prayer times for your city with alerts and a live countdown, plus an optional tab break at prayer, dhikr reminders and a dhikr game.",
     "description": "Chrome Web Store description."
   }
 }

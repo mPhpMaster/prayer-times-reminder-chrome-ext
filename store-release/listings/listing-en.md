@@ -5,7 +5,7 @@ Prayer Times Reminder (Prayer Times Break)
 
 ## Short description
 **Chrome Web Store — "summary" (≤132 chars):**
-Accurate prayer times, reminders, and a gentle focus lock at prayer time. Works offline. Dhikr, daily schedule, 8 languages.
+Prayer times for your city with alerts and a live countdown, plus an optional tab break at prayer, dhikr reminders and a dhikr game.
 
 **Google Play — "short description" (≤80 chars):**
 Prayer times, reminders & a focus lock at prayer time. Offline. 8 languages.

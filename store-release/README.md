@@ -7,12 +7,24 @@ Listing text (EN + AR): `listings/`. Privacy page to host: `../docs/privacy.html
 
 ## Chrome Web Store
 Item id `knahkbkmbjghaiillhngjbhoinmeegoc`. Upload `packages/prayer-times-reminder-chrome-v2.3.0.zip`
-(built by `npm run build`, checked by `npm run verify:package`) · screenshots `assets/chrome/`.
+(built by `npm run build`, checked by `npm run verify:package`).
 
-2.3.0 adds the optional dhikr game (popup › "Prayer Adhkar", opens in a tab). Prayer times stay the
-popup/home and never need an account.
+Listing text: `../listings/store-description.{en,ar}.md` (same sections in both languages).
+Privacy policy URL (as set in the dashboard): `https://github.com/mPhpMaster/prayer-times-reminder-chrome-ext/blob/main/PRIVACY.md`
+(web copy: `https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/privacy.html`) — both update
+only when this branch is merged to `main`.
 
-### Before publishing 2.3.0 — Google sign-in setup (one time)
+Screenshots (1280×800, real UI rendered by `python scripts/make_store_screenshots.py`), per listing
+language — upload the `en-*` set to English and the `ar-*` set to Arabic, in this order:
+`assets/chrome/screenshots/<lang>-1-prayer-times.png`, `-2-game-tasks.png`, `-3-game-account.png`,
+`-4-welcome.png`. Promo tiles: `assets/chrome/promo-small-440x280.png`, `promo-marquee-1400x560.png`
+(`python scripts/make_promo.py`, then copy from `screenshots/`).
+
+2.3.0 adds the optional dhikr game (popup › Settings › "Prayer Adhkar", opens in a tab). Prayer times
+stay the popup/home and never need an account.
+
+### Google sign-in setup (done — verified 2026-09-27: Google accepts the redirect URI below for the
+### web client; a made-up extension id still gets `redirect_uri_mismatch`)
 The game's "Continue with Google" uses `chrome.identity.launchWebAuthFlow` with the backend's **web**
 OAuth client (`GOOGLE_WEB_CLIENT_ID`, served by `GET /v1/auth/config`), so the ID token's audience is
 the one the server already verifies. In Google Cloud Console › Credentials › that web client ›
@@ -34,7 +46,9 @@ password-reset codes.
 Tick: **Personally identifiable information** (email address — optional game account),
 **Authentication information** (password, sent over HTTPS and stored only as a hash; Google sign-in
 token), **User activity** (dhikr tasks finished and points — leaderboard). All only when the user
-creates a game account. Certify: not sold, not used for unrelated purposes, not used for
+creates a game account. Voice: the game page uses Chrome's Web Speech API; Chrome sends the audio to
+Google for recognition and the extension receives only text, which it never sends to the developer
+(disclosed in the privacy policy). Certify: not sold, not used for unrelated purposes, not used for
 creditworthiness. Privacy policy URL: the hosted `docs/privacy.html`.
 
 ### Remote code

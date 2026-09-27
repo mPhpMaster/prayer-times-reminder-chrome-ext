@@ -172,6 +172,7 @@ html:not([lang="ar"]):not([lang="ur"]) .tasks .name { font-size: 16px; font-weig
   font-weight: 700;
 }
 input[type="search"], #username, #search, #auth input {
+  box-sizing: border-box; /* width 100% includes the padding: no overflow past the card */
   width: 100%;
   font: inherit;
   background: var(--input);

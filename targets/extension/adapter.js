@@ -21,6 +21,7 @@
 
   const runtime = {
     getURL: (path) => chrome.runtime.getURL(path),
+    version: () => chrome.runtime.getManifest().version,
     // Close the onboarding tab (welcome page). Falls back to window.close() if
     // the page wasn't opened as its own tab.
     closeOnboarding: () =>

@@ -17,7 +17,8 @@ authoritative local timetable.
 Prayer times, settings, and reminders do not require an account. The optional
 dhikr game can be played locally. An account is needed only for server features
 such as leaderboards and following. You may register with email/password or
-Google and choose a public username.
+Google and choose a public username. Your username, display name and monthly
+points are visible to other signed-in players unless you hide your progress.
 
 You are responsible for your account access and for choosing an appropriate
 public username. Do not impersonate others, disrupt the service, automate abuse,
@@ -28,8 +29,10 @@ They may change when scoring rules or verified tasks change.
 
 ## Voice recognition and third-party services
 
-Voice missions use the speech-recognition service provided by the platform.
-Recognition may be inaccurate. Location-name lookup, city lists, Google sign-in,
+Voice missions use the speech-recognition service provided by the platform (in
+Chrome, Google's speech service through the browser; on Android, the phone's
+speech recognition). Recognition may be inaccurate, so a correct reading is
+occasionally not counted. Location-name lookup, city lists, Google sign-in,
 and fallback prayer-time requests depend on the third-party services identified
 in [the privacy policy](PRIVACY.md) and are also subject to their terms.
 
@@ -37,8 +40,8 @@ in [the privacy policy](PRIVACY.md) and are also subject to their terms.
 
 You may permanently delete a signed-in game account from **My account**. This
 removes the server account, points, progress, follows, and sign-in links. Local
-game progress may remain on the device until app data is cleared or the app is
-removed.
+game progress may remain on the device until app data is cleared or the app or
+extension is removed.
 
 ## Availability and changes
 

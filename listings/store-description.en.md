@@ -1,13 +1,26 @@
-Prayer Times Reminder helps you follow today's prayers from your browser. It shows Fajr, Dhuhr, Asr, Maghrib, and Isha for your city, sends a notification when prayer time begins, and includes a live countdown to the next prayer with Hijri and Gregorian dates.
+Prayer Times Reminder shows today's prayer times for your city, alerts you when each prayer begins, and keeps a live countdown to the next one. Everything else in the extension is optional.
 
-You can enable Prayer Times Break to cover your tabs when prayer time begins, helping you step away from the screen for a duration you choose. Manual unlock remains available, and the feature is entirely optional.
+🕌 DAILY PRAYER TIMES
+• Fajr, Sunrise, Duha, Dhuhr (Jumu'ah on Fridays), Asr, Maghrib, and Isha
+• A notification at each prayer time, with a chime, the adhan, or no sound
+• A live countdown to the next prayer, with the Hijri and Gregorian dates
+• Pick your country and city, or use your current location, and choose the calculation method you follow
+• Times are calculated on your device and refresh automatically after midnight
 
-The settings page lets you select a country and city or use your current location, with several calculation methods for prayer times. The daily schedule refreshes automatically after midnight, and you can adjust notifications and Prayer Times Break to suit your needs.
+🔒 PRAYER TIMES BREAK (OPTIONAL)
+When prayer time begins, the extension can cover your open tabs with a countdown so you can step away and pray. Choose a duration from 1 to 120 minutes, and allow manual unlock if you like. Access to your tabs is requested only when you turn this on.
 
-An optional floating dhikr reminder can appear over web pages and dismiss itself automatically. You can choose its interval and screen position, or disable it at any time.
+📿 DHIKR REMINDERS (OPTIONAL)
+A small dhikr card can appear on the page you are viewing at a fixed or random interval, in the screen position you choose. Tap it to dismiss it, or it hides by itself after 10 seconds.
 
-The interface supports English, Arabic, Urdu, German, French, Spanish, Hindi, and Indonesian, including right-to-left layouts and optional Arabic-Indic numerals. You can also choose between Midnight Emerald and Classic themes.
+🎙️ PRAYER ADHKAR GAME (OPTIONAL)
+Open "Prayer Adhkar" from the popup's settings to read the adhkar for each prayer aloud in its own tab. Chrome's speech recognition follows your reading, and you earn points for each prayer, day, and month. You can play without an account; sign in with email or Google only if you want the leaderboard and to follow friends.
 
-An optional prayer adhkar game offers dhikr and recitation missions with points and a streak stored on your device. Prayer times remain the home screen and work without an account. Email/password or Google sign-in is required only for leaderboard and following features.
+🌐 LANGUAGES AND THEMES
+English, Arabic, Urdu, German, French, Spanish, Hindi, and Indonesian, with right-to-left layout and optional Arabic-Indic numerals. Two themes: Midnight Emerald and Classic.
 
-The extension contains no advertising, tracking, or analytics. Prayer times are calculated locally, and prayer preferences remain on your device. If you choose to sign in, only game account and social-feature data is sent to the game server.
+🔐 PRIVACY
+• No ads, no tracking, no analytics
+• Prayer times and all prayer settings work without an account and stay on your device
+• In the game, your voice is sent to Google's speech service for recognition; the extension does not record or keep it
+• If you create a game account, only your account details and game progress are sent to the game server, and you can delete the account at any time

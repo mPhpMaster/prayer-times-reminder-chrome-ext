@@ -8,7 +8,7 @@
     "description": "Short name for space-constrained UI (new tab, app launcher)."
   },
   "appDesc": {
-    "message": "استراحة الصلاة: يقفل تبويباتك عند دخول وقت الصلاة لتصلّي — مع التذكيرات، والجدول اليومي، والأذكار، والسمات، و٨ لغات.",
+    "message": "مواقيت الصلاة لمدينتك مع التنبيهات وعدّ تنازلي للصلاة القادمة، واستراحة صلاة اختيارية للتبويبات، وتذكير بالأذكار، ولعبة أذكار.",
     "description": "Chrome Web Store description."
   }
 }
