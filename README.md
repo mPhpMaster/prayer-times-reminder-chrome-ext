@@ -99,6 +99,7 @@ Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `t
 | `icons/` | Extension icons (crescent + star). |
 | `scripts/make_icons.py` | Regenerates the PNG icons (dev-only, not needed at runtime). |
 | `PRIVACY.md` | Privacy policy for the extension. |
+| `TERMS.md` | Terms and conditions for the extension and companion apps. |
 
 ## How it works
 
@@ -115,6 +116,7 @@ The settings dropdown exposes common AlAdhan methods — ISNA (North America), M
 ## Privacy
 
 See [PRIVACY.md](PRIVACY.md) for what data is stored locally and which third-party APIs are contacted.
+See [TERMS.md](TERMS.md) for the terms that apply to prayer-time calculations, the optional game, and game accounts.
 
 ## License
 

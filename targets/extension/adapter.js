@@ -87,5 +87,37 @@
       }),
   };
 
-  globalThis.__PTPlatform = { name: "chrome", store, runtime, enforce, dhikr, geo, permissions };
+  // The dhikr game (optional; prayer times never need it). Speech and Google
+  // sign-in live in ES modules loaded on first use, so the popup and the
+  // prayer pages never pay for them.
+  const lazy = (file) => {
+    let mod = null;
+    return () => mod || (mod = import(chrome.runtime.getURL(file)));
+  };
+  const speechModule = lazy("speech-web.js");
+  const hasRecognizer = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const speech = hasRecognizer
+    ? {
+        status: () => speechModule().then((m) => m.status()),
+        start: (opts) => speechModule().then((m) => m.start(opts)),
+        stop: () => speechModule().then((m) => m.stop()),
+      }
+    : undefined;
+
+  const googleModule = lazy("google-auth-chrome.js");
+  const googleAuth = chrome.identity
+    ? {
+        signIn: (clientId) => googleModule().then((m) => m.signIn(clientId)),
+        signOut: () => googleModule().then((m) => m.signOut()).catch(() => {}),
+      }
+    : undefined;
+
+  // "Tasks open" / "30 min left" notifications are planned by the worker.
+  const gameAlerts = {
+    refresh: () => chrome.runtime.sendMessage({ type: "REFRESH_GAME_ALERTS" }).catch(() => {}),
+  };
+
+  globalThis.__PTPlatform = {
+    name: "chrome", store, runtime, enforce, dhikr, geo, permissions, speech, googleAuth, gameAlerts,
+  };
 })();

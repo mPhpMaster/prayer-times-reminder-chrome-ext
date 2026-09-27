@@ -19,7 +19,11 @@
 //   Platform.runtime.getURL(path)          -> string   (sync)
 //   Platform.devBuild?()                   -> boolean   optional (Android): true only in the
 //                                            debug build; gates developer-only screens
-//   Platform.speech?                       optional (Android only for now):
+//   Platform.googleAuth?                   optional (Android, Chrome): Google sign-in for the game
+//     .signIn(webClientId)                 -> Google ID token; rejects with .code "canceled" | "failed" | "no-account"
+//     .signOut()
+//   Platform.gameAlerts?                   optional: .refresh() re-plans the game's reminders
+//   Platform.speech?                       optional (Android; Chrome via Web Speech):
 //     .status()                            -> { available, onDevice, permission, whisper }
 //     .start({ lang, preferOffline, engine: "default"|"onDevice"|"whisper",
 //              onPartial, onFinal, onState, onSpeech, onError }) -> { ok, reason? }

@@ -842,8 +842,8 @@ async function renderMe() {
   if (account && account.legacy) $("legacy-note").textContent = G.legacyNote(account.username);
   if (!signedIn && $("google-name").hidden && $("reset").hidden) showAuthPane("main");
 
-  // Google sign-in is offered wherever the native plugin exists; its client
-  // id is fetched from the server when the button is pressed.
+  // Google sign-in is offered wherever the shell can do it (Android plugin,
+  // Chrome identity); its client id is fetched when the button is pressed.
   $("google-btn").hidden = !Platform.googleAuth;
   loadAuthConfig();
 
