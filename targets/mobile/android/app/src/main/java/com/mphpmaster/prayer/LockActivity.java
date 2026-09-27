@@ -104,7 +104,10 @@ public class LockActivity extends Activity {
         }
 
         final String configJson = getIntent().getStringExtra(EXTRA_CONFIG);
-        Log.d(TAG, "onCreate config=" + configJson);
+        // Full config only in debuggable builds; release logs just the event.
+        boolean debuggable = (getApplicationInfo().flags
+            & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        Log.d(TAG, debuggable ? "onCreate config=" + configJson : "onCreate");
         active = true;
         activeConfig = configJson;
         scheduleExpiryFallback(configJson);

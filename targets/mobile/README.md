@@ -129,7 +129,7 @@ which follows the phone's language: "مواقيت الصلاة" on an Arabic pho
   also needs a one-time user grant (`PrayerLock.ensureFullScreenIntentPermission`,
   `ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT`) — asked via the permission flow
   (see Permission flow above). The notification is also tappable as a manual fallback.
-- ✅ Lock teardown is symmetric: manual unlock (X), countdown expiry
+- ✅ Lock teardown is symmetric: manual unlock (tap anywhere), countdown expiry
   (`__prayerLockOnExpire`), and a native fallback timer in `LockActivity` all
   stop the foreground service, restore DND (`Dnd.java`), and finish the
   Activity — no lingering black screen.
