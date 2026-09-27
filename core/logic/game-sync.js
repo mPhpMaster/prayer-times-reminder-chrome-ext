@@ -60,7 +60,8 @@ function gameApi(baseUrl, token) {
     deleteMe: () => call("DELETE", "/v1/me"),
     pushProgress: (completions) => call("POST", "/v1/progress", { completions }),
     users: (q) => call("GET", `/v1/users?q=${u(q)}`),
-    profile: (name, month) => call("GET", `/v1/users/${u(name)}?month=${month}`),
+    // today = the phone's local date, so "days in a row" follows its clock.
+    profile: (name, month, today) => call("GET", `/v1/users/${u(name)}?month=${month}${today ? `&today=${today}` : ""}`),
     follow: (name) => call("PUT", `/v1/follows/${u(name)}`),
     unfollow: (name) => call("DELETE", `/v1/follows/${u(name)}`),
     following: () => call("GET", "/v1/follows"),

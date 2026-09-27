@@ -31,10 +31,26 @@ php artisan test                   # SQLite in memory
 |---|---|---|
 | POST | `/v1/register` `{username}` | → `{user, token}`; token shown once, only its SHA-256 stored; throttled 10/min |
 | GET / PATCH | `/v1/me` `{displayName?, hideProgress?}` | own account |
-| POST | `/v1/progress` `{completions:[…]}` | idempotent, first write wins; caps: 300/task, 100/gift, 400/window; no future timestamps |
+| POST | `/v1/progress` `{completions:[…]}` | idempotent, first write wins; caps: 300/task, 100/gift, 400/window; no future timestamps. → `{accepted, newAchievements}` (ids earned by THIS call only) |
 | GET | `/v1/progress?month=YYYY-MM` | own completions |
 | GET | `/v1/users?q=` | prefix search (≥ 2 chars) |
-| GET | `/v1/users/{username}?month=` | profile; `points: null` if the player hides progress |
+| GET | `/v1/users/{username}?month=&today=YYYY-MM-DD` | profile: `followers`, `followingCount`, `joined`, `points`, `stats`, `achievements`; the last three are `null` if the player hides progress (they still see their own) |
+
+### Stats and achievements (`app/Support/GameStats.php`)
+
+Derived only from stored completions — never from numbers the app sends.
+Stats: all-time points, tasks, gifts, completed windows (all tasks of the
+window stored, or its gift), full days (all five), active days, current and
+best streak of consecutive active days. Dates are the window's own date, so
+streaks follow the player's clock; `today` is the viewer's local date.
+
+Achievements (`game_achievements`, primary key `user_id + achievement_id`)
+are awarded with `insertOrIgnore`, and each one's `earned_at` is the finish
+time of the completion that earned it. A resent sync, a repeat award or a
+profile view adds nothing; an account merge rebuilds them from the merged
+completions. `WINDOW_TASK_COUNT` mirrors `WINDOW_TASKS` in
+`core/data/game-tasks.js` (checked by `tools/test/game.js`). Deploy needs
+`php artisan migrate --force` for the new table.
 | PUT / DELETE | `/v1/follows/{username}` | follow / unfollow (one-way) |
 | GET | `/v1/follows` | players I follow |
 | GET | `/v1/leaderboard?month=&scope=all\|following` | monthly totals; hidden players excluded |

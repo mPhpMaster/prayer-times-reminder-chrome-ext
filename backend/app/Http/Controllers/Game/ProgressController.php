@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Game;
 
 use App\Http\Controllers\Controller;
 use App\Support\GameRules;
+use App\Support\GameStats;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -58,8 +59,11 @@ class ProgressController extends Controller
         if ($fresh) {
             DB::table('game_completions')->insertOrIgnore($fresh);
         }
+        // Idempotent: only achievements new in THIS call are returned, so a
+        // resent batch never repeats the app's "unlocked" note.
+        $newAchievements = $fresh ? GameStats::award($me->id) : [];
 
-        return response()->json(['accepted' => count($fresh)]);
+        return response()->json(['accepted' => count($fresh), 'newAchievements' => $newAchievements]);
     }
 
     /** GET /v1/progress?month=YYYY-MM -> {completions} (own progress only). */
