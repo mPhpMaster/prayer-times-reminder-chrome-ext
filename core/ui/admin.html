@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="midnight-emerald">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="game.css?v=228" />
+    <link rel="stylesheet" href="admin.css?v=228" />
+    <title>الإدارة</title>
+</head>
+
+<body>
+    <div class="orb orb-top" aria-hidden="true"></div>
+    <div class="orb orb-bottom" aria-hidden="true"></div>
+
+    <!-- The Admin page (admins only; the server checks every call). Reached
+         from the game's "My account". Everything is built by admin.js. -->
+    <main class="card glass-card game admin">
+        <header class="game-head">
+            <h1 id="admin-title">الإدارة</h1>
+            <button type="button" id="admin-back" class="ghost">→ رجوع</button>
+        </header>
+
+        <p class="notice" id="admin-notice" role="status" hidden></p>
+        <p class="note" id="admin-denied" hidden></p>
+
+        <div id="admin-body" hidden>
+            <nav class="tabs admin-tabs" role="tablist">
+                <button type="button" role="tab" data-tab="requests" aria-selected="true"></button>
+                <button type="button" role="tab" data-tab="names" aria-selected="false"></button>
+                <button type="button" role="tab" data-tab="admins" aria-selected="false"></button>
+                <button type="button" role="tab" data-tab="users" aria-selected="false"></button>
+                <button type="button" role="tab" data-tab="log" aria-selected="false"></button>
+            </nav>
+
+            <section id="tab-requests" class="admin-tab">
+                <div class="seg" role="group" id="req-filter">
+                    <button type="button" data-status="pending" aria-pressed="true"></button>
+                    <button type="button" data-status="approved" aria-pressed="false"></button>
+                    <button type="button" data-status="rejected" aria-pressed="false"></button>
+                    <button type="button" data-status="all" aria-pressed="false"></button>
+                </div>
+                <ul class="admin-list" id="req-list"></ul>
+            </section>
+
+            <section id="tab-names" class="admin-tab" hidden>
+                <button type="button" class="primary" id="name-add"></button>
+                <div id="name-new" hidden></div>
+                <ul class="admin-list" id="name-list"></ul>
+            </section>
+
+            <section id="tab-admins" class="admin-tab" hidden>
+                <form id="admin-add" class="admin-inline" novalidate>
+                    <input id="admin-email" type="email" dir="ltr" autocomplete="off" inputmode="email" />
+                    <button type="submit" class="primary" id="admin-add-btn"></button>
+                </form>
+                <ul class="admin-list" id="admin-list"></ul>
+            </section>
+
+            <section id="tab-users" class="admin-tab" hidden>
+                <form id="user-search" class="admin-inline" novalidate>
+                    <input id="user-q" autocomplete="off" />
+                    <button type="submit" class="primary" id="user-search-btn"></button>
+                </form>
+                <ul class="admin-list" id="user-list"></ul>
+            </section>
+
+            <section id="tab-log" class="admin-tab" hidden>
+                <ul class="admin-list admin-log" id="log-list"></ul>
+            </section>
+        </div>
+    </main>
+
+    <script src="adapter.js"></script>
+    <script src="platform.js"></script>
+    <script src="i18n.js"></script>
+    <script src="admin-i18n.js"></script>
+    <script src="dedications.js"></script>
+    <script src="game-sync.js"></script>
+    <script src="admin.js?v=228"></script>
+</body>
+
+</html>

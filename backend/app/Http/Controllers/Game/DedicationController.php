@@ -21,7 +21,7 @@ use Throwable;
  */
 class DedicationController extends Controller
 {
-    /** GET /v1/dedications -> {dedications: [{id, names}]}. Public, cacheable. */
+    /** GET /v1/dedications -> {dedications: [{id, names}]}. Public; ETag, revalidated on every load. */
     public function index(Request $request): JsonResponse
     {
         $list = Dedications::publicList();
@@ -32,7 +32,7 @@ class DedicationController extends Controller
 
         return response()->json(['dedications' => $list])
             ->setEtag(trim($etag, '"'))
-            ->header('Cache-Control', 'public, max-age=300');
+            ->header('Cache-Control', 'no-cache'); // revalidate each time (a cheap 304), so an approval shows at once
     }
 
     /** GET /v1/dedications/requests -> {requests} — the signed-in player's own, newest first. */

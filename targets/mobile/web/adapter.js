@@ -733,7 +733,7 @@
   //   3. only on the prayer-times home screen, send the app to the background
   //      (minimize keeps its state; exit is the fallback on old plugins).
   // Registering this listener replaces Capacitor's default back handling.
-  const PARENT_PAGE = { "game.html": "popup.html", "game-spike.html": "popup.html" };
+  const PARENT_PAGE = { "game.html": "popup.html", "game-spike.html": "popup.html", "admin.html": "game.html" };
   if (CapApp && CapApp.addListener) {
     CapApp.addListener("backButton", () => {
       const hook = window.__ptBack || window.__ptPopupBack;

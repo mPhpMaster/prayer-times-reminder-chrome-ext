@@ -46,7 +46,7 @@ function manifestChecks() {
   ok("no externally_connectable / oauth2 leftovers", !m.externally_connectable && !m.oauth2);
   ok("popup is the prayer-times page", m.action.default_popup === "popup.html");
 
-  for (const page of ["popup.html", "game.html", "welcome.html", "about.html", "offscreen.html"]) {
+  for (const page of ["popup.html", "game.html", "welcome.html", "about.html", "admin.html", "offscreen.html"]) {
     if (!fs.existsSync(path.join(BUILD, page))) continue;
     const html = read(page);
     ok(`${page}: no inline <script>`, !/<script(?![^>]*\bsrc=)[^>]*>\s*\S/i.test(html));

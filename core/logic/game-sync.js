@@ -6,8 +6,14 @@
 // retry after a network failure is harmless.
 //
 //   gameApi(baseUrl, token)            -> { authConfig, signUp, signIn, google, forgot, reset, logout,
+//                                           sendVerify, verifyEmail,
 //                                           me, updateMe, deleteMe, pushProgress, users, profile,
-//                                           follow, unfollow, following, leaderboard }
+//                                           follow, unfollow, following, leaderboard,
+//                                           dedications, myDedicationRequests, requestDedication,
+//                                           admin: { overview, admins, addAdmin, removeAdmin, users,
+//                                                    deleteUser, resetUser, requests, updateRequest,
+//                                                    approve, reject, dedications, addDedication,
+//                                                    updateDedication, reorder, deleteDedication, log } }
 //   pendingCompletions(state)          -> rows for POST /v1/progress
 //   markSynced(state, rows)
 //   syncBatches(rows)                  -> rows in POST-sized batches
@@ -55,6 +61,8 @@ function gameApi(baseUrl, token) {
     forgot: (email) => call("POST", "/v1/auth/forgot", { email }),
     reset: (email, code, password) => call("POST", "/v1/auth/reset", { email, code, password }),
     logout: () => call("POST", "/v1/auth/logout"),
+    sendVerify: () => call("POST", "/v1/auth/verify-email/send"),
+    verifyEmail: (code) => call("POST", "/v1/auth/verify-email", { code }),
     me: () => call("GET", "/v1/me"),
     updateMe: (patch) => call("PATCH", "/v1/me", patch),
     deleteMe: () => call("DELETE", "/v1/me"),
@@ -66,6 +74,30 @@ function gameApi(baseUrl, token) {
     unfollow: (name) => call("DELETE", `/v1/follows/${u(name)}`),
     following: () => call("GET", "/v1/follows"),
     leaderboard: (month, scope) => call("GET", `/v1/leaderboard?month=${month}&scope=${scope}`),
+    // The About page's dedication names (public) and a player's requests to add one.
+    dedications: () => call("GET", "/v1/dedications"),
+    myDedicationRequests: () => call("GET", "/v1/dedications/requests"),
+    requestDedication: (names, note) => call("POST", "/v1/dedications/requests", { names, note }),
+    // The Admin page. The server checks admin rights on every call.
+    admin: {
+      overview: () => call("GET", "/v1/admin/overview"),
+      admins: () => call("GET", "/v1/admin/admins"),
+      addAdmin: (email) => call("POST", "/v1/admin/admins", { email }),
+      removeAdmin: (email) => call("DELETE", `/v1/admin/admins/${u(email)}`),
+      users: (q) => call("GET", `/v1/admin/users?q=${u(q)}`),
+      deleteUser: (id) => call("DELETE", `/v1/admin/users/${id}`),
+      resetUser: (id) => call("POST", `/v1/admin/users/${id}/reset`),
+      requests: (status) => call("GET", `/v1/admin/requests?status=${u(status)}`),
+      updateRequest: (id, patch) => call("PATCH", `/v1/admin/requests/${id}`, patch),
+      approve: (id, names) => call("POST", `/v1/admin/requests/${id}/approve`, names ? { names } : {}),
+      reject: (id, reason) => call("POST", `/v1/admin/requests/${id}/reject`, { reason }),
+      dedications: () => call("GET", "/v1/admin/dedications"),
+      addDedication: (names) => call("POST", "/v1/admin/dedications", { names }),
+      updateDedication: (id, patch) => call("PATCH", `/v1/admin/dedications/${id}`, patch),
+      reorder: (ids) => call("POST", "/v1/admin/dedications/order", { ids }),
+      deleteDedication: (id) => call("DELETE", `/v1/admin/dedications/${id}`),
+      log: () => call("GET", "/v1/admin/log"),
+    },
   };
 }
 

@@ -479,3 +479,7 @@ input[type="search"], #username, #search, #auth input {
   .celebrate-card, .celebrate-mark, .notice.reward { animation: none; }
   .progress .fill, .w { transition: none; }
 }
+
+/* "Admin" (admins only) is a link styled like the wide ghost buttons. */
+a.admin-link { display: block; box-sizing: border-box; text-align: center; text-decoration: none; }
+#verify { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
