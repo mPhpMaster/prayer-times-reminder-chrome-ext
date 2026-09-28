@@ -33,6 +33,10 @@ class AuthController extends Controller
 
     private const RESET_ATTEMPTS = 5;
 
+    private const VERIFY_MINUTES = 15;
+
+    private const VERIFY_ATTEMPTS = 5;
+
     /** GET /v1/auth/config -> {google: {clientId} | null}. Public ids only, never secrets. */
     public function config(): JsonResponse
     {
@@ -98,6 +102,16 @@ class AuthController extends Controller
                 GameRules::fail(409, 'account-conflict'); // that email is tied to another Google account
             }
             $user->google_sub = $claims['sub']; // same verified email: link Google to it
+            if ($user->email_verified_at === null) {
+                // Nobody had proven this email before: whoever set its password
+                // may not own it. The Google owner takes the account over alone.
+                $user->password = null;
+                GameAccounts::revokeAll($user);
+            }
+            $user->save();
+        }
+        if ($user && $user->email === $claims['email'] && $user->email_verified_at === null) {
+            $user->email_verified_at = now(); // Google vouches for this address
             $user->save();
         }
         if ($user) {
@@ -108,7 +122,9 @@ class AuthController extends Controller
 
         $legacy = $this->legacy($request);
         if ($legacy) {
-            $legacy->fill(['google_sub' => $claims['sub'], 'email' => $claims['email']])->save();
+            $legacy->fill(['google_sub' => $claims['sub'], 'email' => $claims['email']]);
+            $legacy->email_verified_at = now();
+            $legacy->save();
             GameAccounts::revokeAll($legacy);
 
             return $this->signedIn($legacy, 201);
@@ -117,6 +133,8 @@ class AuthController extends Controller
             GameRules::fail(422, 'username-required'); // new player: the app asks for a public name
         }
         $user = $this->create($request->input('username'), ['google_sub' => $claims['sub'], 'email' => $claims['email']]);
+        $user->email_verified_at = now();
+        $user->save();
 
         return $this->signedIn($user, 201);
     }
@@ -185,11 +203,78 @@ class AuthController extends Controller
             GameRules::fail(400, 'bad-code');
         }
         $user->password = Hash::make($password);
+        $user->email_verified_at ??= now(); // the emailed code proves the address
         $user->save();
         DB::table('game_password_resets')->where('email', $email)->delete();
         GameAccounts::revokeAll($user);
 
         return $this->signedIn($user);
+    }
+
+    /**
+     * POST /v1/auth/verify-email/send -> 204. Emails the signed-in player a
+     * 6-digit code proving their address (needed, e.g., for admin rights).
+     */
+    public function sendVerification(Request $request): Response
+    {
+        /** @var GameUser $me */
+        $me = $request->attributes->get('gameUser');
+        if (! $me->email) {
+            GameRules::fail(400, 'no-email');
+        }
+        if ($me->email_verified_at !== null) {
+            GameRules::fail(409, 'already-verified');
+        }
+        $code = (string) random_int(100000, 999999);
+        DB::table('game_email_verifications')->updateOrInsert(
+            ['user_id' => $me->id],
+            ['email' => $me->email, 'code_hash' => Hash::make($code), 'attempts' => 0, 'expires_at' => now()->addMinutes(self::VERIFY_MINUTES)],
+        );
+        try {
+            Mail::raw(
+                "رمز تأكيد بريدك في تطبيق مواقيت الصلاة: $code
+".
+                'Your Prayer Times email confirmation code: '.$code."
+
+".
+                'صالح لمدة '.self::VERIFY_MINUTES.' دقيقة. إن لم تطلبه فتجاهل هذه الرسالة.'."
+".
+                'Valid for '.self::VERIFY_MINUTES." minutes. If you didn't ask for it, ignore this email.",
+                fn ($m) => $m->to($me->email)->subject('رمز تأكيد البريد / Email confirmation code'),
+            );
+        } catch (Throwable $e) {
+            Log::error('game email verification mail failed', ['error' => $e->getMessage()]);
+            GameRules::fail(503, 'mail-failed');
+        }
+
+        return response()->noContent();
+    }
+
+    /** POST /v1/auth/verify-email {code} -> {user}. */
+    public function verifyEmail(Request $request): JsonResponse
+    {
+        /** @var GameUser $me */
+        $me = $request->attributes->get('gameUser');
+        $row = DB::table('game_email_verifications')->where('user_id', $me->id)->first();
+        if (! $row || $row->email !== $me->email) {
+            GameRules::fail(400, 'bad-code');
+        }
+        if (now()->greaterThan($row->expires_at)) {
+            DB::table('game_email_verifications')->where('user_id', $me->id)->delete();
+            GameRules::fail(400, 'code-expired');
+        }
+        if ($row->attempts >= self::VERIFY_ATTEMPTS) {
+            GameRules::fail(429, 'too-many-attempts');
+        }
+        if (! Hash::check((string) $request->input('code'), $row->code_hash)) {
+            DB::table('game_email_verifications')->where('user_id', $me->id)->increment('attempts');
+            GameRules::fail(400, 'bad-code');
+        }
+        DB::table('game_email_verifications')->where('user_id', $me->id)->delete();
+        $me->email_verified_at = now();
+        $me->save();
+
+        return response()->json(['user' => $me->toPrivate()]);
     }
 
     // ---- helpers ------------------------------------------------------------

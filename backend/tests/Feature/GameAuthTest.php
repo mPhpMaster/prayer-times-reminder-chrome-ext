@@ -197,10 +197,14 @@ class GameAuthTest extends TestCase
 
     public function test_google_with_the_same_verified_email_links_to_the_password_account(): void
     {
+        // The password was set before anyone proved the address, so Google's
+        // verified owner takes the account over and that password is dropped
+        // (it can be set again with "forgot password"). See GameAdminTest.
         $this->signUp('sara@gmail.com', 'sara');
         $this->fakeGoogle(['sub' => 'g-9', 'email' => 'sara@gmail.com']);
         $this->postJson('/v1/auth/google', ['idToken' => 'tok'])->assertOk()
-            ->assertJsonPath('user.username', 'sara')->assertJsonPath('user.google', true)->assertJsonPath('user.hasPassword', true);
+            ->assertJsonPath('user.username', 'sara')->assertJsonPath('user.google', true)
+            ->assertJsonPath('user.emailVerified', true)->assertJsonPath('user.hasPassword', false);
         $this->assertDatabaseCount('game_users', 1);
     }
 

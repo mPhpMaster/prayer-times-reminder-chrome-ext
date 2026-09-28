@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\GameAdmins;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -20,7 +21,7 @@ class GameUser extends Model
 
     protected function casts(): array
     {
-        return ['hide_progress' => 'boolean'];
+        return ['hide_progress' => 'boolean', 'email_verified_at' => 'datetime'];
     }
 
     public static function findByUsername(string $name): ?self
@@ -48,9 +49,12 @@ class GameUser extends Model
     {
         return $this->toPublic() + [
             'email' => $this->email,
+            'emailVerified' => $this->email_verified_at !== null,
             'hasPassword' => $this->password !== null,
             'google' => $this->google_sub !== null,
             'legacy' => $this->isLegacy(),
+            'admin' => GameAdmins::isAdmin($this),
+            'superAdmin' => GameAdmins::isSuperAdmin($this),
         ];
     }
 }

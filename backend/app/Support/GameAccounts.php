@@ -73,6 +73,23 @@ final class GameAccounts
         GameStats::rebuild($into->id);
     }
 
+    /**
+     * Wipe a player's game data and profile, keeping the account and sign-in:
+     * progress, achievements, follows (both ways), display name, and the
+     * "hide my progress" choice. Used by admins.
+     */
+    public static function resetData(GameUser $user): void
+    {
+        DB::transaction(function () use ($user) {
+            DB::table('game_completions')->where('user_id', $user->id)->delete();
+            DB::table('game_achievements')->where('user_id', $user->id)->delete();
+            DB::table('game_follows')->where('follower_id', $user->id)->orWhere('followee_id', $user->id)->delete();
+            $user->display_name = null;
+            $user->hide_progress = false;
+            $user->save();
+        });
+    }
+
     /** Delete an account and everything tied to it (explicitly: SQLite may not cascade). */
     public static function deleteUser(GameUser $user): void
     {
@@ -81,6 +98,10 @@ final class GameAccounts
             DB::table('game_achievements')->where('user_id', $user->id)->delete();
             DB::table('game_follows')->where('follower_id', $user->id)->orWhere('followee_id', $user->id)->delete();
             DB::table('game_tokens')->where('user_id', $user->id)->delete();
+            DB::table('game_email_verifications')->where('user_id', $user->id)->delete();
+            DB::table('dedication_requests')->where('user_id', $user->id)->where('status', 'pending')->delete();
+            // Decided requests stay (an approved name is on the About page) but lose their owner.
+            DB::table('dedication_requests')->where('user_id', $user->id)->update(['user_id' => null]);
             if ($user->email) {
                 DB::table('game_password_resets')->where('email', $user->email)->delete();
             }
