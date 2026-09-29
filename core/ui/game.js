@@ -32,7 +32,7 @@ let journeyOn = true;
 let soundOn = false;
 
 // Account / server
-let account = null; // { username, token, email, legacy }
+let account = null; // { username, token, email, legacy, emailVerified, admin }
 let apiUrl = "";
 const api = () => gameApi(apiUrl, account && account.token);
 let authCfg = null; // /v1/auth/config, fetched once
@@ -838,6 +838,7 @@ function authErrorText(e) {
     "bad-code": G.badCode,
     "code-expired": G.codeExpired,
     "too-many-attempts": G.tooMany,
+    "mail-failed": G.mailFailed,
     "http-429": G.tooMany,
     canceled: G.googleCanceled,
     "no-account": G.googleNoAccount,
@@ -886,7 +887,14 @@ async function renderMe() {
   if (account) {
     try {
       const { user } = await api().me();
-      account = { ...account, username: user.username, email: user.email, legacy: user.legacy };
+      account = {
+        ...account,
+        username: user.username,
+        email: user.email,
+        legacy: user.legacy,
+        emailVerified: user.emailVerified,
+        admin: user.admin,
+      };
       await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
       $("hide-progress").checked = user.hideProgress;
     } catch (e) {
@@ -906,6 +914,11 @@ async function renderMe() {
   $("google-btn").hidden = !Platform.googleAuth;
   loadAuthConfig();
 
+  // Admin link and email confirmation follow the server's answer above.
+  $("admin-link").hidden = !(signedIn && account.admin);
+  $("verify").hidden = !(signedIn && account.email && account.emailVerified === false);
+  if ($("verify").hidden) $("verify-step2").hidden = true;
+
   if (!account) return;
   $("me-name").textContent = account.username;
   $("me-email").textContent = account.email ? G.signedInEmail(account.email) : "";
@@ -920,7 +933,14 @@ async function renderMe() {
 // Every successful sign-in lands here: store the account, move this device's
 // local progress to it (re-sent in full; the server ignores duplicates).
 async function signedIn({ user, token }, message) {
-  account = { username: user.username, token, email: user.email, legacy: user.legacy };
+  account = {
+    username: user.username,
+    token,
+    email: user.email,
+    legacy: user.legacy,
+    emailVerified: user.emailVerified,
+    admin: user.admin,
+  };
   await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
   if (adoptSyncAccount(state, user.username)) await save();
   pendingGoogleToken = null;
@@ -992,6 +1012,26 @@ async function logout() {
   await forgetAccount();
   showNotice(G.loggedOut, { autoHide: true });
   renderMe();
+}
+
+function sendVerifyCode() {
+  withBusy($("verify-send"), async () => {
+    await api().sendVerify();
+    $("verify-step2").hidden = false;
+    $("verify-code").focus();
+  });
+}
+
+function submitVerify(ev) {
+  ev.preventDefault();
+  withBusy(ev.submitter || $("verify-send"), async () => {
+    const { user } = await api().verifyEmail($("verify-code").value.trim());
+    account = { ...account, emailVerified: user.emailVerified, admin: user.admin };
+    await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
+    $("verify-code").value = "";
+    await renderMe();
+    showNotice(G.verifyDone, { autoHide: true });
+  });
 }
 
 function sendResetCode() {
@@ -1213,6 +1253,8 @@ $("profile-back").addEventListener("click", () => goBack({ name: "board" }));
 $("profile-follow").addEventListener("click", toggleFollow);
 $("my-profile").addEventListener("click", () => account && go({ name: "profile", arg: account.username }));
 $("delete-account").addEventListener("click", deleteAccount);
+$("verify-send").addEventListener("click", sendVerifyCode);
+$("verify").addEventListener("submit", submitVerify);
 $("mic").addEventListener("click", () => (listening ? stopListening() : startListening()));
 $("back").addEventListener("click", () => goBack({ name: "tasks" }));
 $("chunk-prev").addEventListener("click", () => stepChunk(-1));

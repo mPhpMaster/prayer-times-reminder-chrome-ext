@@ -1,6 +1,6 @@
 # Privacy Policy — Prayer Times Reminder
 
-_Last updated: 27 September 2026_
+_Last updated: 29 September 2026_
 
 **Prayer Times Reminder** ("the extension") is designed to respect your privacy.
 This policy explains what data the extension uses and how.
@@ -89,6 +89,33 @@ entirely in the extension, and your progress stays on your device.
   time from **My account › Delete my account**; this removes your account,
   points, follows and sign-in links from the server at once. Without the
   extension, see [how to request deletion](https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/delete-account.html).
+
+## Dedication names on the About page
+
+The About page lists the people this app is an ongoing charity (sadaqah
+jariyah) for. The list is loaded from the game server
+(`prayer-times.sarhsoft.com`) and kept on your device so it shows offline;
+loading it sends no personal data.
+
+- **Requesting a name (signed-in players only).** You can ask for a name to be
+  added, written in one or more of the app's languages, with an optional note.
+  The server stores the name(s), the note, the request's status, and which
+  account sent it. The app's admins see the request together with your
+  username and email, and may edit, approve or decline it; if they decline,
+  you see their reason under **My requests**. No email is sent to you.
+- **Approved names are public**: everyone who uses the app sees them on the
+  About page. Only send a name you have the right to share.
+- Deleting your account removes your pending requests; names already approved
+  stay on the About page, no longer linked to any account.
+
+## Email confirmation and admins
+
+- To confirm your email, the server emails you a 6-digit code (valid 15
+  minutes; only its hash is stored). Google sign-in confirms it automatically.
+- The app's **admins** (accounts whose confirmed email the owner has made an
+  admin) can review name requests, manage the About page list, see account
+  usernames, emails and points, and reset or delete accounts (for example
+  when asked to, or for abuse). Every admin action is logged on the server.
 
 ## Tab lock and page access
 

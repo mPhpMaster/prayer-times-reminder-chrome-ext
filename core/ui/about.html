@@ -20,7 +20,8 @@
         <p class="lead" id="about-desc">—</p>
 
         <!-- Ongoing-charity (sadaqah jariyah) dedication. The heading is
-             localized; the names below stay in Arabic in every UI language. -->
+             localized; the names come from the server (admins add them),
+             with the last list seen kept on the device (dedications.js). -->
         <section class="sadaqah next-card" aria-labelledby="about-sadaqah-heading">
             <h2 id="about-sadaqah-heading">—</h2>
             <ul class="sadaqah-names" id="sadaqah-names"></ul>
@@ -30,12 +31,44 @@
             </p>
         </section>
 
+        <!-- Ask for a name to be added (signed-in players); admins decide. -->
+        <section class="ded-request next-card" aria-labelledby="ded-request-title">
+            <h2 id="ded-request-title">—</h2>
+            <p class="ded-intro" id="ded-intro"></p>
+            <div id="ded-signin" hidden>
+                <p class="ded-note" id="ded-signin-note"></p>
+                <a class="ded-btn" id="ded-signin-btn" href="game.html#me"></a>
+            </div>
+            <button type="button" class="ded-btn" id="ded-open" hidden></button>
+            <form id="ded-form" hidden novalidate>
+                <div id="ded-main-fields"></div>
+                <details id="ded-more">
+                    <summary id="ded-more-label"></summary>
+                    <div id="ded-more-fields"></div>
+                </details>
+                <textarea id="ded-note" maxlength="300" rows="2"></textarea>
+                <p class="ded-note" id="ded-public-note"></p>
+                <div class="ded-actions">
+                    <button type="submit" class="ded-btn" id="ded-submit"></button>
+                    <button type="button" class="ded-link" id="ded-cancel"></button>
+                </div>
+            </form>
+            <p class="ded-msg" id="ded-msg" role="status" hidden></p>
+            <div id="ded-mine" hidden>
+                <h3 id="ded-mine-title"></h3>
+                <ul class="ded-mine" id="ded-mine-list"></ul>
+            </div>
+        </section>
+
         <button type="button" id="about-back" class="about-back">—</button>
     </main>
 
     <script src="adapter.js"></script>
     <script src="platform.js"></script>
     <script src="i18n.js"></script>
+    <script src="dedication-i18n.js"></script>
+    <script src="dedications.js"></script>
+    <script src="game-sync.js"></script>
     <script src="about.js"></script>
 </body>
 

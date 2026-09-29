@@ -68,7 +68,7 @@ if (JSON.stringify(manifest) !== JSON.stringify(SOURCE_MANIFEST)) problems.push(
 const need = new Set(["background.js", manifest.action && manifest.action.default_popup, ...Object.values(manifest.icons || {})]);
 for (const loc of ["en", "ar"]) need.add(`_locales/${loc}/messages.json`);
 for (const n of names.filter((x) => x.endsWith(".html"))) {
-  for (const [, src] of readFile(buf, entries.get(n)).matchAll(/<(?:script|link)[^>]+(?:src|href)=["']([^"':]+)["']/gi)) need.add(src);
+  for (const [, src] of readFile(buf, entries.get(n)).matchAll(/<(?:script|link)[^>]+(?:src|href)=["']([^"':]+)["']/gi)) need.add(src.split("?")[0]); // drop cache-busting ?v=
 }
 const bg = entries.has("background.js") ? readFile(buf, entries.get("background.js")) : "";
 const imports = bg.match(/importScripts\(([\s\S]*?)\);/);

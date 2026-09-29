@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="stylesheet" href="theme.css" />
-    <link rel="stylesheet" href="game.css?v=227" />
+    <link rel="stylesheet" href="game.css?v=228" />
     <title data-g="pageTitle">أذكار الصلاة</title>
 </head>
 
@@ -174,6 +174,19 @@
             <div id="account" hidden>
                 <p class="who"><span data-g="youAre">أنت:</span> <b id="me-name"></b></p>
                 <p class="muted" id="me-email"></p>
+                <!-- Admins only (the server decides; this is just the way in). -->
+                <a class="ghost wide admin-link" id="admin-link" href="admin.html" data-g="adminLink" hidden>🛠️ الإدارة</a>
+                <!-- An email that isn't proven yet: confirm it with an emailed code. -->
+                <form id="verify" hidden novalidate>
+                    <h3 data-g="verifyTitle">تأكيد البريد</h3>
+                    <p class="note" data-g="verifyNote"></p>
+                    <button type="button" class="primary" id="verify-send" data-g="verifySend">أرسل رمز التأكيد</button>
+                    <div id="verify-step2" hidden>
+                        <p class="note" data-g="verifyCodeSent"></p>
+                        <input id="verify-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr" data-g-ph="codePh" data-g-aria="codePh" />
+                        <button type="submit" class="primary" data-g="verifySubmit">أكّد البريد</button>
+                    </div>
+                </form>
                 <button type="button" class="ghost wide" id="my-profile" data-g="myProfile">ملفي</button>
                 <label class="row"><input type="checkbox" id="hide-progress" /> <span data-g="hideProgress"></span></label>
                 <h3 data-g="findPlayer">ابحث عن لاعب</h3>
@@ -239,7 +252,7 @@
     <script src="game-state.js"></script>
     <script src="game-tasks.js"></script>
     <script src="game-sync.js"></script>
-    <script src="game.js?v=227"></script>
+    <script src="game.js?v=228"></script>
 </body>
 
 </html>

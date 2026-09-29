@@ -1,6 +1,6 @@
 # Terms & Conditions — Prayer Times Reminder
 
-_Last updated: 27 September 2026_
+_Last updated: 29 September 2026_
 
 These terms apply to the Prayer Times Reminder Chrome extension, Android app,
 and Windows app. By using the app, you agree to use it lawfully and responsibly.
@@ -35,6 +35,18 @@ speech recognition). Recognition may be inaccurate, so a correct reading is
 occasionally not counted. Location-name lookup, city lists, Google sign-in,
 and fallback prayer-time requests depend on the third-party services identified
 in [the privacy policy](PRIVACY.md) and are also subject to their terms.
+
+## Dedication names
+
+Signed-in players may ask for a name to be added to the About page. Send only
+names you have the right to share, and nothing offensive, misleading or
+unrelated. Admins may edit, approve or decline any request, and may change,
+hide or remove names on the list. Approved names are shown publicly.
+
+## Admins
+
+The owner may make other accounts admins. Admins may reset or delete accounts
+that break these terms or whose owners ask for it.
 
 ## Account deletion
 
