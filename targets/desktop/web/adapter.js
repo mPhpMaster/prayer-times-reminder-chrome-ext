@@ -155,7 +155,9 @@
   // Companion Chrome extension (browser tab lock): detect install on disk and
   // open the Web Store listing. The settings UI shows an install button unless
   // it's already present. Desktop-only capability (extension/mobile omit it).
-  const browserExt = {
+  // Left out of a Microsoft Store install (Store policy 10.1.5: no promoting
+  // software from outside the Store); main.rs sets __PT_STORE_INSTALL__.
+  const browserExt = globalThis.__PT_STORE_INSTALL__ ? undefined : {
     installed: () => invoke("chrome_extension_installed").then((v) => v === true).catch(() => false),
     install: () =>
       invoke("open_chrome_store")
