@@ -199,16 +199,16 @@
       <style>
         :host {
           all: initial;
-          --foreground: oklch(0.97 0.01 180);
-          --muted-foreground: oklch(0.7 0.02 180);
-          --teal: oklch(0.78 0.14 170);
-          --gold: oklch(0.82 0.14 85);
-          --card: oklch(0.23 0.035 185);
-          --border: oklch(1 0 0 / 8%);
-          --input: oklch(1 0 0 / 10%);
-          --gradient-next: linear-gradient(135deg, oklch(0.32 0.09 170 / 0.85), oklch(0.28 0.07 185 / 0.7));
-          --shadow-glow: 0 0 40px -10px oklch(0.78 0.14 170 / 0.5);
-          --shadow-card: 0 10px 40px -15px oklch(0 0 0 / 0.5);
+          --foreground: #eef7f5;
+          --muted-foreground: #92a39f;
+          --teal: #3ad4aa;
+          --gold: #eebc4a;
+          --card: #05221f;
+          --border: rgba(255, 255, 255, 0.08);
+          --input: rgba(255, 255, 255, 0.1);
+          --gradient-next: linear-gradient(135deg, rgba(0, 65, 44, 0.85), rgba(0, 51, 45, 0.7));
+          --shadow-glow: 0 0 40px -10px rgba(58, 212, 170, 0.5);
+          --shadow-card: 0 10px 40px -15px rgba(0, 0, 0, 0.5);
           --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
           --font-arabic: "Amiri", "Scheherazade New", serif;
         }
@@ -219,7 +219,7 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          background: oklch(0.12 0.02 180 / 0.92);
+          background: rgba(0, 8, 6, 0.92);
           color: var(--foreground);
           font-family: ${cardFont};
           text-align: center;
@@ -231,7 +231,7 @@
           max-width: 420px;
           width: 100%;
           background: var(--gradient-next);
-          border: 1px solid oklch(0.78 0.14 170 / 0.35);
+          border: 1px solid rgba(58, 212, 170, 0.35);
           border-radius: 1rem;
           padding: 32px 28px;
           box-shadow: var(--shadow-glow), var(--shadow-card);

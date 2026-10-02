@@ -194,7 +194,16 @@
     start: async ({ lang = "ar-SA", preferOffline = true, engine = "default", onPartial, onFinal, onState, onSpeech, onBusy, onError, getPrompt } = {}) => {
       await speech.stop();
       if (engine === "google") {
-        if (!Speech.recognizeOnce) return { ok: false, reason: "no-google-dialog" };
+        // No Google voice dialog on this device (emulator / no Google app):
+        // fall back to the in-process recognizer, then the bundled Whisper model.
+        const st = await Speech.isAvailable().catch(() => ({}));
+        if (!Speech.recognizeOnce || st.dialog === false) {
+          if (st.available) { engine = "default"; preferOffline = false; } // the dialog was online too
+          else if (st.whisper) engine = "whisper";
+          else return { ok: false, reason: "no-recognizer" };
+        }
+      }
+      if (engine === "google") {
         googleLoop = { active: true };
         runGoogleLoop(googleLoop, { lang, getPrompt, onFinal, onState, onError });
         return { ok: true };
@@ -556,7 +565,7 @@
       wrap.dir = L.dir || "ltr";
       wrap.style.cssText =
         "position:fixed;inset:0;z-index:2147483647;display:flex;align-items:flex-end;" +
-        "justify-content:center;padding:16px;background:oklch(0 0 0 / 0.6)";
+        "justify-content:center;padding:16px;background:rgba(0, 0, 0, 0.6)";
       const card = document.createElement("div");
       card.style.cssText =
         "width:100%;max-width:440px;box-sizing:border-box;padding:20px;border-radius:var(--radius,1rem);" +
