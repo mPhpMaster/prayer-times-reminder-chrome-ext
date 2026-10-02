@@ -35,7 +35,11 @@ module.exports = [
   {
     // Lazily imported ES modules (each shell's adapter.js loads them on first use).
     // speech-web.js is shared by the extension and the desktop app.
-    files: ["core/platform/speech-web.js", "targets/extension/google-auth-chrome.js"],
+    files: [
+      "core/platform/speech-web.js",
+      "targets/extension/google-auth-chrome.js",
+      "targets/desktop/web/google-auth-desktop.js"
+    ],
     languageOptions: { sourceType: "module", globals: { ...sharedGlobals, crypto: "readonly", atob: "readonly" } }
   },
   {

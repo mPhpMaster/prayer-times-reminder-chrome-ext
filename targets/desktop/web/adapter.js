@@ -174,8 +174,7 @@
 
   // The dhikr game. Speech is WebView2's Web Speech API (shared speech-web.js,
   // loaded on first use). The game opens in its own resizable window; its
-  // "prayer times" button brings back the tray popup. No Google sign-in on
-  // desktop yet — the game hides that button when googleAuth is absent.
+  // "prayer times" button brings back the tray popup.
   let speechMod = null;
   const speechModule = () => speechMod || (speechMod = import("./speech-web.js"));
   const hasRecognizer = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -186,6 +185,14 @@
         stop: () => speechModule().then((m) => m.stop()),
       }
     : undefined;
+  // Google sign-in for the game: the default browser + a loopback redirect
+  // (google-auth-desktop.js, loaded on first use).
+  let googleMod = null;
+  const googleModule = () => googleMod || (googleMod = import("./google-auth-desktop.js"));
+  const googleAuth = {
+    signIn: (clientId) => googleModule().then((m) => m.signIn(clientId, invoke)),
+    signOut: () => googleModule().then((m) => m.signOut()).catch(() => {}),
+  };
   const game = {
     open: () => invoke("open_game").then(() => ({ ok: true })).catch((e) => ({ ok: false, reason: String(e) })),
     showPrayerTimes: () => invoke("show_prayer_times").catch(() => {}),
@@ -196,5 +203,5 @@
     document.addEventListener("contextmenu", (e) => e.preventDefault());
   }
 
-  globalThis.__PTPlatform = { name: "tauri", store, enforce, dhikr, runtime, geo, permissions, browserExt, autostart, speech, game };
+  globalThis.__PTPlatform = { name: "tauri", store, enforce, dhikr, runtime, geo, permissions, browserExt, autostart, speech, googleAuth, game };
 })();

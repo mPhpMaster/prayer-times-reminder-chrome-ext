@@ -20,7 +20,7 @@
 //   Platform.runtime.version?()            -> string   optional (Chrome): packaged version (sync)
 //   Platform.devBuild?()                   -> boolean   optional (Android): true only in the
 //                                            debug build; gates developer-only screens
-//   Platform.googleAuth?                   optional (Android, Chrome): Google sign-in for the game
+//   Platform.googleAuth?                   optional (Android, Chrome, Windows): Google sign-in for the game
 //     .signIn(webClientId)                 -> Google ID token; rejects with .code "canceled" | "failed" | "no-account"
 //     .signOut()
 //   Platform.gameAlerts?                   optional: .refresh() re-plans the game's reminders

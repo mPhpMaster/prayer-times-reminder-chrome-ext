@@ -7,6 +7,8 @@
 // and camera disable need elevation and are staged separately (see README).
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod google_auth;
+
 use std::sync::Mutex;
 use tauri::{
     menu::{Menu, MenuItem},
@@ -427,6 +429,22 @@ fn show_prayer_times(app: tauri::AppHandle) {
     show_popup(&app);
 }
 
+// "Sign in with Google" for the game: the sign-in page runs in the default
+// browser and returns to a loopback port (see google_auth.rs). `query` is the
+// auth request built by the web layer, without redirect_uri. Brings the game
+// window back to the front once the browser is done.
+#[tauri::command]
+async fn google_sign_in(app: tauri::AppHandle, query: String) -> Result<String, String> {
+    let result = tauri::async_runtime::spawn_blocking(move || google_auth::sign_in(&query))
+        .await
+        .map_err(|e| e.to_string())?;
+    if let Some(win) = app.get_webview_window("game") {
+        let _ = win.unminimize();
+        let _ = win.set_focus();
+    }
+    result
+}
+
 fn hide_popup(app: &tauri::AppHandle) {
     if let Some(win) = app.get_webview_window("settings") {
         let _ = win.hide();
@@ -636,6 +654,7 @@ fn main() {
             set_autostart,
             open_game,
             show_prayer_times,
+            google_sign_in,
             log_js
         ])
         .setup(|app| {
