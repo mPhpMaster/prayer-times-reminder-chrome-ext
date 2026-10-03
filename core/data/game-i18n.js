@@ -58,6 +58,8 @@ const GAME_I18N = {
     speechUnavailable: "التعرف على الصوت غير متاح على هذه المنصة.",
     speechStopped: (m) => `توقف التعرف على الصوت: ${m}`,
     speechStartFail: (m) => `تعذّر بدء التعرف على الصوت: ${m}`,
+
+    speechNoService: "لا توجد خدمة للتعرف على الصوت على هذا الجهاز. ثبّت تطبيق Google أو «خدمات التعرف على الكلام من Google» ثم حاول مجددًا.",
     taskDone: (title, n) => `✓ ${title}: +${n} نقطة`,
     giftDone: (n) => `🎁 تقبّل الله، +${n} نقطة`,
     windowClosed: "انتهى وقت هذه الصلاة، وما لم يكتمل من مهماتها فاتك.",
@@ -150,6 +152,8 @@ const GAME_I18N = {
     speechUnavailable: "Speech recognition isn't available on this platform.",
     speechStopped: (m) => `Speech recognition stopped: ${m}`,
     speechStartFail: (m) => `Couldn't start speech recognition: ${m}`,
+
+    speechNoService: "No speech recognition service on this device. Install the Google app or “Speech Recognition & Synthesis from Google”, then try again.",
     taskDone: (title, n) => `✓ ${title}: +${n} pts`,
     giftDone: (n) => `🎁 May Allah accept it, +${n} pts`,
     windowClosed: "This prayer's time is over; unfinished tasks are missed.",
@@ -242,6 +246,8 @@ const GAME_I18N = {
     speechUnavailable: "Spracherkennung ist auf dieser Plattform nicht verfügbar.",
     speechStopped: (m) => `Spracherkennung beendet: ${m}`,
     speechStartFail: (m) => `Spracherkennung konnte nicht starten: ${m}`,
+
+    speechNoService: "Auf diesem Gerät gibt es keinen Spracherkennungsdienst. Installiere die Google-App oder „Spracherkennung und -synthese von Google“ und versuche es erneut.",
     taskDone: (title, n) => `✓ ${title}: +${n} Pkt.`,
     giftDone: (n) => `🎁 Möge Allah es annehmen, +${n} Pkt.`,
     windowClosed: "Die Zeit dieses Gebets ist vorbei; unerledigte Aufgaben sind verpasst.",
@@ -334,6 +340,8 @@ const GAME_I18N = {
     speechUnavailable: "La reconnaissance vocale n’est pas disponible sur cette plateforme.",
     speechStopped: (m) => `Reconnaissance vocale arrêtée : ${m}`,
     speechStartFail: (m) => `Impossible de démarrer la reconnaissance vocale : ${m}`,
+
+    speechNoService: "Aucun service de reconnaissance vocale sur cet appareil. Installez l’application Google ou « Reconnaissance et synthèse vocales de Google », puis réessayez.",
     taskDone: (title, n) => `✓ ${title} : +${n} pts`,
     giftDone: (n) => `🎁 Qu’Allah l’accepte, +${n} pts`,
     windowClosed: "Le temps de cette prière est passé ; les tâches non terminées sont manquées.",
@@ -426,6 +434,8 @@ const GAME_I18N = {
     speechUnavailable: "El reconocimiento de voz no está disponible en esta plataforma.",
     speechStopped: (m) => `El reconocimiento de voz se detuvo: ${m}`,
     speechStartFail: (m) => `No se pudo iniciar el reconocimiento de voz: ${m}`,
+
+    speechNoService: "No hay un servicio de reconocimiento de voz en este dispositivo. Instala la app de Google o «Reconocimiento y síntesis de voz de Google» y vuelve a intentarlo.",
     taskDone: (title, n) => `✓ ${title}: +${n} pts`,
     giftDone: (n) => `🎁 Que Allah lo acepte, +${n} pts`,
     windowClosed: "El tiempo de esta oración ha terminado; las tareas sin terminar se pierden.",
@@ -518,6 +528,8 @@ const GAME_I18N = {
     speechUnavailable: "Pengenalan suara tidak tersedia di platform ini.",
     speechStopped: (m) => `Pengenalan suara berhenti: ${m}`,
     speechStartFail: (m) => `Tidak bisa memulai pengenalan suara: ${m}`,
+
+    speechNoService: "Tidak ada layanan pengenalan suara di perangkat ini. Pasang aplikasi Google atau “Pengenalan & Sintesis Ucapan dari Google”, lalu coba lagi.",
     taskDone: (title, n) => `✓ ${title}: +${n} poin`,
     giftDone: (n) => `🎁 Semoga Allah menerimanya, +${n} poin`,
     windowClosed: "Waktu salat ini sudah berakhir; tugas yang belum selesai terlewat.",
@@ -610,6 +622,8 @@ const GAME_I18N = {
     speechUnavailable: "اس پلیٹ فارم پر آواز کی شناخت دستیاب نہیں۔",
     speechStopped: (m) => `آواز کی شناخت رک گئی: ${m}`,
     speechStartFail: (m) => `آواز کی شناخت شروع نہیں ہو سکی: ${m}`,
+
+    speechNoService: "اس آلے پر آواز کی شناخت کی کوئی سروس نہیں۔ Google ایپ یا «Google کی جانب سے تقریر کی شناخت اور ترکیب» انسٹال کریں، پھر دوبارہ کوشش کریں۔",
     taskDone: (title, n) => `✓ ${title}: +${n} پوائنٹس`,
     giftDone: (n) => `🎁 اللہ قبول فرمائے، +${n} پوائنٹس`,
     windowClosed: "اس نماز کا وقت ختم ہو گیا؛ نامکمل کام چھوٹ گئے۔",
@@ -702,6 +716,8 @@ const GAME_I18N = {
     speechUnavailable: "इस प्लैटफ़ॉर्म पर आवाज़ पहचान उपलब्ध नहीं है।",
     speechStopped: (m) => `आवाज़ पहचान रुक गई: ${m}`,
     speechStartFail: (m) => `आवाज़ पहचान शुरू नहीं हो सकी: ${m}`,
+
+    speechNoService: "इस डिवाइस पर कोई आवाज़ पहचान सेवा नहीं है। Google ऐप या “Google की ओर से वाक् पहचान और संश्लेषण” इंस्टॉल करें, फिर दोबारा कोशिश करें।",
     taskDone: (title, n) => `✓ ${title}: +${n} अंक`,
     giftDone: (n) => `🎁 अल्लाह क़बूल करे, +${n} अंक`,
     windowClosed: "इस नमाज़ का समय खत्म हो गया; अधूरे काम छूट गए।",
@@ -793,6 +809,8 @@ const GAME_I18N = {
     speechUnavailable: "Распознавание речи недоступно на этой платформе.",
     speechStopped: (m) => `Распознавание речи остановлено: ${m}`,
     speechStartFail: (m) => `Не удалось запустить распознавание речи: ${m}`,
+
+    speechNoService: "На этом устройстве нет службы распознавания речи. Установите приложение Google или «Распознавание и синтез речи от Google» и повторите попытку.",
     taskDone: (title, n) => `✓ ${title}: +${n} очк.`,
     giftDone: (n) => `🎁 Да примет Аллах, +${n} очк.`,
     windowClosed: "Время этого намаза истекло; невыполненные задания пропущены.",
@@ -884,6 +902,8 @@ const GAME_I18N = {
     speechUnavailable: "Бұл платформада сөйлеуді тану қолжетімсіз.",
     speechStopped: (m) => `Сөйлеуді тану тоқтады: ${m}`,
     speechStartFail: (m) => `Сөйлеуді тануды бастау мүмкін болмады: ${m}`,
+
+    speechNoService: "Бұл құрылғыда сөйлеуді тану қызметі жоқ. Google қолданбасын немесе «Google сөйлеуді тану және синтездеу» қызметін орнатып, қайталап көріңіз.",
     taskDone: (title, n) => `✓ ${title}: +${n} ұпай`,
     giftDone: (n) => `🎁 Алла қабыл етсін, +${n} ұпай`,
     windowClosed: "Бұл намаздың уақыты өтті; аяқталмаған тапсырмалар өткізіп алынды.",
@@ -975,6 +995,8 @@ const GAME_I18N = {
     speechUnavailable: "Bu platformada nutqni aniqlash imkoni yo‘q.",
     speechStopped: (m) => `Nutqni aniqlash to‘xtadi: ${m}`,
     speechStartFail: (m) => `Nutqni aniqlashni boshlab bo‘lmadi: ${m}`,
+
+    speechNoService: "Bu qurilmada nutqni aniqlash xizmati yo‘q. Google ilovasini yoki “Google nutqni aniqlash va sintezlash” xizmatini o‘rnating, so‘ng qayta urinib ko‘ring.",
     taskDone: (title, n) => `✓ ${title}: +${n} ball`,
     giftDone: (n) => `🎁 Alloh qabul qilsin, +${n} ball`,
     windowClosed: "Bu namoz vaqti o‘tdi; tugallanmagan vazifalar o‘tkazib yuborildi.",

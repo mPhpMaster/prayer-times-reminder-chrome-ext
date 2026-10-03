@@ -212,5 +212,5 @@ h1 {
 .ded-mine-name { font-weight: 600; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .ded-status { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--secondary); }
 .ded-approved { color: #04211c; background: var(--teal); }
-.ded-rejected { background: oklch(0.45 0.12 25 / 60%); }
+.ded-rejected { background: rgba(140, 52, 50, 0.6); }
 .ded-reason { flex-basis: 100%; font-size: 12.5px; color: var(--muted-foreground); }

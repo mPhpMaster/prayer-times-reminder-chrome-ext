@@ -117,11 +117,11 @@
       <style>
         :host {
           all: initial;
-          --foreground: oklch(0.97 0.01 180);
-          --muted-foreground: oklch(0.7 0.02 180);
-          --teal: oklch(0.78 0.14 170);
-          --gradient-card: linear-gradient(145deg, oklch(0.26 0.04 185 / 0.9), oklch(0.22 0.035 190 / 0.85));
-          --shadow-card: 0 10px 40px -15px oklch(0 0 0 / 0.5);
+          --foreground: #eef7f5;
+          --muted-foreground: #92a39f;
+          --teal: #3ad4aa;
+          --gradient-card: linear-gradient(145deg, rgba(7, 42, 38, 0.9), rgba(3, 32, 30, 0.85));
+          --shadow-card: 0 10px 40px -15px rgba(0, 0, 0, 0.5);
         }
         .tasbih-wrap {
           position: fixed;
@@ -140,7 +140,7 @@
           max-width: 320px;
           padding: 16px 20px;
           background: var(--gradient-card);
-          border: 1px solid oklch(1 0 0 / 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 1rem;
           box-shadow: var(--shadow-card);
           backdrop-filter: blur(12px);

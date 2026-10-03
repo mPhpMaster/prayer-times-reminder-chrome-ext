@@ -656,7 +656,7 @@ async function startListening() {
     })
     .catch((e) => ({ ok: false, reason: String((e && e.message) || e) }));
   if (!res.ok) {
-    showNotice(G.speechStartFail(res.reason));
+    showNotice(res.reason === "no-recognizer" ? G.speechNoService : G.speechStartFail(res.reason));
     listening = false;
     setMic(false);
   }

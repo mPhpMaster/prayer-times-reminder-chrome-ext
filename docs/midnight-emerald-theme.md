@@ -3,7 +3,9 @@
 
 This repo also includes a **Classic** theme (selected in Settings). The rules in this document apply to the Midnight Emerald variant (`[data-theme="midnight-emerald"]`).
 
-## Palette (oklch only — never hex/RGB)
+## Palette (designed in oklch — shipped as hex/rgba)
+
+> The values below are the design source. `theme.css` and the overlays ship their exact sRGB hex/rgba equivalents, because `oklch()` needs Chromium 111+ and older Android WebViews (emulators, older phones) drop every oklch colour, leaving the theme unreadable. Never put raw `oklch()` in shipped CSS/JS; any `color-mix()` needs a plain fallback declaration before it.
 
 | Token | Value | Usage |
 |-------|-------|-------|

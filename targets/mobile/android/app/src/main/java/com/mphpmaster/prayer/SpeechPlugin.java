@@ -68,6 +68,10 @@ public class SpeechPlugin extends Plugin {
             onDevice = SpeechRecognizer.isOnDeviceRecognitionAvailable(getContext());
         }
         ret.put("onDevice", onDevice);
+        // The Google voice dialog (recognizeOnce) needs an activity for
+        // RECOGNIZE_SPEECH — missing on emulators / phones without the Google app.
+        Intent dialog = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        ret.put("dialog", dialog.resolveActivity(getContext().getPackageManager()) != null);
         ret.put("permission", getPermissionState("microphone") == PermissionState.GRANTED);
         ret.put("whisper", WhisperEngine.modelsPresent(getContext()));
         ret.put("whisperDir", WhisperEngine.modelDir(getContext()).getAbsolutePath());

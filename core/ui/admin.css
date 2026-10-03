@@ -28,10 +28,10 @@
 .admin-names dt { color: var(--muted-foreground); font-size: 12.5px; }
 .admin-names dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; text-align: match-parent; }
 
-.admin-badge { font-size: 11.5px; padding: 1px 8px; border-radius: 999px; background: oklch(1 0 0 / 10%); white-space: nowrap; }
-.admin-badge.st-pending { background: oklch(0.7 0.13 80 / 35%); }
+.admin-badge { font-size: 11.5px; padding: 1px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); white-space: nowrap; }
+.admin-badge.st-pending { background: rgba(200, 148, 45, 0.35); }
 .admin-badge.st-approved { color: #04211c; background: var(--teal); }
-.admin-badge.st-rejected { background: oklch(0.45 0.12 25 / 60%); }
+.admin-badge.st-rejected { background: rgba(140, 52, 50, 0.6); }
 
 .admin-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .admin-actions button { padding: 6px 12px; font-size: 13px; }

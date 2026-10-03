@@ -169,6 +169,7 @@ h1 {
   padding: 12px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--color-border);
+  background: var(--color-input);
   background:
     radial-gradient(120% 160% at 0% 0%, color-mix(in oklch, var(--teal) 12%, transparent), transparent 60%),
     var(--color-input);
