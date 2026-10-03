@@ -50,7 +50,7 @@ for the dhikr game (Web Speech in WebView2).
 | Low-level key hook (`WH_KEYBOARD_LL` + `WH_MOUSE_LL`, swallow Win/Alt+Tab/Alt+F4) | done (`input_block`; strict locks only; `Ctrl+Alt+U` emergency unlock) |
 | Camera disable | done (`camera::disable` — per-user HKCU `ConsentStore\webcam` consent toggle; reversible, no admin, crash-recovery on startup) |
 | Dhikr card window | done (`show_dhikr` → transparent per-monitor `tasbih.html`, reuses `overlay-tasbih.js`) |
-| Dhikr game | done (`open_game` → resizable `game` window; speech = WebView2 Web Speech via shared `speech-web.js`; email sign-in only, no Google on desktop yet) |
+| Dhikr game | done (`open_game` → resizable `game` window; speech = WebView2 Web Speech via shared `speech-web.js`; email or Google sign-in — Google runs in the default browser and returns to a loopback port, see `google_auth.rs`; the web client must list `http://127.0.0.1:53917/`, `:53918/` and `:53919/` as redirect URIs) |
 | Run elevated in release (`requireAdministrator`) | done (`build.rs` embeds the manifest for `--release` only; debug stays as-invoker) |
 
 `Ctrl+Alt+Del` is intentionally not blocked (impossible in user mode — accepted).

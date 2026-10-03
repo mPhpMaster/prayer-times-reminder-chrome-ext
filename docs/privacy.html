@@ -128,7 +128,8 @@
     You can hide your progress from others at any time. In the Chrome extension, “Continue with Google” opens
     Chrome’s own Google sign-in window (the extension’s <code>identity</code> permission); the extension receives
     only the sign-in token that Google issues for the game, and passes it to the game server to confirm your
-    account.</li>
+    account. In the Windows app, it opens Google’s sign-in page in your default browser, which hands the same
+    token back to the app through a local address on your own computer (127.0.0.1); nothing else is shared.</li>
     <li><strong>Voice.</strong> When you tap the microphone to recite, the app uses the platform’s speech
     recognition — Android’s (Google’s voice input) in the Android app, Chrome’s built-in speech recognition in the
     extension, which asks for microphone permission the first time. Your voice is processed by that service under

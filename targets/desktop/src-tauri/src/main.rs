@@ -7,6 +7,8 @@
 // and camera disable need elevation and are staged separately (see README).
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod google_auth;
+
 use std::sync::Mutex;
 use tauri::{
     menu::{Menu, MenuItem},
@@ -427,6 +429,22 @@ fn show_prayer_times(app: tauri::AppHandle) {
     show_popup(&app);
 }
 
+// "Sign in with Google" for the game: the sign-in page runs in the default
+// browser and returns to a loopback port (see google_auth.rs). `query` is the
+// auth request built by the web layer, without redirect_uri. Brings the game
+// window back to the front once the browser is done.
+#[tauri::command]
+async fn google_sign_in(app: tauri::AppHandle, query: String) -> Result<String, String> {
+    let result = tauri::async_runtime::spawn_blocking(move || google_auth::sign_in(&query))
+        .await
+        .map_err(|e| e.to_string())?;
+    if let Some(win) = app.get_webview_window("game") {
+        let _ = win.unminimize();
+        let _ = win.set_focus();
+    }
+    result
+}
+
 fn hide_popup(app: &tauri::AppHandle) {
     if let Some(win) = app.get_webview_window("settings") {
         let _ = win.hide();
@@ -473,6 +491,16 @@ fn quit_app(app: &tauri::AppHandle) {
 }
 
 // --- Companion Chrome extension ---------------------------------------------
+// Microsoft Store policy 10.1.5 forbids promoting software from outside the
+// Store, so a Store (MSIX) install hides the "Get the Chrome extension" button.
+// MSIX packages always install under ...\WindowsApps\; the setup.exe/MSI build
+// keeps the button. The flag reaches every webview before its scripts run.
+fn is_store_install() -> bool {
+    std::env::current_exe()
+        .map(|p| p.to_string_lossy().to_ascii_lowercase().contains("\\windowsapps\\"))
+        .unwrap_or(false)
+}
+
 // The published Web Store id (see the READMEs' store link) and listing URL.
 const CHROME_EXT_ID: &str = "knahkbkmbjghaiillhngjbhoinmeegoc";
 const CHROME_STORE_URL: &str =
@@ -603,6 +631,11 @@ fn main() {
     log_line("main: starting");
 
     tauri::Builder::default()
+        .plugin(
+            tauri::plugin::Builder::<tauri::Wry, ()>::new("store-install")
+                .js_init_script(format!("globalThis.__PT_STORE_INSTALL__ = {};", is_store_install()))
+                .build(),
+        )
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             show_popup(app);
         }))
@@ -636,6 +669,7 @@ fn main() {
             set_autostart,
             open_game,
             show_prayer_times,
+            google_sign_in,
             log_js
         ])
         .setup(|app| {
