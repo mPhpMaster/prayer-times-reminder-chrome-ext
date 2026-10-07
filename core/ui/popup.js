@@ -842,6 +842,7 @@ function applyLanguage() {
   el.countdownHoursLabel.textContent = t.countdownHours;
   el.countdownMinLabel.textContent = t.countdownMin;
   el.countdownSecLabel.textContent = t.countdownSec;
+  fillLegalLinks(t);
   el.openSettingsBtn.textContent = t.openSettings;
   el.settingsTitle.textContent = t.settingsTitle;
   el.backBtn.textContent = t.back;

@@ -17,21 +17,8 @@ const GAME_ALERT_DAYS = 2;
 const GAME_ALERT_PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 const GAME_NEXT_PRAYER = { Fajr: "Dhuhr", Dhuhr: "Asr", Asr: "Maghrib", Maghrib: "Isha", Isha: "Fajr" };
 
-// Arabic-first; every other UI language gets English.
-const GAME_ALERT_TEXT = {
-  ar: {
-    openTitle: (p) => `فُتحت مهمات صلاة ${p}`,
-    openBody: () => "ابدأ الآن لتأخذ النقاط كاملة.",
-    closingTitle: (p, next) => `بقيت نصف ساعة على صلاة ${next}`,
-    closingBody: (p) => `أكمل مهمات صلاة ${p} قبل أن تفوتك.`,
-  },
-  en: {
-    openTitle: (p) => `${p} adhkar tasks are open`,
-    openBody: () => "Start now to earn full points.",
-    closingTitle: (p, next) => `Half an hour until ${next}`,
-    closingBody: (p) => `Finish the ${p} adhkar tasks before they close.`,
-  },
-};
+// Wording: gameOpenTitle / gameOpenBody / gameClosingTitle / gameClosingBody
+// in i18n.js, in every language the app speaks.
 
 async function clearGameAlarms() {
   const all = await chrome.alarms.getAll();
@@ -71,16 +58,14 @@ async function fireGameAlert(name) {
   const s = await chrome.storage.local.get(["gameAlerts", "gameState", "lang"]);
   if (s.gameAlerts === false) return;
   if (kind === "closing" && windowFinished(s.gameState, key)) return;
-  const lang = s.lang || "en";
-  const text = GAME_ALERT_TEXT[lang] || GAME_ALERT_TEXT.en;
-  const L = tr(text === GAME_ALERT_TEXT.ar ? "ar" : "en");
+  const L = tr(s.lang || "en");
   const name_ = prayerLabel(L, prayer);
   const next = prayerLabel(L, GAME_NEXT_PRAYER[prayer]);
   chrome.notifications.create(`game-${kind}-${key}-${Date.now()}`, {
     type: "basic",
     iconUrl: "icons/icon128.png",
-    title: kind === "open" ? text.openTitle(name_) : text.closingTitle(name_, next),
-    message: kind === "open" ? text.openBody(name_) : text.closingBody(name_),
+    title: kind === "open" ? L.gameOpenTitle(name_) : L.gameClosingTitle(name_, next),
+    message: kind === "open" ? L.gameOpenBody : L.gameClosingBody(name_),
     priority: 1,
   });
 }

@@ -180,13 +180,13 @@ async function renderFamily() {
     body.replaceChildren(fel("p", { class: "muted", textContent: G.familySignIn }));
     return;
   }
-  if (!body.childElementCount) body.replaceChildren(fel("p", { class: "muted", textContent: "…" }));
+  if (!body.childElementCount) body.replaceChildren(fel("ul", { class: "people" }, skeletonItems(4)));
   let st;
   try {
     st = await api().family.get();
   } catch (e) {
     if (e.status === 401) return body.replaceChildren(fel("p", { class: "muted", textContent: G.familySignIn }));
-    return body.replaceChildren(fel("p", { class: "muted", textContent: G.offline }));
+    return body.replaceChildren(fel("p", { class: "muted", textContent: G.offline }), retryButton(renderFamily));
   }
   await cacheFamilyAlerts(st.family);
   $("family-badge").hidden = !st.invites.length;
@@ -302,14 +302,15 @@ function legend() {
 async function openMember(name) {
   memberName = name;
   const body = $("member-body");
-  body.replaceChildren(fel("p", { class: "muted", textContent: "…" }));
+  body.replaceChildren(fel("div", { class: "skeleton-block" }), fel("ul", { class: "people" }, skeletonItems(3)));
   if (!account) return body.replaceChildren(fel("p", { class: "muted", textContent: G.familySignIn }));
   let y;
   try {
     y = await api().family.year(name, memberYear);
   } catch (e) {
     if (memberName !== name) return;
-    return body.replaceChildren(fel("p", { class: "muted", textContent: e.status === 404 || e.status === 403 ? G.familyNotMember : G.offline }));
+    if (e.status === 404 || e.status === 403) return body.replaceChildren(fel("p", { class: "muted", textContent: G.familyNotMember }));
+    return body.replaceChildren(fel("p", { class: "muted", textContent: G.offline }), retryButton(() => openMember(name)));
   }
   if (memberName !== name) return; // another member was opened meanwhile
   const thisYear = new Date().getFullYear();

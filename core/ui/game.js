@@ -805,6 +805,26 @@ async function adoptAccountSettings(s) {
 // ---- tabs: board ------------------------------------------------------------
 const month = () => (current ? current.day.slice(0, 7) : new Date().toISOString().slice(0, 7));
 
+// A "Try again" button for a screen that couldn't reach the server.
+function retryButton(onRetry) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "link retry";
+  b.textContent = tr(lang).uiRetry;
+  b.addEventListener("click", onRetry);
+  return b;
+}
+
+// Shimmering placeholders while a list loads from the server.
+function skeletonItems(n) {
+  return Array.from({ length: n }, () => {
+    const li = document.createElement("li");
+    li.className = "skeleton";
+    li.setAttribute("aria-hidden", "true");
+    return li;
+  });
+}
+
 function messageItem(text) {
   const li = document.createElement("li");
   li.className = "msg";
@@ -891,7 +911,7 @@ async function renderBoard() {
     boardScope = "all";
     for (const x of document.querySelectorAll("#board-view [data-scope]")) x.setAttribute("aria-pressed", String(x.dataset.scope === "all"));
   }
-  box.replaceChildren();
+  box.replaceChildren(...skeletonItems(6));
   try {
     if (account) await syncNow();
     const data = await api().leaderboard(boardPeriod, boardScope, localDay());
@@ -914,7 +934,9 @@ async function renderBoard() {
     if (!data.rows.length) box.replaceChildren(messageItem(G.boardEmpty));
     $("board-me").textContent = !data.me ? G.guestBoardNote : data.me.hideProgress ? G.myPointsHidden(data.me.points) : G.myPoints(data.me.points);
   } catch {
-    box.replaceChildren(messageItem(G.offline));
+    const li = messageItem(G.offline);
+    li.append(retryButton(renderBoard));
+    box.replaceChildren(li);
   }
 }
 
@@ -1212,7 +1234,7 @@ async function openProfile(name) {
   profileName = name;
   $("profile-name").textContent = name;
   $("profile-meta").textContent = "";
-  $("profile-points").textContent = "…";
+  $("profile-points").replaceChildren(Object.assign(document.createElement("span"), { className: "skeleton-line" }));
   $("profile-wins").hidden = true;
   $("profile-follow").hidden = true;
   $("profile-stats").hidden = true;
@@ -1235,7 +1257,7 @@ async function openProfile(name) {
     renderStats(p.stats, p.points);
     renderAchievements(p.achievements);
   } catch {
-    $("profile-points").textContent = G.profileFail;
+    $("profile-points").replaceChildren(G.profileFail, " ", retryButton(() => openProfile(name)));
   }
 }
 
