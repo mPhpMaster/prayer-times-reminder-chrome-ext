@@ -18,6 +18,7 @@ module.exports = [
     ignores: [
       "dist/**", "node_modules/**", "backend/**", "tools/**", "scripts/**",
       "targets/extension/build/**", "targets/desktop/src/**", "targets/mobile/www/**",
+      "targets/vencord/build/**", // generated Vencord userplugin (core.generated.js)
       "core/platform/vendor/**", // vendored third-party (adhan, tz-lookup)
       "targets/mobile/android/**", "targets/desktop/src-tauri/**" // generated native projects
     ]

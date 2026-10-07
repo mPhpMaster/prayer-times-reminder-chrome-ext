@@ -10,6 +10,7 @@ web-ext-artifacts/
 targets/extension/build/
 targets/desktop/src/
 targets/mobile/www/
+targets/vencord/build/
 
 # ---- Store-screenshot transient harness (written by make_store_screenshots.py) ----
 _store_harness.html
@@ -58,6 +59,7 @@ targets/desktop/src-tauri/gen/
 # (the native source under targets/mobile/android/ IS tracked; Capacitor's own
 #  android/.gitignore covers build outputs like .gradle/, app/build/, etc.)
 targets/mobile/www/
+targets/vencord/build/
 targets/mobile/node_modules/
 targets/mobile/android/.gradle/
 targets/mobile/android/build/

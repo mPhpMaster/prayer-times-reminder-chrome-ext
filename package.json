@@ -11,6 +11,7 @@
     "sync:desktop": "node tools/sync-core.mjs desktop",
     "sync:mobile": "node tools/sync-core.mjs mobile",
     "sync:all": "node tools/sync-core.mjs all",
+    "sync:vencord": "node tools/sync-core.mjs vencord",
     "version:bump": "node tools/version.mjs bump",
     "version:rollback": "node tools/version.mjs rollback",
     "version:release": "node tools/version.mjs bump --build",

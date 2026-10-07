@@ -72,6 +72,7 @@ npm run sync            # assemble the extension  -> targets/extension/build/
 npm run sync:desktop    # assemble desktop         -> targets/desktop/src/
 npm run sync:mobile     # assemble mobile          -> targets/mobile/www/
 npm run sync:all        # all three at once
+npm run sync:vencord    # Discord (Vencord userplugin) -> targets/vencord/build/prayerTimesBreak/
 ```
 
 The three output dirs are **generated artifacts** and are `.gitignore`d — they
@@ -81,6 +82,7 @@ are never edited by hand and never committed. Edit `core/` (shared) or
 - **Extension:** `npm run sync`, then load `targets/extension/build/` unpacked
   (or ↻ on `chrome://extensions` after each sync).
 - **Desktop:** `npm run sync:desktop`, then `cargo tauri dev` in `targets/desktop/src-tauri/`.
+- **Discord (Vencord):** `npm run sync:vencord`, then copy `targets/vencord/build/prayerTimesBreak/` into Vencord's `src/userplugins/` and `pnpm build` (see `targets/vencord/README.md`). Unlike the other shells this target *generates* `core.generated.js`, an ES module that evaluates the core scripts in one function scope and re-exports their globals.
 - **Mobile:** `npm run sync:mobile`, then `npx cap copy android` + build in `targets/mobile/`.
 
 ## Where to make a change
