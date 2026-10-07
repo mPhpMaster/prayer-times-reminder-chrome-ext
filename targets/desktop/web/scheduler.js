@@ -83,5 +83,65 @@ Platform.store.onChange((changes) => {
   if (DHIKR_KEYS.some((k) => k in changes)) scheduleDhikr();
 });
 
+// --- New version -------------------------------------------------------------
+// A Microsoft Store install asks the Store (native, updater.rs); a setup.exe /
+// MSI install reads GitHub Releases, where each desktop version is published
+// as tag "desktop-v<version>" with its installer attached. One toast per
+// version: a click installs the Store update, or opens the new installer.
+const RELEASES_API =
+  "https://api.github.com/repos/mPhpMaster/prayer-times-reminder-chrome-ext/releases?per_page=30";
+const DESKTOP_TAG = "desktop-v";
+const UPDATE_CHECK_MS = 24 * 3600 * 1000;
+
+// True if dotted version a is newer than b ("1.0.10" > "1.0.9").
+function isNewerVersion(a, b) {
+  const pa = String(a).split(".").map(Number);
+  const pb = String(b).split(".").map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d > 0;
+  }
+  return false;
+}
+
+async function latestGithubRelease(current) {
+  const res = await fetch(RELEASES_API, { headers: { Accept: "application/vnd.github+json" } });
+  if (!res.ok) return null;
+  let best = null;
+  for (const r of await res.json()) {
+    if (r.draft || r.prerelease || !String(r.tag_name).startsWith(DESKTOP_TAG)) continue;
+    const v = r.tag_name.slice(DESKTOP_TAG.length);
+    if (!best || isNewerVersion(v, best.version)) best = { version: v, release: r };
+  }
+  if (!best || !isNewerVersion(best.version, current)) return null;
+  const assets = best.release.assets || [];
+  const installer = assets.find((a) => /-setup\.exe$/i.test(a.name)) || assets.find((a) => /\.msi$/i.test(a.name));
+  return { version: best.version, url: installer ? installer.browser_download_url : best.release.html_url };
+}
+
+async function checkForUpdate() {
+  try {
+    const invoke = globalThis.__TAURI__.core.invoke;
+    let update = null;
+    if (globalThis.__PT_STORE_INSTALL__) {
+      const version = await invoke("store_update_version");
+      if (version) update = { version, url: null };
+    } else {
+      update = await latestGithubRelease(await globalThis.__TAURI__.app.getVersion());
+    }
+    if (!update) return;
+    const { lang, updateNotified } = await Platform.store.get(["lang", "updateNotified"]);
+    if (updateNotified === update.version) return;
+    const L = tr(lang || DEFAULT_SETTINGS.lang);
+    await invoke("notify_update", { title: L.updateTitle, body: L.updateBody, url: update.url });
+    await Platform.store.set({ updateNotified: update.version });
+  } catch {
+    /* offline, rate-limited, no Store: try again tomorrow */
+  } finally {
+    setTimeout(checkForUpdate, UPDATE_CHECK_MS);
+  }
+}
+
 reschedule();
 scheduleDhikr();
+setTimeout(checkForUpdate, 60 * 1000);

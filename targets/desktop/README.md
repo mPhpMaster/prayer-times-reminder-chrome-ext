@@ -33,6 +33,22 @@ copy ..\src-tauri\target\release\prayer-desktop.exe layout\
 The exe and `*.msix` are gitignored. The manifest declares `microphone`
 for the dhikr game (Web Speech in WebView2).
 
+### Telling installed copies about a new version
+
+`web/scheduler.js` checks a minute after start and then daily, and shows a
+toast once per version (`updater.rs`):
+- **Store (MSIX) installs** ask the Microsoft Store. A click has the Store
+  download and install the update. Nothing to publish beyond the Store
+  submission.
+- **setup.exe / MSI installs** read GitHub Releases. For every desktop version,
+  publish a release tagged **`desktop-v<version>`** (e.g. `desktop-v1.0.11`)
+  with the NSIS `…-setup.exe` (and optionally the `.msi`) attached. A click
+  opens the installer's download link.
+
+```
+gh release create desktop-v1.0.11 "PrayerTimesReminder-windows-1.0.11-setup.exe" --title "Windows 1.0.11" --notes "…"
+```
+
 `cargo check` validates the Rust without a GUI. `tauri.conf.json` sets
 `withGlobalTauri` (so `window.__TAURI__` is available to `adapter.js`),
 `frontendDist: ../src`, and the hidden tray-launched settings window.

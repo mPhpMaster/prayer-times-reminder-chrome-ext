@@ -28,6 +28,12 @@ windows = { version = "0.58", features = [
   "Win32_System_Diagnostics_Debug",
   "Win32_System_Diagnostics_ToolHelp",
   "Win32_System_Kernel",
+  # New-version notice (updater.rs): Store updates + the owner window they need.
+  "Foundation",
+  "Foundation_Collections",
+  "ApplicationModel",
+  "Services_Store",
+  "Win32_UI_Shell",
 ] }
 # WebView2 memory trimming (SetMemoryUsageTargetLevel / TrySuspend). Same 0.38
 # line Tauri's wry uses, so the interface types match tauri's controller handle.
@@ -38,6 +44,9 @@ webview2-com = "0.38"
 windows-core = "0.61"
 # Camera consent toggle (HKCU ConsentStore\webcam) — reversible, needs no admin.
 winreg = "0.52"
+# The "new version" toast with a click handler (already pulled in by
+# tauri-plugin-notification; used directly for on_activated).
+tauri-winrt-notification = "0.7"
 
 [profile.release]
 opt-level = "s"

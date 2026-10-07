@@ -152,7 +152,7 @@ Cache-Control: no-store\r\nConnection: close\r\n\r\n",
 
 // rundll32 hands the URL straight to the default browser; going through
 // `cmd /C start` would split it at every '&'.
-fn open_browser(url: &str) -> Result<(), String> {
+pub(crate) fn open_browser(url: &str) -> Result<(), String> {
     #[cfg(windows)]
     std::process::Command::new("rundll32")
         .args(["url.dll,FileProtocolHandler", url])
