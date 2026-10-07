@@ -85,6 +85,44 @@ async function fireGameAlert(name) {
   });
 }
 
+// ---- family alerts (family-alerts.js) ------------------------------------------
+// A parent's "the children didn't finish" checks, as alarms named by the check
+// id. The game page caches { mode, role } in "familyAlerts" whenever it loads
+// the family; the server has the final say when the alarm fires.
+const FAMILY_STALE_MS = 30 * 60000; // Chrome was closed: skip checks this late
+
+async function scheduleFamilyAlerts() {
+  try {
+    const all = await chrome.alarms.getAll();
+    await Promise.all(all.filter((a) => a.name.startsWith(FAMILY_ALERT_PREFIX)).map((a) => chrome.alarms.clear(a.name)));
+    const s = await chrome.storage.local.get(["location", "familyAlerts"]);
+    const fa = s.familyAlerts;
+    if (!fa || fa.role !== "parent" || !s.location || s.location.latitude == null) return;
+    for (const c of planFamilyChecks(PrayerEngine, s.location, new Date(), fa.mode)) {
+      chrome.alarms.create(c.id, { when: c.when });
+    }
+  } catch {
+    // best effort — re-planned with the next prayer-alarm refresh
+  }
+}
+
+async function fireFamilyAlert(name) {
+  const s = await chrome.storage.local.get(["gameAccount", "gameApiUrl", "lang"]);
+  if (!s.gameAccount || !s.gameAccount.token) return;
+  const msg = await familyAlertFor(s.gameApiUrl, s.gameAccount.token, s.lang || "en", parseFamilyCheck(name));
+  if (!msg) return;
+  chrome.notifications.create(`family-${Date.now()}`, {
+    type: "basic",
+    iconUrl: "icons/icon128.png",
+    title: msg.title,
+    message: msg.body,
+    priority: 1,
+  });
+}
+
+const isFamilyAlarm = (name) => name.startsWith(FAMILY_ALERT_PREFIX);
+const isFamilyNotification = (id) => id.startsWith("family-");
+
 // storage.onChanged: the game page saved its first state (first time played).
 const isFirstGameState = (changes) => !!(changes.gameState && changes.gameState.newValue && !changes.gameState.oldValue);
 const isGameAlarm = (name) => name.startsWith(GAME_ALARM_PREFIX);

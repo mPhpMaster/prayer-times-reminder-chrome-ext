@@ -197,6 +197,7 @@
                     </div>
                 </form>
                 <button type="button" class="ghost wide" id="my-profile" data-g="myProfile">ملفي</button>
+                <button type="button" class="ghost wide family-btn" id="family-btn" hidden><span data-g="familyBtn">👪 العائلة</span> <span class="count-badge" id="family-badge" hidden></span></button>
                 <label class="row"><input type="checkbox" id="hide-progress" /> <span data-g="hideProgress"></span></label>
                 <h3 data-g="findPlayer">ابحث عن لاعب</h3>
                 <input id="search" maxlength="20" autocomplete="off" data-g-ph="searchPh" data-g-aria="searchPh" />
@@ -232,6 +233,17 @@
             </section>
         </section>
 
+        <!-- Family (game-family.js): members, invitations, alerts; a member's year. -->
+        <section id="family-view" hidden>
+            <button type="button" id="family-back" class="ghost" data-g="profileBack">→ رجوع</button>
+            <h2 data-g="familyTitle">العائلة</h2>
+            <div id="family-body"></div>
+        </section>
+        <section id="member-view" hidden>
+            <button type="button" id="member-back" class="ghost" data-g="profileBack">→ رجوع</button>
+            <div id="member-body"></div>
+        </section>
+
         <p class="privacy" data-g="privacy"></p>
     </main>
 
@@ -256,12 +268,14 @@
          load/resume; this page is the Android home, so it needs the planners. -->
     <script src="lock-config.js"></script>
     <script src="notify-plan.js"></script>
+    <script src="family-alerts.js"></script>
     <script src="recitation-match.js"></script>
     <script src="game-score.js"></script>
     <script src="game-windows.js"></script>
     <script src="game-state.js"></script>
     <script src="game-tasks.js"></script>
     <script src="game-sync.js"></script>
+    <script src="game-family.js"></script>
     <script src="game.js?v=230"></script>
 </body>
 

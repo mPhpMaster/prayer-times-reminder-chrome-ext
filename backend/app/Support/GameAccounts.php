@@ -107,6 +107,7 @@ final class GameAccounts
             DB::table('game_period_winners')->where('user_id', $user->id)->delete();
             DB::table('game_follows')->where('follower_id', $user->id)->orWhere('followee_id', $user->id)->delete();
             DB::table('game_tokens')->where('user_id', $user->id)->delete();
+            GameFamilies::forget($user); // the last parent out dissolves the family
             DB::table('game_email_verifications')->where('user_id', $user->id)->delete();
             DB::table('dedication_requests')->where('user_id', $user->id)->where('status', 'pending')->delete();
             // Decided requests stay (an approved name is on the About page) but lose their owner.
