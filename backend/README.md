@@ -1,7 +1,7 @@
 # Prayer game API (Laravel)
 
 The backend for the dhikr game (docs/GAME-DESIGN-2026-09-25.md, phases 2–3):
-accounts, progress sync, follows and the monthly leaderboard.
+accounts, progress sync, follows, the leaderboard and period prizes.
 
 **The app never talks to the database.** It calls this API at `/v1/*` with a
 bearer token; only this backend holds the database credentials. The database
@@ -34,7 +34,7 @@ php artisan test                   # SQLite in memory
 | POST | `/v1/progress` `{completions:[…]}` | idempotent, first write wins; caps: 300/task, 100/gift, 400/window; no future timestamps. → `{accepted, newAchievements}` (ids earned by THIS call only) |
 | GET | `/v1/progress?month=YYYY-MM` | own completions |
 | GET | `/v1/users?q=` | prefix search (≥ 2 chars) |
-| GET | `/v1/users/{username}?month=&today=YYYY-MM-DD` | profile: `followers`, `followingCount`, `joined`, `points`, `stats`, `achievements`; the last three are `null` if the player hides progress (they still see their own) |
+| GET | `/v1/users/{username}?month=&today=YYYY-MM-DD` | profile: `followers`, `followingCount`, `joined`, `points`, `stats`, `achievements` (`null` if the player hides progress; they still see their own), and `wins` `{month, quarter, half, year, total, lastMonth}` (always public) |
 
 ### Stats and achievements (`app/Support/GameStats.php`)
 
@@ -53,7 +53,7 @@ completions. `WINDOW_TASK_COUNT` mirrors `WINDOW_TASKS` in
 `php artisan migrate --force` for the new table.
 | PUT / DELETE | `/v1/follows/{username}` | follow / unfollow (one-way) |
 | GET | `/v1/follows` | players I follow |
-| GET | `/v1/leaderboard?month=&scope=all\|following` | monthly totals; hidden players excluded |
+| GET | `/v1/leaderboard?period=all\|year\|half\|quarter\|month&today=YYYY-MM-DD&scope=all\|following` | points never reset: all-time totals or the current period's (from the viewer's `today`); hidden players excluded. `winners`: the latest decided month / quarter / half / year and its winner(s) (ties all win; a hidden winner shows without points). Periods are decided lazily, 2 days after they end (`App\Support\GameWinners`). Older apps send only `month=`. |
 
 Errors are `{"error": "code"}` with a matching HTTP status. The app's client
 is `core/logic/game-sync.js`. Location is never sent — prayer windows are

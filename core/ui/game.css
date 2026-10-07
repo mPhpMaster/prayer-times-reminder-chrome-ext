@@ -232,6 +232,13 @@ input[type="search"], #username, #search, #auth input {
 .board .name, .people .name { flex: 1; }
 .board .p { font-weight: 700; font-variant-numeric: tabular-nums; }
 .board li.me .row-btn { border-color: var(--primary); }
+/* Period tabs + the latest winners (points never reset; each period crowns its top player). */
+.seg.periods { margin-top: 6px; }
+.seg.periods button { font-size: 12px; padding-inline: 2px; }
+.winners { display: grid; gap: 6px; margin-top: 8px; }
+.winners-title { margin: 0 0 4px; font-size: 13px; font-weight: 700; color: var(--gold); }
+.winners .row-btn { border-color: var(--gold); }
+.wins { margin: 4px 0 0; font-size: 14px; color: var(--gold); white-space: pre-line; }
 .me-line { font-size: 14px; margin: 0; }
 .row { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.6; }
 #me-view h3 { font-size: 15px; margin: 14px 0 4px; }

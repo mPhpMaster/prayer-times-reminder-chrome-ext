@@ -37,6 +37,7 @@ let apiUrl = "";
 const api = () => gameApi(apiUrl, account && account.token);
 let authCfg = null; // /v1/auth/config, fetched once
 let boardScope = "all";
+let boardPeriod = "month"; // all | year | half | quarter | month
 let profileName = null;
 
 // Reader state
@@ -178,7 +179,8 @@ function render(r) {
   if (r.name === "board") renderBoard();
   if (r.name === "me") renderMe();
   if (r.name === "profile") openProfile(r.arg);
-  if (r.name === "read" || r.name === "gift") {
+  if (r.name === "gift") return replaceRoute({ name: "tasks" }); // gifts are gone (an old link)
+  if (r.name === "read") {
     if (!current) return replaceRoute({ name: "tasks" });
     const task = r.name === "gift" ? giftForWindow(current.key) : tasks.find((t) => t.id === r.arg);
     const giftReady = r.name !== "gift" || allTasksDone(entry(), tasks.map((t) => t.id));
@@ -372,9 +374,9 @@ function tick() {
   $("done-count").textContent = G.doneCount(doneCount, tasks.length);
   renderResume(open, e);
 
-  const done = allTasksDone(e, tasks.map((t) => t.id));
-  const giftDone = e && e.gift && e.gift.doneAt;
-  $("gift").hidden = !(open && done && !giftDone);
+  // Finishing a window no longer opens a gift: the prize goes to each
+  // period's top player (the board's winners), so the button stays hidden.
+  $("gift").hidden = true;
 
   $("pts-window").textContent = windowPoints(e);
   $("pts-day").textContent = pointsWithPrefix(state, current.day);
@@ -788,15 +790,61 @@ function rowButton(parts, label, onClick) {
   return li;
 }
 
+// "2026-10" / "2026-Q4" / "2026-H2" / "2026" -> a name in the player's language.
+function periodName(type, key) {
+  if (!key) return "";
+  const y = key.slice(0, 4);
+  if (type === "month") return fmtMonth(key);
+  if (type === "quarter") return G.quarterN(Number(key.slice(6)), y);
+  if (type === "half") return G.halfN(Number(key.slice(6)), y);
+  return y;
+}
+
+// The latest winners: for the selected period type, or every type on "all".
+function renderWinners(winners) {
+  const box = $("board-winners");
+  const types = boardPeriod === "all" ? ["month", "quarter", "half", "year"] : [boardPeriod];
+  const groups = types.map((t) => [t, winners && winners[t]]).filter(([, w]) => w && w.winners.length);
+  box.hidden = !groups.length;
+  box.replaceChildren(
+    ...groups.map(([type, w]) => {
+      const div = document.createElement("div");
+      const h = document.createElement("p");
+      h.className = "winners-title";
+      h.textContent = G.winnersOf(periodName(type, w.key));
+      const ol = document.createElement("ol");
+      ol.className = "board";
+      for (const u of w.winners) {
+        ol.appendChild(
+          rowButton(
+            [["rank", "🏆"], ["name", u.displayName], ["p", u.points == null ? "—" : u.points]],
+            G.winnerRow(u.displayName, u.points),
+            () => go({ name: "profile", arg: u.username })
+          )
+        );
+      }
+      div.append(h, ol);
+      return div;
+    })
+  );
+}
+
 async function renderBoard() {
   const box = $("board");
   $("board-me").textContent = "";
-  $("board-month").textContent = G.boardMonth(month());
-  if (!apiUrl || !account) return box.replaceChildren(messageItem(socialUnavailableText()));
+  $("board-month").textContent = "";
+  if (!apiUrl || !account) {
+    $("board-winners").hidden = true;
+    return box.replaceChildren(messageItem(socialUnavailableText()));
+  }
   box.replaceChildren();
   try {
     await syncNow();
-    const data = await api().leaderboard(month(), boardScope);
+    const data = await api().leaderboard(boardPeriod, boardScope, localDay());
+    // An older server ignores `period` and answers with this month.
+    const type = data.period || "month";
+    $("board-month").textContent = type === "all" ? G.boardAll : G.boardPeriod(periodName(type, data.periodKey || data.month));
+    renderWinners(data.winners);
     for (const r of data.rows) {
       const li = rowButton(
         [["rank", r.rank], ["name", r.displayName], ["p", r.points]],
@@ -1107,6 +1155,7 @@ async function openProfile(name) {
   $("profile-name").textContent = name;
   $("profile-meta").textContent = "";
   $("profile-points").textContent = "…";
+  $("profile-wins").hidden = true;
   $("profile-follow").hidden = true;
   $("profile-stats").hidden = true;
   $("profile-ach").hidden = true;
@@ -1124,11 +1173,23 @@ async function openProfile(name) {
     $("profile-follow").hidden = p.self;
     $("profile-follow").textContent = p.following ? G.unfollow : G.follow;
     $("profile-follow").dataset.following = String(p.following);
+    renderWins(p.wins);
     renderStats(p.stats, p.points);
     renderAchievements(p.achievements);
   } catch {
     $("profile-points").textContent = G.profileFail;
   }
+}
+
+// Period prizes: public even when progress is hidden (the winners list shows
+// the name anyway). "Last month's winner", then counts by period type.
+function renderWins(w) {
+  const el = $("profile-wins");
+  if (!w || !w.total) return (el.hidden = true);
+  const labels = { month: G.periodMonth, quarter: G.periodQuarter, half: G.periodHalf, year: G.periodYear };
+  const parts = ["month", "quarter", "half", "year"].filter((t) => w[t]).map((t) => `${labels[t]} ×${fmtNum(w[t])}`);
+  el.textContent = [w.lastMonth ? G.lastMonthWinner : "", G.winsLine(parts.join(" · "))].filter(Boolean).join("\n");
+  el.hidden = false;
 }
 
 function renderStats(s, monthPoints) {
@@ -1163,7 +1224,9 @@ function renderAchievements(list) {
   $("profile-ach").hidden = !list;
   if (!list) return;
   const earned = new Map(list.map((a) => [a.id, a.earnedAt]));
-  const ids = [...earned.keys(), ...Object.keys(G.ach).filter((id) => !earned.has(id))];
+  // "first-gift" can no longer be earned (gifts are gone): kept only if already won.
+  const RETIRED = ["first-gift"];
+  const ids = [...earned.keys(), ...Object.keys(G.ach).filter((id) => !earned.has(id) && !RETIRED.includes(id))];
   $("ach-list").replaceChildren(
     ...ids
       .filter((id) => G.ach[id]) // an id newer than this app: skip until it knows the name
@@ -1202,10 +1265,17 @@ async function toggleFollow() {
 
 // ---- wiring ---------------------------------------------------------------
 for (const b of document.querySelectorAll(".tabs button")) b.addEventListener("click", () => selectTab(b.dataset.tab));
-for (const b of document.querySelectorAll("#board-view .seg button")) {
+for (const b of document.querySelectorAll("#board-view [data-scope]")) {
   b.addEventListener("click", () => {
     boardScope = b.dataset.scope;
-    for (const x of document.querySelectorAll("#board-view .seg button")) x.setAttribute("aria-pressed", String(x === b));
+    for (const x of document.querySelectorAll("#board-view [data-scope]")) x.setAttribute("aria-pressed", String(x === b));
+    renderBoard();
+  });
+}
+for (const b of document.querySelectorAll("#board-view [data-period]")) {
+  b.addEventListener("click", () => {
+    boardPeriod = b.dataset.period;
+    for (const x of document.querySelectorAll("#board-view [data-period]")) x.setAttribute("aria-pressed", String(x === b));
     renderBoard();
   });
 }

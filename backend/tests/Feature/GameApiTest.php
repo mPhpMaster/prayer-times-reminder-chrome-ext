@@ -91,7 +91,8 @@ class GameApiTest extends TestCase
         $this->as($t)->postJson('/v1/progress', ['completions' => array_slice($flood, 3)]);
 
         $mine = collect($this->as($t)->getJson('/v1/progress?month=2026-09')->json('completions'));
-        $this->assertSame(400, $mine->where('windowKey', '2026-09-25:Asr')->sum('points'));
+        // A window's tasks are capped at 300 (gifts no longer add 100 on top).
+        $this->assertSame(300, $mine->where('windowKey', '2026-09-25:Asr')->sum('points'));
         $this->assertSame(27, $mine->firstWhere('itemId', 'tasbih-33')['points']);
     }
 

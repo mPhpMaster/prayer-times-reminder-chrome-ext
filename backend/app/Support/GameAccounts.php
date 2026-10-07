@@ -66,6 +66,13 @@ final class GameAccounts
                     DB::table('game_follows')->insertOrIgnore(['follower_id' => $f, 'followee_id' => $into->id, 'created_at' => now()]);
                 }
             }
+            // The same person's other account: its period prizes come along.
+            foreach (DB::table('game_period_winners')->where('user_id', $from->id)->get() as $w) {
+                DB::table('game_period_winners')->insertOrIgnore([
+                    'period_type' => $w->period_type, 'period_key' => $w->period_key, 'user_id' => $into->id,
+                    'points' => $w->points, 'decided_at' => $w->decided_at,
+                ]);
+            }
             self::deleteUser($from);
         });
         // Re-derived from the merged completions, not copied: an achievement
@@ -75,14 +82,15 @@ final class GameAccounts
 
     /**
      * Wipe a player's game data and profile, keeping the account and sign-in:
-     * progress, achievements, follows (both ways), display name, and the
-     * "hide my progress" choice. Used by admins.
+     * progress, achievements, period prizes, follows (both ways), display
+     * name, and the "hide my progress" choice. Used by admins.
      */
     public static function resetData(GameUser $user): void
     {
         DB::transaction(function () use ($user) {
             DB::table('game_completions')->where('user_id', $user->id)->delete();
             DB::table('game_achievements')->where('user_id', $user->id)->delete();
+            DB::table('game_period_winners')->where('user_id', $user->id)->delete();
             DB::table('game_follows')->where('follower_id', $user->id)->orWhere('followee_id', $user->id)->delete();
             $user->display_name = null;
             $user->hide_progress = false;
@@ -96,6 +104,7 @@ final class GameAccounts
         DB::transaction(function () use ($user) {
             DB::table('game_completions')->where('user_id', $user->id)->delete();
             DB::table('game_achievements')->where('user_id', $user->id)->delete();
+            DB::table('game_period_winners')->where('user_id', $user->id)->delete();
             DB::table('game_follows')->where('follower_id', $user->id)->orWhere('followee_id', $user->id)->delete();
             DB::table('game_tokens')->where('user_id', $user->id)->delete();
             DB::table('game_email_verifications')->where('user_id', $user->id)->delete();
