@@ -194,21 +194,21 @@ class AuthController extends Controller
     public function reset(Request $request): JsonResponse
     {
         $email = mb_strtolower(trim((string) $request->input('email')));
-        $row = DB::table('game_password_resets')->where('email', $email)->first();
-        if (! $row) {
-            GameRules::fail(400, 'bad-code');
-        }
-        if (now()->greaterThan($row->expires_at)) {
-            DB::table('game_password_resets')->where('email', $email)->delete();
-            GameRules::fail(400, 'code-expired');
-        }
-        // Per code, and per email across resends (a new code resets only the first).
+        // Every failure looks the same — no code, an expired or used-up code,
+        // a wrong code, an unknown email — so this never tells whether an
+        // email has an account. Wrong tries are capped per email either way.
         $wrongKey = 'reset-wrong:'.sha1($email);
-        if ($row->attempts >= self::RESET_ATTEMPTS || RateLimiter::tooManyAttempts($wrongKey, 10)) {
+        if (RateLimiter::tooManyAttempts($wrongKey, 10)) {
             GameRules::fail(429, 'too-many-attempts');
         }
-        if (! Hash::check((string) $request->input('code'), $row->code_hash)) {
-            DB::table('game_password_resets')->where('email', $email)->increment('attempts');
+        $row = DB::table('game_password_resets')->where('email', $email)->first();
+        $fresh = $row && now()->lessThanOrEqualTo($row->expires_at) && $row->attempts < self::RESET_ATTEMPTS;
+        // One hash check either way, so timing doesn't tell either.
+        $match = Hash::check((string) $request->input('code'), $row->code_hash ?? '$2y$12$'.str_repeat('x', 53));
+        if (! $fresh || ! $match) {
+            if ($row) {
+                DB::table('game_password_resets')->where('email', $email)->increment('attempts');
+            }
             RateLimiter::hit($wrongKey, 86400);
             GameRules::fail(400, 'bad-code');
         }

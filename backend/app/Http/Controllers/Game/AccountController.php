@@ -18,7 +18,7 @@ class AccountController extends Controller
         return response()->json(['user' => $request->attributes->get('gameUser')->toPrivate()]);
     }
 
-    /** PATCH /v1/me {displayName?, hideProgress?} */
+    /** PATCH /v1/me {displayName?, hideProgress?, settings?: {alerts?, journey?, sound?}} */
     public function update(Request $request): JsonResponse
     {
         /** @var GameUser $me */
@@ -30,6 +30,17 @@ class AccountController extends Controller
         }
         if (is_bool($request->input('hideProgress'))) {
             $me->hide_progress = $request->input('hideProgress');
+        }
+        // Game options: only the known on/off keys; the rest of the stored set is kept.
+        $settings = $request->input('settings');
+        if (is_array($settings)) {
+            $known = array_filter(
+                array_intersect_key($settings, array_flip(GameUser::SETTINGS)),
+                'is_bool',
+            );
+            if ($known) {
+                $me->settings = array_merge($me->settings ?? [], $known);
+            }
         }
         $me->save();
 

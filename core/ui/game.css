@@ -60,6 +60,42 @@ button { font: inherit; cursor: pointer; }
   line-height: 1.7;
 }
 .notice.reward { animation: reward-arrive 480ms ease-out both; }
+/* Messages float as a toast at the bottom of the screen (tap to close). */
+#notice {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  max-width: 440px;
+  margin-inline: auto;
+  border: 1px solid var(--next-item-border, var(--border));
+  box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  animation: toast-in 220ms ease-out both;
+}
+#notice.reward { animation: toast-in 220ms ease-out both, reward-arrive 480ms ease-out both; }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #notice, #notice.reward { animation: none; }
+}
+/* Signed out: a calm warning above the tasks. */
+.guest-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(238, 188, 74, 0.45);
+  background: rgba(238, 188, 74, 0.1);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.guest-note .link { padding: 0; font-weight: 700; }
 @keyframes reward-arrive {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: none; }

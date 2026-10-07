@@ -19,9 +19,12 @@ class GameUser extends Model
 
     protected $hidden = ['password', 'google_sub', 'email'];
 
+    /** The game options kept with the account (all on/off). */
+    public const SETTINGS = ['alerts', 'journey', 'sound'];
+
     protected function casts(): array
     {
-        return ['hide_progress' => 'boolean', 'email_verified_at' => 'datetime', 'banned_at' => 'datetime'];
+        return ['hide_progress' => 'boolean', 'email_verified_at' => 'datetime', 'banned_at' => 'datetime', 'settings' => 'array'];
     }
 
     public static function findByUsername(string $name): ?self
@@ -61,6 +64,8 @@ class GameUser extends Model
             'legacy' => $this->isLegacy(),
             'admin' => GameAdmins::isAdmin($this),
             'superAdmin' => GameAdmins::isSuperAdmin($this),
+            // null until the player changes one: the app keeps its own defaults.
+            'settings' => $this->settings ? (object) array_intersect_key($this->settings, array_flip(self::SETTINGS)) : null,
         ];
     }
 }

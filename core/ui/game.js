@@ -14,7 +14,8 @@
 // name-only account from before is "legacy" and is linked on sign-in.
 
 const $ = (id) => document.getElementById(id);
-const NOTICE_HIDE_MS = 4000; // success messages fade out; errors and hints stay
+const NOTICE_HIDE_MS = 4000; // a toast: success fades after 4 s,
+const NOTICE_ERROR_MS = 7000; // a problem stays a little longer; a tap closes either
 const CELEBRATE_HIDE_MS = 7000;
 
 let lang = "ar";
@@ -178,6 +179,7 @@ function render(r) {
   document.body.classList.toggle("reader-active", r.name === "read" || r.name === "gift");
   document.querySelector(".scores").hidden = !onTasks;
   $("list-view").hidden = r.name !== "tasks";
+  $("guest-note").hidden = !!account || !apiUrl;
   $("reader").hidden = !(r.name === "read" || r.name === "gift");
   $("board-view").hidden = r.name !== "board";
   $("me-view").hidden = r.name !== "me";
@@ -425,7 +427,7 @@ function showNotice(text, { autoHide = false } = {}) {
   $("notice").hidden = !text;
   $("notice").textContent = text || "";
   $("notice").classList.toggle("reward", Boolean(text && autoHide));
-  if (text && autoHide) noticeTimer = setTimeout(() => showNotice(""), NOTICE_HIDE_MS);
+  if (text) noticeTimer = setTimeout(() => showNotice(""), autoHide ? NOTICE_HIDE_MS : NOTICE_ERROR_MS);
 }
 
 // ---- celebration ------------------------------------------------------------
@@ -708,11 +710,9 @@ async function finishReading() {
     return;
   }
   const started = isGift ? entry() && entry().gift && entry().gift.startedAt : entry() && entry().tasks[task.id] && entry().tasks[task.id].startedAt;
-  if (isGift) markGiftDone(state, current.key, task.id, points, now);
-  else {
-    markTaskDone(state, current.key, task.id, points, now); // once: a done task is never re-banked
-    if (started) recordDuration(state, durationKey(task.id, task.repeat), now - started);
-  }
+  const rec = isGift ? markGiftDone(state, current.key, task.id, points, now) : markTaskDone(state, current.key, task.id, points, now); // once: a done task is never re-banked
+  if (!account) rec.local = true; // a guest's points stay on this device (never sent, even after signing in)
+  if (!isGift && started) recordDuration(state, durationKey(task.id, task.repeat), now - started);
   await save();
   syncNow();
   // A finished window no longer needs its "30 min left" alert.
@@ -765,6 +765,37 @@ async function syncNow() {
 async function forgetAccount() {
   account = null;
   await Platform.store.remove(GAME_ACCOUNT_KEY);
+}
+
+// ---- the game's options, kept with the account ---------------------------------
+// Task alerts, the day's journey and the soft sound are saved on the server
+// (PATCH /v1/me settings) and read back at sign-in, so they follow the player
+// to any device. The first time an account has none, this device's choices
+// become the account's.
+function pushSettings(patch) {
+  if (account && apiUrl) api().updateMe({ settings: patch }).catch(() => {});
+}
+
+async function adoptAccountSettings(s) {
+  if (!s) {
+    const { gameAlerts } = await Platform.store.get(["gameAlerts"]);
+    return pushSettings({ alerts: gameAlerts !== false, journey: journeyOn, sound: soundOn });
+  }
+  if (typeof s.alerts === "boolean") {
+    await Platform.store.set({ gameAlerts: s.alerts });
+    $("alerts").checked = s.alerts;
+    if (Platform.gameAlerts) Platform.gameAlerts.refresh();
+  }
+  if (typeof s.journey === "boolean") {
+    journeyOn = s.journey;
+    await Platform.store.set({ gameJourney: journeyOn });
+    $("journey-on").checked = journeyOn;
+  }
+  if (typeof s.sound === "boolean") {
+    soundOn = s.sound;
+    await Platform.store.set({ gameSound: soundOn });
+    $("sound-on").checked = soundOn;
+  }
 }
 
 // ---- tabs: board ------------------------------------------------------------
@@ -845,13 +876,20 @@ async function renderBoard() {
   const box = $("board");
   $("board-me").textContent = "";
   $("board-month").textContent = "";
-  if (!apiUrl || !account) {
+  if (!apiUrl) {
     $("board-winners").hidden = true;
     return box.replaceChildren(messageItem(socialUnavailableText()));
   }
+  // Anyone can see the board; "following" needs an account.
+  const scopes = document.querySelector("#board-view [data-scope]").parentElement;
+  scopes.hidden = !account;
+  if (!account && boardScope !== "all") {
+    boardScope = "all";
+    for (const x of document.querySelectorAll("#board-view [data-scope]")) x.setAttribute("aria-pressed", String(x.dataset.scope === "all"));
+  }
   box.replaceChildren();
   try {
-    await syncNow();
+    if (account) await syncNow();
     const data = await api().leaderboard(boardPeriod, boardScope, localDay());
     // An older server ignores `period` and answers with this month.
     const type = data.period || "month";
@@ -863,14 +901,14 @@ async function renderBoard() {
         G.boardRow(r.rank, r.displayName, r.points),
         () => go({ name: "profile", arg: r.username })
       );
-      if (r.username === account.username) {
+      if (account && r.username === account.username) {
         li.classList.add("me");
         li.firstChild.setAttribute("aria-current", "true");
       }
       box.appendChild(li);
     }
     if (!data.rows.length) box.replaceChildren(messageItem(G.boardEmpty));
-    $("board-me").textContent = data.me.hideProgress ? G.myPointsHidden(data.me.points) : G.myPoints(data.me.points);
+    $("board-me").textContent = !data.me ? G.guestBoardNote : data.me.hideProgress ? G.myPointsHidden(data.me.points) : G.myPoints(data.me.points);
   } catch {
     box.replaceChildren(messageItem(G.offline));
   }
@@ -958,6 +996,7 @@ async function renderMe() {
       };
       await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
       $("hide-progress").checked = user.hideProgress;
+      await adoptAccountSettings(user.settings);
     } catch (e) {
       if (e.status === 401) await forgetAccount();
     }
@@ -1296,14 +1335,17 @@ for (const b of document.querySelectorAll("#board-view [data-period]")) {
 $("alerts").addEventListener("change", async (e) => {
   await Platform.store.set({ gameAlerts: e.target.checked });
   if (Platform.gameAlerts) Platform.gameAlerts.refresh();
+  pushSettings({ alerts: e.target.checked });
 });
 $("journey-on").addEventListener("change", async (e) => {
   journeyOn = e.target.checked;
   await Platform.store.set({ gameJourney: journeyOn });
+  pushSettings({ journey: journeyOn });
 });
 $("sound-on").addEventListener("change", async (e) => {
   soundOn = e.target.checked;
   await Platform.store.set({ gameSound: soundOn });
+  pushSettings({ sound: soundOn });
   if (soundOn) softChime(); // let the player hear how quiet it is
 });
 $("mode-in").addEventListener("click", () => setAuthMode("in"));
@@ -1335,6 +1377,11 @@ $("hide-progress").addEventListener("change", async (e) => {
 });
 $("profile-back").addEventListener("click", () => goBack({ name: "board" }));
 $("profile-follow").addEventListener("click", toggleFollow);
+// The toast floats over the screen: it lives on <body>, not inside the glass card
+// (a backdrop-filter would pin position:fixed to the card instead of the screen).
+document.body.appendChild($("notice"));
+$("notice").addEventListener("click", () => showNotice(""));
+$("guest-signin").addEventListener("click", () => selectTab("me"));
 $("my-profile").addEventListener("click", () => account && go({ name: "profile", arg: account.username }));
 $("family-btn").addEventListener("click", () => go({ name: "family" }));
 $("family-back").addEventListener("click", () => goBack({ name: "me" }));

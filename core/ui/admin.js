@@ -50,7 +50,8 @@ function notice(text, autoHide = true) {
   clearTimeout(noticeTimer);
   $("admin-notice").textContent = text || "";
   $("admin-notice").hidden = !text;
-  if (text && autoHide) noticeTimer = setTimeout(() => notice(""), 4000);
+  // A toast: success fades after 4 s, a problem after 7 s; a tap closes either.
+  if (text) noticeTimer = setTimeout(() => notice(""), autoHide ? 4000 : 7000);
 }
 
 function errorText(e) {
@@ -661,6 +662,11 @@ $("user-search").addEventListener("submit", searchUsers);
 window.__ptPopupReset = () => {
   location.href = "popup.html";
 };
+
+// The toast floats over the screen: it lives on <body>, not inside the glass card
+// (a backdrop-filter would pin position:fixed to the card instead of the screen).
+document.body.appendChild($("admin-notice"));
+$("admin-notice").addEventListener("click", () => notice(""));
 
 async function init() {
   const s = await Platform.store.get(["lang", "theme", GAME_ACCOUNT_KEY, GAME_API_KEY]);

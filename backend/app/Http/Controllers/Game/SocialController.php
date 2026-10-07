@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Game;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\GameAuth;
 use App\Models\GameUser;
 use App\Support\GamePeriods;
 use App\Support\GameRules;
@@ -150,9 +151,13 @@ class SocialController extends Controller
      */
     public function leaderboard(Request $request): JsonResponse
     {
-        $me = $this->me($request);
+        // Public: a valid token (not a banned player's) adds "me" and the following scope.
+        $me = GameAuth::userForToken($request->bearerToken());
+        if ($me && $me->isBanned()) {
+            $me = null;
+        }
         $nowMs = (int) now()->getTimestampMs();
-        $scope = $request->query('scope') === 'following' ? 'following' : 'all';
+        $scope = $me && $request->query('scope') === 'following' ? 'following' : 'all';
         $asked = $request->query('period');
         $period = in_array($asked, ['all', ...GamePeriods::TYPES], true) ? $asked : 'month';
         if ($asked === null) {
@@ -188,8 +193,8 @@ class SocialController extends Controller
             'points' => (int) $r->points,
         ]);
 
-        $mine = DB::table('game_completions')->where('user_id', $me->id);
-        if ($key !== null) {
+        $mine = $me ? DB::table('game_completions')->where('user_id', $me->id) : null;
+        if ($mine && $key !== null) {
             GamePeriods::scope($mine, $period, $key);
         }
 
@@ -199,7 +204,7 @@ class SocialController extends Controller
             'month' => $period === 'month' ? $key : null,
             'scope' => $scope,
             'rows' => $rows,
-            'me' => $me->toPublic() + ['points' => (int) $mine->sum('points')],
+            'me' => $me ? $me->toPublic() + ['points' => (int) $mine->sum('points')] : null,
             'winners' => GameWinners::latest(),
         ]);
     }
