@@ -73,7 +73,8 @@ function gameApi(baseUrl, token) {
     follow: (name) => call("PUT", `/v1/follows/${u(name)}`),
     unfollow: (name) => call("DELETE", `/v1/follows/${u(name)}`),
     following: () => call("GET", "/v1/follows"),
-    leaderboard: (month, scope) => call("GET", `/v1/leaderboard?month=${month}&scope=${scope}`),
+    // period: all | year | half | quarter | month (points never reset; see GameWinners).
+    leaderboard: (period, scope, today) => call("GET", `/v1/leaderboard?period=${period}&scope=${scope}&today=${today}`),
     // The About page's dedication names (public) and a player's requests to add one.
     dedications: () => call("GET", "/v1/dedications"),
     myDedicationRequests: () => call("GET", "/v1/dedications/requests"),

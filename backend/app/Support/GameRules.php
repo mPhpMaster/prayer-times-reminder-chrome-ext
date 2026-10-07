@@ -5,14 +5,17 @@ namespace App\Support;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 /**
- * Validation shared by the game endpoints. Point caps mirror the app's
- * core/logic/game-score.js (WINDOW_POINTS, GIFT_POINTS) — keep them in step.
+ * Validation shared by the game endpoints. The point cap mirrors the app's
+ * core/logic/game-score.js (WINDOW_POINTS) — keep them in step.
+ *
+ * Finishing a window no longer opens a gift worth points: prizes go to each
+ * period's top player instead (GameWinners). Older apps still send their
+ * "gift" rows; those are dropped here, so they earn nothing.
  */
 final class GameRules
 {
     public const WINDOW_POINTS = 300;
-    public const GIFT_POINTS = 100;
-    public const MAX_WINDOW_TOTAL = self::WINDOW_POINTS + self::GIFT_POINTS;
+    public const MAX_WINDOW_TOTAL = self::WINDOW_POINTS;
 
     private const USERNAME = '/^[\p{L}\p{N}_]{3,20}$/u'; // any script, digits, underscore
     private const WINDOW_KEY = '/^\d{4}-\d{2}-\d{2}:(Fajr|Dhuhr|Asr|Maghrib|Isha)$/';
@@ -102,8 +105,11 @@ final class GameRules
             if (! preg_match(self::WINDOW_KEY, $key) || ! preg_match(self::ITEM_ID, $item)) {
                 continue;
             }
-            $kind = ($r['kind'] ?? '') === 'gift' ? 'gift' : 'task';
-            $cap = $kind === 'gift' ? self::GIFT_POINTS : self::WINDOW_POINTS;
+            if (($r['kind'] ?? '') === 'gift') {
+                continue; // gifts no longer earn points (see the class comment)
+            }
+            $kind = 'task';
+            $cap = self::WINDOW_POINTS;
             if (! is_numeric($r['points'] ?? null) || ! is_numeric($r['doneAt'] ?? null)) {
                 continue;
             }

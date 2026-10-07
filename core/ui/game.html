@@ -106,12 +106,21 @@
             <p class="heard" id="heard" lang="ar" dir="rtl" aria-live="polite"></p>
         </section>
 
-        <!-- Leaderboard (monthly) -->
+        <!-- Leaderboard: all-time points or the current year / half / quarter /
+             month (points never reset), with each period's latest winners. -->
         <section id="board-view" hidden>
             <div class="seg" role="group" data-g-aria="scopeLabel" aria-label="نطاق القائمة">
                 <button type="button" data-scope="all" aria-pressed="true" data-g="scopeAll">الكل</button>
                 <button type="button" data-scope="following" aria-pressed="false" data-g="scopeFollowing">من أتابعهم</button>
             </div>
+            <div class="seg periods" role="group" data-g-aria="periodLabel" aria-label="فترة الترتيب">
+                <button type="button" data-period="all" aria-pressed="false" data-g="periodAll">كل الأوقات</button>
+                <button type="button" data-period="year" aria-pressed="false" data-g="periodYear">السنة</button>
+                <button type="button" data-period="half" aria-pressed="false" data-g="periodHalf">نصف السنة</button>
+                <button type="button" data-period="quarter" aria-pressed="false" data-g="periodQuarter">الربع</button>
+                <button type="button" data-period="month" aria-pressed="true" data-g="periodMonth">الشهر</button>
+            </div>
+            <div class="winners" id="board-winners" hidden></div>
             <p class="muted" id="board-month"></p>
             <ol class="board" id="board"></ol>
             <p class="me-line" id="board-me"></p>
@@ -211,6 +220,7 @@
                 <p class="muted" id="profile-meta"></p>
             </div>
             <p id="profile-points"></p>
+            <p class="wins" id="profile-wins" hidden></p>
             <button type="button" class="primary" id="profile-follow"></button>
             <section id="profile-stats" hidden>
                 <h3 data-g="statsTitle">إحصاءات</h3>
