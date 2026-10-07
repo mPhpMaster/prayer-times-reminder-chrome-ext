@@ -768,7 +768,7 @@ async function forgetAccount() {
 }
 
 // ---- the game's options, kept with the account ---------------------------------
-// Task alerts, the day's journey and the soft sound are saved on the server
+// Task alerts, the day's journey, the soft sound and the Chrome new tab are saved on the server
 // (PATCH /v1/me settings) and read back at sign-in, so they follow the player
 // to any device. The first time an account has none, this device's choices
 // become the account's.
@@ -778,8 +778,12 @@ function pushSettings(patch) {
 
 async function adoptAccountSettings(s) {
   if (!s) {
-    const { gameAlerts } = await Platform.store.get(["gameAlerts"]);
-    return pushSettings({ alerts: gameAlerts !== false, journey: journeyOn, sound: soundOn });
+    const { gameAlerts, newTabPage } = await Platform.store.get(["gameAlerts", "newTabPage"]);
+    return pushSettings({ alerts: gameAlerts !== false, journey: journeyOn, sound: soundOn, newTab: newTabPage !== false });
+  }
+  if (typeof s.newTab === "boolean") {
+    await Platform.store.set({ newTabPage: s.newTab });
+    $("newtab-on").checked = s.newTab;
   }
   if (typeof s.alerts === "boolean") {
     await Platform.store.set({ gameAlerts: s.alerts });
@@ -976,6 +980,7 @@ async function renderMe() {
   $("alerts").checked = s.gameAlerts !== false;
   $("journey-on").checked = journeyOn;
   $("sound-on").checked = soundOn;
+  $("newtab-on").checked = (await Platform.store.get(["newTabPage"])).newTabPage !== false;
   if (!apiUrl) {
     $("auth").hidden = false;
     $("auth-main").hidden = true;
@@ -1341,6 +1346,10 @@ $("journey-on").addEventListener("change", async (e) => {
   journeyOn = e.target.checked;
   await Platform.store.set({ gameJourney: journeyOn });
   pushSettings({ journey: journeyOn });
+});
+$("newtab-on").addEventListener("change", async (e) => {
+  await Platform.store.set({ newTabPage: e.target.checked });
+  pushSettings({ newTab: e.target.checked });
 });
 $("sound-on").addEventListener("change", async (e) => {
   soundOn = e.target.checked;
