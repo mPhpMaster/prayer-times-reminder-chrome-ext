@@ -17,7 +17,7 @@ module.exports = [
     // Generated sync-core outputs + non-core tooling are not linted as sources.
     ignores: [
       "dist/**", "node_modules/**", "backend/**", "tools/**", "scripts/**",
-      "targets/extension/build/**", "targets/desktop/src/**", "targets/mobile/www/**",
+      "targets/extension/build/**", "targets/desktop/src/**", "targets/mobile/www/**", "targets/web/build/**",
       "core/platform/vendor/**", // vendored third-party (adhan, tz-lookup)
       "targets/mobile/android/**", "targets/desktop/src-tauri/**" // generated native projects
     ]

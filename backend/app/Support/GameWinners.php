@@ -59,6 +59,7 @@ final class GameWinners
             [$start] = GamePeriods::range($type, $key);
             $totals = GamePeriods::scope(DB::table('game_completions'), $type, $key)
                 ->where('window_key', '>=', max($start, GameRules::LAUNCH_DAY))
+                ->whereNotIn('user_id', DB::table('game_users')->whereNotNull('banned_at')->select('id'))
                 ->groupBy('user_id')
                 ->select('user_id', DB::raw('SUM(points) AS points'))
                 ->get();
@@ -97,6 +98,7 @@ final class GameWinners
         return DB::table('game_period_winners as w')
             ->join('game_users as u', 'u.id', '=', 'w.user_id')
             ->where('w.period_type', $type)->where('w.period_key', $key)
+            ->whereNull('u.banned_at')
             ->orderBy('u.username')
             ->get(['u.username', 'u.display_name', 'u.hide_progress', 'w.points'])
             ->map(fn ($r) => [

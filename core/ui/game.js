@@ -883,6 +883,7 @@ function authErrorText(e) {
     "weak-password": G.weakPassword,
     "email-taken": G.emailTaken,
     "bad-credentials": G.badCredentials,
+    banned: G.accountBanned,
     "bad-username": G.badUsername,
     "username-taken": G.usernameTaken,
     "account-conflict": G.accountConflict,

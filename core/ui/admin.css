@@ -18,6 +18,10 @@
   background: var(--secondary);
 }
 .admin-card.is-hidden { opacity: 0.6; }
+.admin-card.is-banned { border-color: rgba(140, 52, 50, 0.8); }
+.admin-user-edit { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.admin-check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.admin-log-details { flex-basis: 100%; overflow-wrap: anywhere; }
 .admin-card .muted, .admin-card .note { margin: 0; overflow-wrap: anywhere; }
 .admin-card-head { display: flex; justify-content: flex-start; }
 

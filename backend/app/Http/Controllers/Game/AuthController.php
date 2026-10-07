@@ -336,6 +336,9 @@ class AuthController extends Controller
     private function signedIn(GameUser $user, int $status = 200): JsonResponse
     {
         $user->refresh();
+        if ($user->isBanned()) {
+            GameRules::fail(403, 'banned'); // every sign-in path ends here
+        }
 
         return response()->json(['user' => $user->toPrivate(), 'token' => GameAccounts::issueToken($user)], $status);
     }
