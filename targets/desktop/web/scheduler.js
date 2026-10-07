@@ -76,9 +76,45 @@ async function scheduleDhikr() {
   }, Math.max(1000, minutes * 60 * 1000));
 }
 
+// --- Family alerts ------------------------------------------------------------
+// A parent's "the children didn't finish" checks (family-alerts.js); the game
+// window caches { mode, role } in "familyAlerts" whenever it loads the family.
+let familyTimers = [];
+
+async function fireFamilyCheck(check) {
+  const s = await Platform.store.get(["gameAccount", "gameApiUrl", "lang"]);
+  if (!s.gameAccount || !s.gameAccount.token) return;
+  const msg = await familyAlertFor(s.gameApiUrl, s.gameAccount.token, s.lang || "en", check);
+  if (!msg) return;
+  try {
+    await globalThis.__TAURI__.core.invoke("notify_family", { title: msg.title, body: msg.body });
+  } catch {
+    /* no toast (older shell): nothing else to do */
+  }
+}
+
+async function scheduleFamily() {
+  familyTimers.forEach(clearTimeout);
+  familyTimers = [];
+  const s = await Platform.store.get(["location", "familyAlerts"]);
+  const fa = s.familyAlerts;
+  if (fa && fa.role === "parent" && s.location && s.location.latitude != null) {
+    try {
+      for (const c of planFamilyChecks(PrayerEngine, s.location, new Date(), fa.mode)) {
+        const delay = c.when - Date.now();
+        if (delay > 0) familyTimers.push(setTimeout(() => fireFamilyCheck(c), delay));
+      }
+    } catch {
+      /* no prayer times yet */
+    }
+  }
+  familyTimers.push(setTimeout(scheduleFamily, 12 * 3600 * 1000)); // new days' times
+}
+
 // Re-plan when relevant settings change in the settings window.
 Platform.store.onChange((changes) => {
   if (!changes) return;
+  if (changes.location || changes.familyAlerts) scheduleFamily();
   if (changes.location || changes.lang) reschedule();
   if (DHIKR_KEYS.some((k) => k in changes)) scheduleDhikr();
 });
@@ -144,4 +180,5 @@ async function checkForUpdate() {
 
 reschedule();
 scheduleDhikr();
+scheduleFamily();
 setTimeout(checkForUpdate, 60 * 1000);

@@ -720,12 +720,43 @@
   }
   globalThis.__PTPlatform.gameAlerts = { refresh: scheduleGameAlerts };
 
+  // --- family alerts: a parent's "the children didn't finish" ----------------
+  // Planned here (family-alerts.js) and handed to AlarmManager with ready-made
+  // templates; at each check the native side asks the server and fills them in
+  // (FamilyAlertScheduler.java), with the app closed too. The game page caches
+  // { mode, role } in "familyAlerts" and calls Platform.familyAlerts.refresh().
+  async function scheduleFamilyAlerts() {
+    if (!Lock || !Lock.scheduleFamilyAlerts) return;
+    // A page without the planner must not send an empty schedule (that disarms it).
+    if (typeof planFamilyChecks !== "function") return;
+    try {
+      const s = await store.get(["location", "familyAlerts", "gameAccount", "gameApiUrl", "lang"]);
+      const fa = s.familyAlerts;
+      const token = (s.gameAccount && s.gameAccount.token) || "";
+      let entries = [];
+      if (fa && fa.role === "parent" && token && s.location && s.location.latitude != null) {
+        const lang = s.lang || "en";
+        entries = planFamilyChecks(PrayerEngine, s.location, new Date(), fa.mode, SCHED_DAYS).map((c) => ({
+          when: c.when,
+          kind: c.kind,
+          keys: c.keys,
+          tpl: familyAlertTemplates(lang, c),
+        }));
+      }
+      await Lock.scheduleFamilyAlerts({ entries, api: s.gameApiUrl || FAMILY_API_DEFAULT, token });
+    } catch {
+      /* best effort — re-tried on next resume */
+    }
+  }
+  globalThis.__PTPlatform.familyAlerts = { refresh: scheduleFamilyAlerts };
+
   async function scheduleAll() {
     await ensureChannels();
     scheduleNotifications();
     schedulePrayerLockAlarms();
     syncDhikrSchedule();
     scheduleGameAlerts();
+    scheduleFamilyAlerts();
     runPermissionFlow();
   }
 

@@ -113,7 +113,8 @@ function parseRoute(hash) {
   const [name, ...rest] = h.split("/");
   const arg = rest.join("/");
   if (name === "board" || name === "me" || name === "gift") return { name };
-  if ((name === "read" || name === "profile") && arg) return { name, arg };
+  if (name === "family") return { name };
+  if ((name === "read" || name === "profile" || name === "member") && arg) return { name, arg };
   return { name: "tasks" };
 }
 const routeHash = (r) => (r.arg ? `#${r.name}/${encodeURIComponent(r.arg)}` : `#${r.name}`);
@@ -147,6 +148,8 @@ function selectTab(name) {
 }
 function parentOf(r) {
   if (r.name === "profile") return { name: "board" };
+  if (r.name === "member") return { name: "family" };
+  if (r.name === "family") return { name: "me" };
   return { name: "tasks" };
 }
 
@@ -169,7 +172,7 @@ function render(r) {
     leaveReader(); // partial progress is already saved with every recognized phrase
   }
   // A profile keeps the tab it was opened from (board or account) highlighted.
-  const tab = isTab(r) ? r.name : r.name === "profile" ? currentTab() : "tasks";
+  const tab = isTab(r) ? r.name : r.name === "profile" ? currentTab() : r.name === "family" || r.name === "member" ? "me" : "tasks";
   for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === tab));
   const onTasks = r.name === "tasks" || r.name === "read" || r.name === "gift";
   document.body.classList.toggle("reader-active", r.name === "read" || r.name === "gift");
@@ -179,11 +182,15 @@ function render(r) {
   $("board-view").hidden = r.name !== "board";
   $("me-view").hidden = r.name !== "me";
   $("profile-view").hidden = r.name !== "profile";
+  $("family-view").hidden = r.name !== "family";
+  $("member-view").hidden = r.name !== "member";
 
   if (r.name === "tasks" && current) renderList();
   if (r.name === "board") renderBoard();
   if (r.name === "me") renderMe();
   if (r.name === "profile") openProfile(r.arg);
+  if (r.name === "family") renderFamily();
+  if (r.name === "member") openMember(r.arg);
   if (r.name === "gift") return replaceRoute({ name: "tasks" }); // gifts are gone (an old link)
   if (r.name === "read") {
     if (!current) return replaceRoute({ name: "tasks" });
@@ -958,6 +965,7 @@ async function renderMe() {
   const signedIn = account && !account.legacy;
   $("auth").hidden = !!signedIn;
   $("account").hidden = !account;
+  refreshFamilyButton();
   $("logout").hidden = !signedIn; // a name-only account has nothing to sign back in with
   $("legacy-note").hidden = !(account && account.legacy);
   if (account && account.legacy) $("legacy-note").textContent = G.legacyNote(account.username);
@@ -1328,6 +1336,9 @@ $("hide-progress").addEventListener("change", async (e) => {
 $("profile-back").addEventListener("click", () => goBack({ name: "board" }));
 $("profile-follow").addEventListener("click", toggleFollow);
 $("my-profile").addEventListener("click", () => account && go({ name: "profile", arg: account.username }));
+$("family-btn").addEventListener("click", () => go({ name: "family" }));
+$("family-back").addEventListener("click", () => goBack({ name: "me" }));
+$("member-back").addEventListener("click", () => goBack({ name: "family" }));
 $("delete-account").addEventListener("click", deleteAccount);
 $("verify-send").addEventListener("click", sendVerifyCode);
 $("verify").addEventListener("submit", submitVerify);

@@ -68,6 +68,12 @@ final class GameRules
         return $p;
     }
 
+    /** "YYYY-MM-DD:Prayer", as the apps key a prayer window. */
+    public static function isWindowKey(mixed $key): bool
+    {
+        return is_string($key) && preg_match(self::WINDOW_KEY, $key) === 1;
+    }
+
     /**
      * A window date a player can really have played: a real calendar date,
      * not before LAUNCH_DAY, and not after tomorrow in UTC (the furthest-ahead

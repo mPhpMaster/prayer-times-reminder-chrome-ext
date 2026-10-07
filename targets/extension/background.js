@@ -10,7 +10,7 @@ importScripts(
     "tasbih-phrases.js", "i18n.js",
     "vendor/adhan.js", "vendor/tz-lookup.js", "prayer-engine.js",
     "scheduler-core.js", "dhikr-core.js", "lock-config.js",
-    "notify-plan.js", "game-alerts.js"
+    "notify-plan.js", "family-alerts.js", "game-alerts.js"
 );
 
 // The five obligatory prayers we notify for. Sunrise is shown in the popup
@@ -133,6 +133,7 @@ async function scheduleAlarmsImpl() {
     } finally {
         await ensureTasbihAlarm();
         await scheduleGameAlerts(); // optional game reminders (game-alerts.js)
+        await scheduleFamilyAlerts(); // a parent's alerts about their children
     }
 }
 
@@ -509,6 +510,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
         })();
         return;
     }
+    if (isFamilyAlarm(alarm.name)) {
+        if (Date.now() - alarm.scheduledTime <= FAMILY_STALE_MS) fireFamilyAlert(alarm.name);
+        return;
+    }
     if (isGameAlarm(alarm.name)) {
         if (!alarmFiredLate(alarm.scheduledTime, Date.now(), STALE_ALARM_GRACE_MS)) fireGameAlert(alarm.name);
         return;
@@ -538,6 +543,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
         scheduleAlarms();
     } else if (area === "local" && isFirstGameState(changes)) {
         scheduleGameAlerts();
+    }
+    if (area === "local" && changes.familyAlerts) {
+        scheduleFamilyAlerts();
     }
     if (area === "local" && TASBIH_STORAGE_KEYS.some((key) => key in changes)) {
         resetTasbihAlarm();
@@ -617,6 +625,10 @@ chrome.notifications.onClicked.addListener((id) => {
     } else if (isGameNotification(id)) {
         chrome.tabs.create({
             url: chrome.runtime.getURL("game.html")
+        });
+    } else if (isFamilyNotification(id)) {
+        chrome.tabs.create({
+            url: chrome.runtime.getURL("game.html#family")
         });
     }
 });

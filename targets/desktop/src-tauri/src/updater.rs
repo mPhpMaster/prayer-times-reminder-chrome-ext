@@ -96,6 +96,26 @@ pub fn notify_update(
         .map_err(|e| e.to_string())
 }
 
+/// A parent's family alert ("the children didn't finish the Asr adhkar"); a
+/// click opens the game window (its Family screen is one tap away).
+#[tauri::command]
+pub fn notify_family(app: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
+    let app_id = toast_app_id(&app.config().identifier);
+    let handle = app.clone();
+    Toast::new(&app_id)
+        .title(&title)
+        .text1(&body)
+        .on_activated(move |_| {
+            let h = handle.clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = crate::open_game(h).await;
+            });
+            Ok(())
+        })
+        .show()
+        .map_err(|e| e.to_string())
+}
+
 // The Store shows its own download/install progress and restarts the app. A
 // desktop (Win32) app must hand StoreContext an owner window first.
 fn install_store_update(app: &tauri::AppHandle) {

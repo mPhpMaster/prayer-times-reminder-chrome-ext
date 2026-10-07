@@ -199,4 +199,13 @@
         .catch(() => {});
     });
   }
+
+  // A parent's family alerts, while the prayer-times or game page is open.
+  if (/\/(popup|game)\.html$/.test(location.pathname)) {
+    window.addEventListener("load", () => {
+      loadScript("family-alerts.js")
+        .then(() => loadScript("web-family.js"))
+        .catch(() => {});
+    });
+  }
 })();

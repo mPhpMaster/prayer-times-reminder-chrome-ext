@@ -4,6 +4,7 @@ use App\Http\Controllers\Game\AccountController;
 use App\Http\Controllers\Game\AdminController;
 use App\Http\Controllers\Game\AuthController;
 use App\Http\Controllers\Game\DedicationController;
+use App\Http\Controllers\Game\FamilyController;
 use App\Http\Controllers\Game\ProgressController;
 use App\Http\Controllers\Game\SocialController;
 use App\Http\Middleware\GameAdmin;
@@ -46,6 +47,17 @@ Route::prefix('v1')->group(function () {
         Route::delete('follows/{username}', [SocialController::class, 'unfollow']);
         Route::get('follows', [SocialController::class, 'following']);
         Route::get('leaderboard', [SocialController::class, 'leaderboard']);
+
+        Route::get('family', [FamilyController::class, 'show']);
+        Route::post('family', [FamilyController::class, 'create']);
+        Route::patch('family/me', [FamilyController::class, 'settings']);
+        Route::post('family/leave', [FamilyController::class, 'leave']);
+        Route::post('family/invites', [FamilyController::class, 'invite'])->middleware('throttle:30,60');
+        Route::post('family/invites/{id}/accept', [FamilyController::class, 'accept'])->whereNumber('id');
+        Route::delete('family/invites/{id}', [FamilyController::class, 'dropInvite'])->whereNumber('id');
+        Route::delete('family/members/{username}', [FamilyController::class, 'remove']);
+        Route::get('family/members/{username}/year', [FamilyController::class, 'year']);
+        Route::get('family/status', [FamilyController::class, 'status']);
 
         Route::get('dedications/requests', [DedicationController::class, 'mine']);
         Route::post('dedications/requests', [DedicationController::class, 'store'])->middleware('throttle:5,60');

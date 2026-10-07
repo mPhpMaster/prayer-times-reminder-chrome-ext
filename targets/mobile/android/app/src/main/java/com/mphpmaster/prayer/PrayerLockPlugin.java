@@ -193,6 +193,18 @@ public class PrayerLockPlugin extends Plugin {
         call.resolve(ret);
     }
 
+    /** A parent's family checks (planned by core/logic/family-alerts.js, with
+     *  localized templates) plus the server and token to ask at fire time.
+     *  An empty list disarms them. */
+    @PluginMethod
+    public void scheduleFamilyAlerts(PluginCall call) {
+        com.getcapacitor.JSArray entries = call.getArray("entries");
+        FamilyAlertScheduler.setSchedule(getContext(),
+            entries != null ? entries.toString() : "[]",
+            call.getString("api", ""), call.getString("token", ""));
+        call.resolve();
+    }
+
     /** (Re)arm the periodic dhikr alarms from the stored settings. Call on
      *  launch/resume and whenever dhikr settings change. */
     @PluginMethod

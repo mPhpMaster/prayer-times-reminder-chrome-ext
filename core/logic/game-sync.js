@@ -10,6 +10,8 @@
 //                                           me, updateMe, deleteMe, pushProgress, users, profile,
 //                                           follow, unfollow, following, leaderboard,
 //                                           dedications, myDedicationRequests, requestDedication,
+//                                           family: { get, create, invite, accept, dropInvite, remove,
+//                                                     leave, settings, status, year },
 //                                           admin: { overview, admins, addAdmin, removeAdmin, users,
 //                                                    deleteUser, resetUser, updateUser, banUser, unbanUser,
 //                                                    requests, updateRequest,
@@ -80,6 +82,19 @@ function gameApi(baseUrl, token) {
     dedications: () => call("GET", "/v1/dedications"),
     myDedicationRequests: () => call("GET", "/v1/dedications/requests"),
     requestDedication: (names, note) => call("POST", "/v1/dedications/requests", { names, note }),
+    // Families: parents follow their children (FamilyController).
+    family: {
+      get: () => call("GET", "/v1/family"),
+      create: () => call("POST", "/v1/family"),
+      invite: (username, role) => call("POST", "/v1/family/invites", { username, role }),
+      accept: (id) => call("POST", `/v1/family/invites/${id}/accept`),
+      dropInvite: (id) => call("DELETE", `/v1/family/invites/${id}`),
+      remove: (name) => call("DELETE", `/v1/family/members/${u(name)}`),
+      leave: () => call("POST", "/v1/family/leave"),
+      settings: (notify) => call("PATCH", "/v1/family/me", { notify }),
+      status: (keys) => call("GET", `/v1/family/status?keys=${u(keys.join(","))}`),
+      year: (name, year) => call("GET", `/v1/family/members/${u(name)}/year?year=${year}`),
+    },
     // The Admin page. The server checks admin rights on every call.
     admin: {
       overview: () => call("GET", "/v1/admin/overview"),
