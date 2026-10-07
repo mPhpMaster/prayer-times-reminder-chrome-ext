@@ -21,12 +21,18 @@ class GameUser extends Model
 
     protected function casts(): array
     {
-        return ['hide_progress' => 'boolean', 'email_verified_at' => 'datetime'];
+        return ['hide_progress' => 'boolean', 'email_verified_at' => 'datetime', 'banned_at' => 'datetime'];
     }
 
     public static function findByUsername(string $name): ?self
     {
         return static::where('username_lower', mb_strtolower($name))->first();
+    }
+
+    /** Banned by an admin: no sign-in, hidden from other players. */
+    public function isBanned(): bool
+    {
+        return $this->banned_at !== null;
     }
 
     public function isLegacy(): bool

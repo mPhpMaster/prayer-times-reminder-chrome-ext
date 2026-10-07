@@ -30,7 +30,12 @@ class SocialController extends Controller
 
     private function target(string $username): GameUser
     {
-        return GameUser::findByUsername($username) ?? GameRules::fail(404, 'no-such-user');
+        $u = GameUser::findByUsername($username);
+        if (! $u || $u->isBanned()) {
+            GameRules::fail(404, 'no-such-user');
+        }
+
+        return $u;
     }
 
     private static function monthPoints(int $userId, string $month): int
@@ -53,7 +58,7 @@ class SocialController extends Controller
         }
         // No LIKE escaping: SQLite has no default escape char, and a stray "_"
         // wildcard only widens a prefix search slightly.
-        $users = GameUser::where('username_lower', 'like', $q.'%')->orderBy('username')->limit(20)->get();
+        $users = GameUser::where('username_lower', 'like', $q.'%')->whereNull('banned_at')->orderBy('username')->limit(20)->get();
 
         return response()->json(['users' => $users->map->toPublic()]);
     }
@@ -129,7 +134,7 @@ class SocialController extends Controller
     public function following(Request $request): JsonResponse
     {
         $users = GameUser::whereIn('id', DB::table('game_follows')->where('follower_id', $this->me($request)->id)->select('followee_id'))
-            ->orderBy('username')->get();
+            ->whereNull('banned_at')->orderBy('username')->get();
 
         return response()->json(['users' => $users->map->toPublic()]);
     }
@@ -163,6 +168,7 @@ class SocialController extends Controller
         $q = DB::table('game_completions as c')
             ->join('game_users as u', 'u.id', '=', 'c.user_id')
             ->where('u.hide_progress', false)
+            ->whereNull('u.banned_at')
             ->groupBy('u.id', 'u.username', 'u.display_name')
             ->select('u.id', 'u.username', 'u.display_name', DB::raw('SUM(c.points) AS points'))
             ->orderByDesc('points')->orderBy('u.username')->limit(100);

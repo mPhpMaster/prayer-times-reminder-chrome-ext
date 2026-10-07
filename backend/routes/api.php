@@ -59,6 +59,9 @@ Route::prefix('v1')->group(function () {
             Route::get('users', [AdminController::class, 'users']);
             Route::delete('users/{id}', [AdminController::class, 'deleteUser'])->whereNumber('id');
             Route::post('users/{id}/reset', [AdminController::class, 'resetUser'])->whereNumber('id');
+            Route::patch('users/{id}', [AdminController::class, 'updateUser'])->whereNumber('id');
+            Route::post('users/{id}/ban', [AdminController::class, 'ban'])->whereNumber('id');
+            Route::delete('users/{id}/ban', [AdminController::class, 'unban'])->whereNumber('id');
             Route::get('requests', [AdminController::class, 'requests']);
             Route::patch('requests/{id}', [AdminController::class, 'updateRequest'])->whereNumber('id');
             Route::post('requests/{id}/approve', [AdminController::class, 'approve'])->whereNumber('id');

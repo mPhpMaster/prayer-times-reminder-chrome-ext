@@ -11,7 +11,8 @@
 //                                           follow, unfollow, following, leaderboard,
 //                                           dedications, myDedicationRequests, requestDedication,
 //                                           admin: { overview, admins, addAdmin, removeAdmin, users,
-//                                                    deleteUser, resetUser, requests, updateRequest,
+//                                                    deleteUser, resetUser, updateUser, banUser, unbanUser,
+//                                                    requests, updateRequest,
 //                                                    approve, reject, dedications, addDedication,
 //                                                    updateDedication, reorder, deleteDedication, log } }
 //   pendingCompletions(state)          -> rows for POST /v1/progress
@@ -88,6 +89,9 @@ function gameApi(baseUrl, token) {
       users: (q) => call("GET", `/v1/admin/users?q=${u(q)}`),
       deleteUser: (id) => call("DELETE", `/v1/admin/users/${id}`),
       resetUser: (id) => call("POST", `/v1/admin/users/${id}/reset`),
+      updateUser: (id, patch) => call("PATCH", `/v1/admin/users/${id}`, patch),
+      banUser: (id, reason) => call("POST", `/v1/admin/users/${id}/ban`, { reason }),
+      unbanUser: (id) => call("DELETE", `/v1/admin/users/${id}/ban`),
       requests: (status) => call("GET", `/v1/admin/requests?status=${u(status)}`),
       updateRequest: (id, patch) => call("PATCH", `/v1/admin/requests/${id}`, patch),
       approve: (id, names) => call("POST", `/v1/admin/requests/${id}/approve`, names ? { names } : {}),
