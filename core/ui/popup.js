@@ -648,9 +648,16 @@ function renderTimings(timings) {
     else if (t && t < now.getTime()) li.classList.add("is-past");
 
     const name = prayerLabel(T(), row.key);
-    li.innerHTML =
-      `<span class="prayer-name"><span class="icon">${row.icon}</span>${name}</span>` +
-      `<span class="prayer-time">${fmtTime(raw)}</span>`;
+    const nameEl = document.createElement("span");
+    nameEl.className = "prayer-name";
+    const iconEl = document.createElement("span");
+    iconEl.className = "icon";
+    iconEl.textContent = row.icon;
+    nameEl.append(iconEl, name);
+    const timeEl = document.createElement("span");
+    timeEl.className = "prayer-time";
+    timeEl.textContent = fmtTime(raw);
+    li.append(nameEl, timeEl);
     el.timings.appendChild(li);
   }
 

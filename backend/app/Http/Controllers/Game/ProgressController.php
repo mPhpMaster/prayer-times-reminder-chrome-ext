@@ -30,9 +30,11 @@ class ProgressController extends Controller
             ->get(['window_key', 'item_id', 'points']);
         $have = [];
         $totals = [];
+        $counts = [];
         foreach ($stored as $s) {
             $have[$s->window_key.'|'.$s->item_id] = true;
             $totals[$s->window_key] = ($totals[$s->window_key] ?? 0) + $s->points;
+            $counts[$s->window_key] = ($counts[$s->window_key] ?? 0) + 1;
         }
 
         $fresh = [];
@@ -44,6 +46,14 @@ class ProgressController extends Controller
             if ($t > GameRules::MAX_WINDOW_TOTAL) {
                 continue;
             }
+            // No more rows than the window has tasks (+ a few spare for older
+            // catalogs), so junk item ids can't flood the table.
+            $prayer = substr($r['windowKey'], 11);
+            $n = ($counts[$r['windowKey']] ?? 0) + 1;
+            if ($n > (GameStats::WINDOW_TASK_COUNT[$prayer] ?? 0) + 3) {
+                continue;
+            }
+            $counts[$r['windowKey']] = $n;
             $totals[$r['windowKey']] = $t;
             $have[$r['windowKey'].'|'.$r['itemId']] = true;
             $fresh[] = [

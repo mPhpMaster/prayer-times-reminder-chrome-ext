@@ -174,16 +174,16 @@ class GameAdminTest extends TestCase
         $this->as($owner)->postJson('/v1/admin/admins', ['email' => self::OWNER])->assertStatus(409);
         $this->as($helper)->getJson('/v1/me')->assertJsonPath('user.admin', true)->assertJsonPath('user.superAdmin', false);
 
-        // A second admin can add admins, but only the owner removes them — and nobody removes the owner.
-        $this->as($helper)->postJson('/v1/admin/admins', ['email' => 'third@example.com'])->assertCreated();
-        $this->as($helper)->deleteJson('/v1/admin/admins/third@example.com')->assertForbidden()->assertJsonPath('error', 'super-admin-only');
+        // Only the owner adds or removes admins — and nobody removes the owner.
+        $this->as($helper)->postJson('/v1/admin/admins', ['email' => 'third@example.com'])->assertForbidden()->assertJsonPath('error', 'super-admin-only');
+        $this->as($helper)->deleteJson('/v1/admin/admins/helper@example.com')->assertForbidden()->assertJsonPath('error', 'super-admin-only');
         $this->as($helper)->deleteJson('/v1/admin/admins/'.self::OWNER)->assertForbidden()->assertJsonPath('error', 'super-admin');
         $this->as($owner)->deleteJson('/v1/admin/admins/'.self::OWNER)->assertForbidden();
         $this->as($owner)->deleteJson('/v1/admin/admins/helper@example.com')->assertNoContent();
         $this->as($helper)->getJson('/v1/admin/overview')->assertForbidden();
 
         $actions = DB::table('game_admin_log')->orderBy('id')->pluck('action')->all();
-        $this->assertSame(['admin.add', 'admin.add', 'admin.remove'], $actions);
+        $this->assertSame(['admin.add', 'admin.remove'], $actions);
     }
 
     public function test_an_added_admin_email_needs_verifying_first(): void

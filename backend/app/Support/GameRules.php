@@ -17,6 +17,13 @@ final class GameRules
     public const WINDOW_POINTS = 300;
     public const MAX_WINDOW_TOTAL = self::WINDOW_POINTS;
 
+    /**
+     * The first day a completion may be dated. The game went live in
+     * September 2026; anything older is forged (and would make period
+     * prizes reach back centuries — see GameWinners).
+     */
+    public const LAUNCH_DAY = '2026-09-01';
+
     private const USERNAME = '/^[\p{L}\p{N}_]{3,20}$/u'; // any script, digits, underscore
     private const WINDOW_KEY = '/^\d{4}-\d{2}-\d{2}:(Fajr|Dhuhr|Asr|Maghrib|Isha)$/';
     private const ITEM_ID = '/^[a-z0-9-]{1,64}$/';
@@ -61,6 +68,20 @@ final class GameRules
         return $p;
     }
 
+    /**
+     * A window date a player can really have played: a real calendar date,
+     * not before LAUNCH_DAY, and not after tomorrow in UTC (the furthest-ahead
+     * time zone is UTC+14, so a player's "today" is at most UTC tomorrow).
+     */
+    public static function playableDay(string $day, int $nowMs): bool
+    {
+        if (! checkdate((int) substr($day, 5, 2), (int) substr($day, 8, 2), (int) substr($day, 0, 4))) {
+            return false;
+        }
+
+        return $day >= self::LAUNCH_DAY && $day <= gmdate('Y-m-d', intdiv($nowMs, 1000) + 86400);
+    }
+
     /** The viewer's local date "YYYY-MM-DD", or null (then the server's UTC date is used). */
     public static function day(?string $d): ?string
     {
@@ -102,7 +123,7 @@ final class GameRules
             }
             $key = (string) ($r['windowKey'] ?? '');
             $item = (string) ($r['itemId'] ?? '');
-            if (! preg_match(self::WINDOW_KEY, $key) || ! preg_match(self::ITEM_ID, $item)) {
+            if (! preg_match(self::WINDOW_KEY, $key) || ! preg_match(self::ITEM_ID, $item) || ! self::playableDay(substr($key, 0, 10), $nowMs)) {
                 continue;
             }
             if (($r['kind'] ?? '') === 'gift') {
@@ -116,7 +137,7 @@ final class GameRules
             $points = (int) round((float) $r['points']);
             $doneAt = (int) $r['doneAt'];
             $startedAt = is_numeric($r['startedAt'] ?? null) ? (int) $r['startedAt'] : $doneAt;
-            if ($points < 0 || $points > $cap || $doneAt > $future || $startedAt > $doneAt) {
+            if ($points < 1 || $points > $cap || $doneAt > $future || $startedAt > $doneAt) {
                 continue;
             }
             $sum = ($perWindow[$key] ?? 0) + $points;

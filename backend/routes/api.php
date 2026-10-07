@@ -29,7 +29,7 @@ Route::prefix('v1')->group(function () {
     // The About page's dedication names (public).
     Route::get('dedications', [DedicationController::class, 'index']);
 
-    Route::middleware(GameAuth::class)->group(function () {
+    Route::middleware([GameAuth::class, 'throttle:120,1'])->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::post('auth/verify-email/send', [AuthController::class, 'sendVerification'])->middleware('throttle:3,10');
         Route::post('auth/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:10,1');

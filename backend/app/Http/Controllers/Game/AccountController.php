@@ -24,7 +24,9 @@ class AccountController extends Controller
         /** @var GameUser $me */
         $me = $request->attributes->get('gameUser');
         if (is_string($request->input('displayName'))) {
-            $me->display_name = mb_substr(trim($request->input('displayName')), 0, 40) ?: null;
+            // Same cleaning as dedication names: control/format characters
+            // (bidi overrides, zero-width) can't be used to fake another name.
+            $me->display_name = mb_substr(\App\Support\Dedications::clean($request->input('displayName')), 0, 40) ?: null;
         }
         if (is_bool($request->input('hideProgress'))) {
             $me->hide_progress = $request->input('hideProgress');

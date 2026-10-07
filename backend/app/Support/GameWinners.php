@@ -21,14 +21,18 @@ final class GameWinners
 {
     public const GRACE_DAYS = 2;
 
+    /** Upper bound on periods decided by one request (the rest wait for the next). */
+    private const MAX_DECISIONS = 60;
+
     /** Decide every ended, undecided period. Cheap when there is nothing to do. */
     public static function settle(int $nowMs): void
     {
-        $first = DB::table('game_completions')->min('window_key');
+        $first = DB::table('game_completions')->where('window_key', '>=', GameRules::LAUNCH_DAY)->min('window_key');
         if ($first === null) {
             return;
         }
         $firstDay = substr($first, 0, 10);
+        $budget = self::MAX_DECISIONS;
         $cutoff = gmdate('Y-m-d', intdiv($nowMs, 1000) - self::GRACE_DAYS * 86400);
 
         foreach (GamePeriods::TYPES as $type) {
@@ -40,6 +44,9 @@ final class GameWinners
                     break; // not ended long enough ago (or not ended at all)
                 }
                 if (! isset($settled[$key])) {
+                    if ($budget-- <= 0) {
+                        return;
+                    }
                     self::decide($type, $key, $nowMs);
                 }
             }
@@ -49,7 +56,9 @@ final class GameWinners
     private static function decide(string $type, string $key, int $nowMs): void
     {
         DB::transaction(function () use ($type, $key, $nowMs) {
+            [$start] = GamePeriods::range($type, $key);
             $totals = GamePeriods::scope(DB::table('game_completions'), $type, $key)
+                ->where('window_key', '>=', max($start, GameRules::LAUNCH_DAY))
                 ->groupBy('user_id')
                 ->select('user_id', DB::raw('SUM(points) AS points'))
                 ->get();
