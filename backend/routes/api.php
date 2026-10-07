@@ -29,6 +29,8 @@ Route::prefix('v1')->group(function () {
 
     // The About page's dedication names (public).
     Route::get('dedications', [DedicationController::class, 'index']);
+    // The leaderboard is public too (a token, if sent, adds "me" and "following").
+    Route::get('leaderboard', [SocialController::class, 'leaderboard'])->middleware('throttle:60,1');
 
     Route::middleware([GameAuth::class, 'throttle:120,1'])->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
@@ -46,7 +48,6 @@ Route::prefix('v1')->group(function () {
         Route::put('follows/{username}', [SocialController::class, 'follow']);
         Route::delete('follows/{username}', [SocialController::class, 'unfollow']);
         Route::get('follows', [SocialController::class, 'following']);
-        Route::get('leaderboard', [SocialController::class, 'leaderboard']);
 
         Route::get('family', [FamilyController::class, 'show']);
         Route::post('family', [FamilyController::class, 'create']);

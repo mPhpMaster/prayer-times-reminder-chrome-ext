@@ -45,6 +45,11 @@
 
         <!-- Task list -->
         <section id="list-view">
+            <!-- Signed out: points stay on this device only (and never move to an account). -->
+            <div class="guest-note" id="guest-note" role="note" hidden>
+                <span data-g="guestWarning"></span>
+                <button type="button" class="link" id="guest-signin" data-g="guestSignIn"></button>
+            </div>
             <!-- The day's journey (optional; "حسابي" toggles it) -->
             <section class="journey" id="journey" hidden>
                 <div class="journey-head">

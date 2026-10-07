@@ -154,11 +154,17 @@ class GameAuthTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $this->postJson('/v1/auth/reset', ['email' => 'sara@example.com', 'code' => $wrong, 'password' => 'new-pass-123']);
         }
-        $this->postJson('/v1/auth/reset', ['email' => 'sara@example.com', 'code' => $code, 'password' => 'new-pass-123'])->assertStatus(429);
+        // Used up: even the right code fails now — with the same answer as any wrong code.
+        $this->postJson('/v1/auth/reset', ['email' => 'sara@example.com', 'code' => $code, 'password' => 'new-pass-123'])
+            ->assertStatus(400)->assertJson(['error' => 'bad-code']);
 
         $code = $this->requestCode('sara@example.com'); // a new code resets the counter
         Carbon::setTestNow(now()->addMinutes(16));
-        $this->postJson('/v1/auth/reset', ['email' => 'sara@example.com', 'code' => $code, 'password' => 'new-pass-123'])->assertStatus(400)->assertJson(['error' => 'code-expired']);
+        $this->postJson('/v1/auth/reset', ['email' => 'sara@example.com', 'code' => $code, 'password' => 'new-pass-123'])->assertStatus(400)->assertJson(['error' => 'bad-code']); // expired: same answer
+
+        // An email without an account gets exactly the same answer: nothing to learn from it.
+        $this->postJson('/v1/auth/reset', ['email' => 'nobody@example.com', 'code' => '123456', 'password' => 'new-pass-123'])
+            ->assertStatus(400)->assertExactJson(['error' => 'bad-code']);
     }
 
     // ---- Google -------------------------------------------------------------

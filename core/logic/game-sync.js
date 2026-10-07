@@ -126,10 +126,10 @@ function pendingCompletions(state) {
   const rows = [];
   for (const [windowKey, w] of Object.entries(state.windows)) {
     for (const [itemId, t] of Object.entries(w.tasks || {})) {
-      if (t.doneAt && !t.synced) rows.push({ windowKey, itemId, kind: "task", points: t.points, startedAt: t.startedAt, doneAt: t.doneAt });
+      if (t.doneAt && !t.synced && !t.local) rows.push({ windowKey, itemId, kind: "task", points: t.points, startedAt: t.startedAt, doneAt: t.doneAt });
     }
     const g = w.gift;
-    if (g && g.doneAt && !g.synced) rows.push({ windowKey, itemId: g.id, kind: "gift", points: g.points, startedAt: g.startedAt, doneAt: g.doneAt });
+    if (g && g.doneAt && !g.synced && !g.local) rows.push({ windowKey, itemId: g.id, kind: "gift", points: g.points, startedAt: g.startedAt, doneAt: g.doneAt });
   }
   return rows;
 }
@@ -154,14 +154,22 @@ function syncBatches(rows) {
 }
 
 // Signing in to a different account than the one this device last synced to:
-// clear every `synced` flag so the whole local history is sent to the new
-// account. The server keeps one row per (window, item), so anything it
+// clear every `synced` flag so the account history on this device is sent to
+// the new account. The server keeps one row per (window, item), so anything it
 // already has is ignored — progress moves over without being counted twice.
+//
+// Progress made while signed out is never sent: it is marked `local` when it
+// is finished (game.js), and on the very first sign-in on a device (no
+// syncAccount yet) whatever was never synced was a guest's, so it stays local.
 function adoptSyncAccount(state, username) {
   if (state.syncAccount === username) return false;
+  const firstAccount = !state.syncAccount;
   for (const w of Object.values(state.windows)) {
-    for (const t of Object.values(w.tasks || {})) delete t.synced;
-    if (w.gift) delete w.gift.synced;
+    for (const item of [...Object.values(w.tasks || {}), w.gift].filter(Boolean)) {
+      if (!item.doneAt || item.local) continue;
+      if (firstAccount && !item.synced) item.local = true;
+      else delete item.synced;
+    }
   }
   state.syncAccount = username;
   return true;

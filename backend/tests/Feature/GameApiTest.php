@@ -202,4 +202,31 @@ class GameApiTest extends TestCase
         $this->as($t)->patchJson('/v1/me', ['displayName' => "\u{202E}nimda\u{200B} \u{2066}x"])->assertOk();
         $this->assertSame('nimda x', $this->as($t)->getJson('/v1/me')->json('user.displayName'));
     }
+
+    public function test_the_leaderboard_is_public_and_a_token_adds_me(): void
+    {
+        $t = $this->register('runner');
+        $this->as($t)->postJson('/v1/progress', ['completions' => [self::done('2026-09-25:Dhuhr', 'tasbih-33', 40)]]);
+
+        $this->flushHeaders();
+        $anon = $this->getJson('/v1/leaderboard?period=all&scope=following')->assertOk()
+            ->assertJsonPath('me', null)->assertJsonPath('scope', 'all'); // following needs an account
+        $this->assertSame(['runner'], collect($anon->json('rows'))->pluck('username')->all());
+        $this->withHeader('Authorization', 'Bearer '.str_repeat('0', 64))
+            ->getJson('/v1/leaderboard?period=all')->assertOk()->assertJsonPath('me', null); // a dead token is just anonymous
+        $this->as($t)->getJson('/v1/leaderboard?period=all')->assertJsonPath('me.points', 40);
+    }
+
+    public function test_game_settings_are_kept_with_the_account(): void
+    {
+        $t = $this->register('settler');
+        $this->as($t)->getJson('/v1/me')->assertJsonPath('user.settings', null);
+        $this->as($t)->patchJson('/v1/me', ['settings' => ['alerts' => false, 'sound' => true, 'evil' => true, 'journey' => 'yes']])
+            ->assertOk()->assertJsonPath('user.settings', ['alerts' => false, 'sound' => true]);
+        // A later change merges; another device signing in reads the same set.
+        $this->as($t)->patchJson('/v1/me', ['settings' => ['journey' => false]]);
+        $this->flushHeaders();
+        $this->postJson('/v1/auth/login', ['email' => 'u'.substr(md5('settler'), 0, 10).'@example.com', 'password' => 'secret-pass-1'])
+            ->assertOk()->assertJsonPath('user.settings', ['alerts' => false, 'sound' => true, 'journey' => false]);
+    }
 }
