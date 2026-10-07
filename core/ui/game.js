@@ -104,7 +104,12 @@ function save() {
 // ---- routing (Android back) -------------------------------------------------
 // history.state.depth = how many screens were pushed above the home screen.
 function parseRoute(hash) {
-  const h = decodeURIComponent(String(hash || "").replace(/^#/, ""));
+  let h = String(hash || "").replace(/^#/, "");
+  try {
+    h = decodeURIComponent(h);
+  } catch {
+    h = ""; // malformed escape: home screen
+  }
   const [name, ...rest] = h.split("/");
   const arg = rest.join("/");
   if (name === "board" || name === "me" || name === "gift") return { name };

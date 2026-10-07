@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Prayer Times Reminder (Prayer Times Break) — prayer times, a break at prayer time, dhikr reminders and a dhikr game, on the web, Chrome, Android, Windows and Discord." />
+    <title>مواقيت الصلاة (استراحة الصلاة) — Prayer Times Break</title>
+    <link rel="icon" href="icons/icon32.png" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="landing.css" />
+  </head>
+  <body>
+    <!-- All text is filled in by landing.js from i18n.js (textContent only).
+         No inline script or style: the site's CSP allows same-origin files only. -->
+    <main class="landing">
+      <header class="hero">
+        <img class="logo" src="icons/icon128.png" alt="" width="72" height="72" />
+        <h1 id="title"></h1>
+        <p class="tagline" id="tagline"></p>
+        <label class="lang">
+          <span class="sr-only" id="lang-label">Language</span>
+          <select id="lang"></select>
+        </label>
+        <div class="cta">
+          <a class="btn primary" href="popup.html" id="open-app"></a>
+          <a class="btn" href="game.html" id="open-game"></a>
+        </div>
+        <p class="note" id="browser-note"></p>
+      </header>
+
+      <section>
+        <h2 id="features-title"></h2>
+        <ul class="features" id="features"></ul>
+      </section>
+
+      <section>
+        <h2 id="downloads-title"></h2>
+        <ul class="downloads" id="downloads"></ul>
+      </section>
+
+      <footer>
+        <a href="https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/privacy.html" rel="noopener noreferrer" target="_blank" id="privacy">Privacy</a>
+      </footer>
+    </main>
+    <script src="i18n.js"></script>
+    <script src="landing.js"></script>
+  </body>
+</html>

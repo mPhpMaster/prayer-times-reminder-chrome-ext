@@ -8,6 +8,7 @@
 //   node tools/sync-core.mjs extension   -> targets/extension/build/
 //   node tools/sync-core.mjs desktop     -> targets/desktop/src/
 //   node tools/sync-core.mjs mobile      -> targets/mobile/www/
+//   node tools/sync-core.mjs web         -> targets/web/build/   (the website; GitHub Pages, .github/workflows/pages.yml)
 //
 // Pure Node built-ins; no dependencies.
 
@@ -23,6 +24,7 @@ const OUT_DIR = {
   extension: path.join(ROOT, "targets", "extension", "build"),
   desktop: path.join(ROOT, "targets", "desktop", "src"),
   mobile: path.join(ROOT, "targets", "mobile", "www"),
+  web: path.join(ROOT, "targets", "web", "build"),
 };
 
 // The per-target shell source: the web files merged on top of core/. For the
@@ -33,6 +35,7 @@ const SHELL_DIR = {
   extension: path.join(ROOT, "targets", "extension"),
   desktop: path.join(ROOT, "targets", "desktop", "web"),
   mobile: path.join(ROOT, "targets", "mobile", "web"),
+  web: path.join(ROOT, "targets", "web"),
 };
 
 // Shared core pieces, each flattened into the output root (or a named subdir).
@@ -48,14 +51,61 @@ const CORE_MAP = [
   ["assets/city-ar", "city-ar"], // Arabic city names per country (tools/build-city-names.mjs)
 ];
 
-function copyTree(src, dst) {
+// Core files a target must not ship (dev-only pages on a public website).
+const CORE_EXCLUDE = {
+  web: /^game-spike\./,
+};
+
+// GitHub Pages can't send response headers, so the website's Content Security
+// Policy goes into every page as a <meta> tag (first thing in <head>, before
+// any script). Scripts only from this site; connections only to the services
+// the app calls. (frame-ancestors can't be set this way: adapter.js refuses
+// to run inside another site's frame instead.)
+const WEB_CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "media-src 'self'",
+  "connect-src 'self' https://prayer-times.sarhsoft.com https://api.aladhan.com https://countriesnow.space https://nominatim.openstreetmap.org https://api.github.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-src 'self'",
+  "worker-src 'self'",
+  "manifest-src 'self'",
+  "upgrade-insecure-requests",
+].join("; ");
+const HTML_HEAD_META = {
+  web:
+    `<meta http-equiv="Content-Security-Policy" content="${WEB_CSP}" />` +
+    `<meta name="referrer" content="strict-origin-when-cross-origin" />`,
+};
+
+function addHeadMeta(target, out) {
+  const meta = HTML_HEAD_META[target];
+  if (!meta) return;
+  for (const name of fs.readdirSync(out)) {
+    if (!name.endsWith(".html")) continue;
+    const f = path.join(out, name);
+    const html = fs.readFileSync(f, "utf8");
+    // Right after <meta charset> (which must come first), else after <head>.
+    const at = /<meta charset[^>]*>/i.test(html) ? /<meta charset[^>]*>/i : /<head[^>]*>/i;
+    if (!at.test(html)) throw new Error(`sync-core: no <head> in ${name}`);
+    fs.writeFileSync(f, html.replace(at, (m) => m + meta));
+  }
+}
+
+function copyTree(src, dst, exclude) {
   if (!fs.existsSync(src)) return;
   let made = false;
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    if (exclude && exclude.test(entry.name)) continue;
     const s = path.join(src, entry.name);
     const d = path.join(dst, entry.name);
     if (entry.isDirectory()) {
-      copyTree(s, d); // skipped silently if empty — no stray dirs in output
+      copyTree(s, d, exclude); // skipped silently if empty — no stray dirs in output
     } else {
       if (!made) {
         fs.mkdirSync(dst, { recursive: true });
@@ -87,9 +137,10 @@ function assemble(target) {
   fs.mkdirSync(out, { recursive: true });
 
   for (const [sub, dest] of CORE_MAP) {
-    copyTree(path.join(CORE, sub), path.join(out, dest === "." ? "" : dest));
+    copyTree(path.join(CORE, sub), path.join(out, dest === "." ? "" : dest), CORE_EXCLUDE[target]);
   }
   copyShell(target, out);
+  addHeadMeta(target, out);
 
   const count = (function walk(dir) {
     let n = 0;
@@ -107,7 +158,7 @@ function main() {
 
   if (target !== "all" && !OUT_DIR[target]) {
     console.error(
-      `Usage: node tools/sync-core.mjs <extension|desktop|mobile|all>\n` +
+      `Usage: node tools/sync-core.mjs <extension|desktop|mobile|web|all>\n` +
         `  unknown target: ${target ?? "(none)"}`
     );
     process.exit(1);

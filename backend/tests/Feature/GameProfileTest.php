@@ -135,7 +135,7 @@ class GameProfileTest extends TestCase
         $tb = $this->register('bilal');
         $this->push($ta, array_merge(
             self::fullWindow('2026-09-29', 'Dhuhr', 13),
-            [self::row('2026-08-31:Isha', 'tasbih-33', 40, self::at('2026-08-31', 21))],
+            [self::row('2026-10-01:Isha', 'tasbih-33', 40, self::at('2026-09-30', 19))], // already Oct 1 in UTC+14
         ));
         $this->as($tb)->putJson('/v1/follows/amina')->assertOk();
 
@@ -149,7 +149,7 @@ class GameProfileTest extends TestCase
             ->assertJsonPath('stats.gifts', 0)
             ->assertJsonPath('stats.windows', 1)
             ->assertJsonPath('stats.fullDays', 0)
-            ->assertJsonPath('stats.lastActive', '2026-09-29');
+            ->assertJsonPath('stats.lastActive', '2026-10-01');
 
         $this->as($ta)->patchJson('/v1/me', ['hideProgress' => true])->assertOk();
         $this->as($tb)->getJson('/v1/users/amina')

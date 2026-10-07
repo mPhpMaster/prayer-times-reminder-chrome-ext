@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Throwable;
 
 /**
@@ -74,12 +75,20 @@ class AuthController extends Controller
     {
         $email = mb_strtolower(trim((string) $request->input('email')));
         $password = (string) $request->input('password');
+        // Wrong passwords per email, whatever the IP: 5 a minute, 20 an hour.
+        $keys = ['login-m:'.sha1($email), 'login-h:'.sha1($email)];
+        if (RateLimiter::tooManyAttempts($keys[0], 5) || RateLimiter::tooManyAttempts($keys[1], 20)) {
+            GameRules::fail(429, 'too-many-attempts');
+        }
         $user = $email !== '' ? GameUser::where('email', $email)->first() : null;
         // Always run one hash check, so response time doesn't reveal which emails exist.
         $ok = Hash::check($password, $user?->password ?? '$2y$12$'.str_repeat('x', 53));
         if (! $user || ! $user->password || ! $ok) {
+            RateLimiter::hit($keys[0], 60);
+            RateLimiter::hit($keys[1], 3600);
             GameRules::fail(401, 'bad-credentials');
         }
+        RateLimiter::clear($keys[0]);
         $this->absorbLegacy($request, $user);
 
         return $this->signedIn($user);
@@ -156,7 +165,10 @@ class AuthController extends Controller
     {
         $email = mb_strtolower(trim((string) $request->input('email')));
         $user = $email !== '' ? GameUser::where('email', $email)->first() : null;
-        if ($user) {
+        // At most 3 codes an hour per email (still 204: no enumeration, no mail flood).
+        $sendKey = 'forgot:'.sha1($email);
+        if ($user && ! RateLimiter::tooManyAttempts($sendKey, 3)) {
+            RateLimiter::hit($sendKey, 3600);
             $code = (string) random_int(100000, 999999);
             DB::table('game_password_resets')->updateOrInsert(
                 ['email' => $email],
@@ -190,11 +202,14 @@ class AuthController extends Controller
             DB::table('game_password_resets')->where('email', $email)->delete();
             GameRules::fail(400, 'code-expired');
         }
-        if ($row->attempts >= self::RESET_ATTEMPTS) {
+        // Per code, and per email across resends (a new code resets only the first).
+        $wrongKey = 'reset-wrong:'.sha1($email);
+        if ($row->attempts >= self::RESET_ATTEMPTS || RateLimiter::tooManyAttempts($wrongKey, 10)) {
             GameRules::fail(429, 'too-many-attempts');
         }
         if (! Hash::check((string) $request->input('code'), $row->code_hash)) {
             DB::table('game_password_resets')->where('email', $email)->increment('attempts');
+            RateLimiter::hit($wrongKey, 86400);
             GameRules::fail(400, 'bad-code');
         }
         $password = GameRules::password($request->input('password'));
@@ -225,6 +240,11 @@ class AuthController extends Controller
         if ($me->email_verified_at !== null) {
             GameRules::fail(409, 'already-verified');
         }
+        $sendKey = 'verify-send:'.$me->id;
+        if (RateLimiter::tooManyAttempts($sendKey, 3)) {
+            GameRules::fail(429, 'too-many-attempts');
+        }
+        RateLimiter::hit($sendKey, 3600);
         $code = (string) random_int(100000, 999999);
         DB::table('game_email_verifications')->updateOrInsert(
             ['user_id' => $me->id],
@@ -263,11 +283,13 @@ class AuthController extends Controller
             DB::table('game_email_verifications')->where('user_id', $me->id)->delete();
             GameRules::fail(400, 'code-expired');
         }
-        if ($row->attempts >= self::VERIFY_ATTEMPTS) {
+        $wrongKey = 'verify-wrong:'.$me->id;
+        if ($row->attempts >= self::VERIFY_ATTEMPTS || RateLimiter::tooManyAttempts($wrongKey, 10)) {
             GameRules::fail(429, 'too-many-attempts');
         }
         if (! Hash::check((string) $request->input('code'), $row->code_hash)) {
             DB::table('game_email_verifications')->where('user_id', $me->id)->increment('attempts');
+            RateLimiter::hit($wrongKey, 86400);
             GameRules::fail(400, 'bad-code');
         }
         DB::table('game_email_verifications')->where('user_id', $me->id)->delete();

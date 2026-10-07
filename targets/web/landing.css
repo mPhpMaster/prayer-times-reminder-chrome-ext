@@ -1,0 +1,35 @@
+/* The website's front page, on the shared Midnight Emerald tokens (theme.css). */
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-arabic, system-ui), system-ui, sans-serif;
+  line-height: 1.6;
+}
+.landing { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+.hero { text-align: center; padding: 24px 0 8px; }
+.logo { border-radius: 18px; }
+h1 { font-size: 30px; margin: 12px 0 4px; color: var(--primary); }
+.tagline { font-size: 17px; margin: 0 0 16px; color: var(--muted-foreground); }
+.lang select {
+  background: var(--card); color: var(--foreground); border: 1px solid var(--border);
+  border-radius: 10px; padding: 6px 10px; font: inherit;
+}
+.cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0 8px; }
+.btn {
+  display: inline-block; padding: 12px 22px; border-radius: 12px; text-decoration: none; font-weight: 700;
+  border: 1px solid var(--border); color: var(--foreground); background: var(--card);
+}
+.btn.primary { background: var(--primary); color: var(--primary-foreground, #04211c); border-color: transparent; }
+.btn:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.note { font-size: 13px; color: var(--muted-foreground); margin: 8px auto 0; max-width: 520px; }
+h2 { font-size: 20px; margin: 32px 0 12px; color: var(--gold, var(--primary)); }
+.features, .downloads { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.features li, .downloads li {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+}
+.downloads a { color: var(--primary); font-weight: 700; text-decoration: none; }
+.downloads small { display: block; color: var(--muted-foreground); font-size: 13px; }
+footer { margin-top: 32px; text-align: center; font-size: 13px; }
+footer a { color: var(--muted-foreground); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -267,4 +267,41 @@ class GameAuthTest extends TestCase
         $this->assertDatabaseCount('game_password_resets', 0);
         $this->signUp('sara@example.com', 'sara')->assertCreated(); // email and name are free again
     }
+
+    public function test_wrong_passwords_lock_the_email_whatever_the_ip(): void
+    {
+        $this->signUp('lock@example.com', 'locked');
+        foreach (range(1, 5) as $i) {
+            $this->withServerVariables(['REMOTE_ADDR' => "10.0.0.$i"])
+                ->postJson('/v1/auth/login', ['email' => 'lock@example.com', 'password' => 'wrong-pass-1'])->assertStatus(401);
+        }
+        // Even the right password waits now, from a fresh IP too.
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.99'])
+            ->postJson('/v1/auth/login', ['email' => 'lock@example.com', 'password' => 'secret-pass-1'])
+            ->assertStatus(429)->assertJson(['error' => 'too-many-attempts']);
+        Carbon::setTestNow(now()->addMinutes(2));
+        $this->postJson('/v1/auth/login', ['email' => 'lock@example.com', 'password' => 'secret-pass-1'])->assertOk();
+    }
+
+    public function test_reset_codes_are_limited_per_email_and_across_resends(): void
+    {
+        $this->signUp('reset@example.com', 'resetter');
+        $this->assertNotNull($this->requestCode('reset@example.com'));
+        $this->requestCode('reset@example.com');
+        $this->requestCode('reset@example.com');
+        $sent = count($this->sentMails());
+        $this->requestCode('reset@example.com'); // 4th within the hour: still 204, no mail
+        $this->assertSame($sent, count($this->sentMails()));
+
+        // New codes reset the per-code cap, but not the per-email one.
+        Carbon::setTestNow(now()->addHours(2));
+        $wrong = fn () => $this->postJson('/v1/auth/reset', ['email' => 'reset@example.com', 'code' => '000000', 'password' => 'new-pass-123']);
+        for ($round = 0; $round < 3; $round++) {
+            $this->requestCode('reset@example.com');
+            for ($i = 0; $i < 4; $i++) {
+                $wrong();
+            }
+        }
+        $wrong()->assertStatus(429)->assertJson(['error' => 'too-many-attempts']);
+    }
 }

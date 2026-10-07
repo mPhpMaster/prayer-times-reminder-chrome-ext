@@ -126,25 +126,25 @@ class GameWinnersTest extends TestCase
 
     public function test_nobody_wins_a_period_without_points_and_past_periods_are_backfilled(): void
     {
-        $this->now('2026-06-15 20:00:00');
+        $this->now('2027-06-15 20:00:00');
         $ta = $this->register('amina');
-        $this->earn($ta, '2026-06-15', 30);
+        $this->earn($ta, '2027-06-15', 30);
 
         // July 3: June, Q2 and H1 are all decided on the first request; July and later aren't.
-        $this->now('2026-07-03 12:00:00');
+        $this->now('2027-07-03 12:00:00');
         $this->as($ta)->getJson('/v1/leaderboard?period=all')->assertOk()
-            ->assertJsonPath('winners.month.key', '2026-06')
-            ->assertJsonPath('winners.quarter.key', '2026-Q2')
-            ->assertJsonPath('winners.half.key', '2026-H1')
+            ->assertJsonPath('winners.month.key', '2027-06')
+            ->assertJsonPath('winners.quarter.key', '2027-Q2')
+            ->assertJsonPath('winners.half.key', '2027-H1')
             ->assertJsonPath('winners.half.winners.0.username', 'amina')
             ->assertJsonPath('winners.year', null);
 
         // August 5: July had no points — decided, but with no winner.
-        $this->now('2026-08-05 12:00:00');
+        $this->now('2027-08-05 12:00:00');
         $this->as($ta)->getJson('/v1/leaderboard?period=all')
-            ->assertJsonPath('winners.month.key', '2026-07')
+            ->assertJsonPath('winners.month.key', '2027-07')
             ->assertJsonPath('winners.month.winners', []);
-        $this->assertSame(1, DB::table('game_settled_periods')->where(['period_type' => 'month', 'period_key' => '2026-07'])->count());
+        $this->assertSame(1, DB::table('game_settled_periods')->where(['period_type' => 'month', 'period_key' => '2027-07'])->count());
         $this->as($ta)->getJson('/v1/users/amina')->assertJsonPath('wins.lastMonth', false)->assertJsonPath('wins.month', 1);
     }
 

@@ -55,10 +55,13 @@ class AdminController extends Controller
         ])->values()->all()]);
     }
 
-    /** POST /v1/admin/admins {email} -> 201. The owner of that email becomes admin once their email is verified. */
+    /** POST /v1/admin/admins {email} -> 201. Super admin only. The owner of that email becomes admin once their email is verified. */
     public function addAdmin(Request $request): JsonResponse
     {
         $me = $this->me($request);
+        if (! GameAdmins::isSuperAdmin($me)) {
+            GameRules::fail(403, 'super-admin-only');
+        }
         $email = GameRules::email($request->input('email'));
         if (GameAdmins::isAdminEmail($email)) {
             GameRules::fail(409, 'already-admin');
