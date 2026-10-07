@@ -62,6 +62,7 @@
         <receiver android:name=".PrayerAlarmReceiver" android:exported="false" />
         <!-- Watchdog that re-asserts the lock if the app is killed mid-prayer. -->
         <receiver android:name=".LockWatchdogReceiver" android:exported="false" />
+        <receiver android:name=".UpdateCheckReceiver" android:exported="false" />
         <receiver android:name=".BootReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

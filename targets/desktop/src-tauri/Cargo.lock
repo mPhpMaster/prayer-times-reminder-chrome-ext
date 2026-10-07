@@ -2575,6 +2575,7 @@ dependencies = [
  "tauri-plugin-global-shortcut",
  "tauri-plugin-notification",
  "tauri-plugin-single-instance",
+ "tauri-winrt-notification",
  "webview2-com",
  "windows 0.58.0",
  "windows-core 0.61.2",

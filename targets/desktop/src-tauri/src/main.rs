@@ -8,6 +8,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod google_auth;
+mod updater;
 
 use std::sync::Mutex;
 use tauri::{
@@ -669,6 +670,8 @@ fn main() {
             set_autostart,
             open_game,
             show_prayer_times,
+            updater::store_update_version,
+            updater::notify_update,
             google_sign_in,
             log_js
         ])

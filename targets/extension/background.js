@@ -484,6 +484,11 @@ async function showTasbihOnAllTabs({
 // ---- Event wiring -----------------------------------------------------------
 
 chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === UPDATE_ALARM) {
+        // Throttled by Chrome; a found update arrives via onUpdateAvailable.
+        chrome.runtime.requestUpdateCheck().catch(() => {});
+        return;
+    }
     if (alarm.name === REFRESH_ALARM) {
         scheduleAlarms();
         return;
@@ -562,6 +567,37 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 chrome.runtime.onStartup.addListener(() => scheduleAlarms());
 
+// ---- New version ----------------------------------------------------------
+// Chrome downloads a new Web Store version on its own. With this listener it
+// holds the update until the extension reloads, so we tell the user once per
+// version, and clicking the notice reloads onto the new version right away.
+// A daily check asks Chrome not to wait for its own (slower) schedule.
+const UPDATE_ALARM = "update-check";
+const UPDATE_NOTIFICATION = "app-update";
+
+chrome.runtime.onUpdateAvailable.addListener(async (details) => {
+    const { updateNotified, lang } = await chrome.storage.local.get(["updateNotified", "lang"]);
+    if (updateNotified === details.version) return;
+    const L = tr(lang || DEFAULT_SETTINGS.lang);
+    chrome.notifications.create(UPDATE_NOTIFICATION, {
+        type: "basic",
+        iconUrl: "icons/icon128.png",
+        title: L.updateTitle,
+        message: L.updateBody,
+        priority: 2,
+        requireInteraction: true
+    });
+    await chrome.storage.local.set({ updateNotified: details.version });
+});
+
+async function ensureUpdateAlarm() {
+    if (!(await chrome.alarms.get(UPDATE_ALARM))) {
+        chrome.alarms.create(UPDATE_ALARM, { delayInMinutes: 5, periodInMinutes: 24 * 60 });
+    }
+}
+chrome.runtime.onInstalled.addListener(() => ensureUpdateAlarm());
+chrome.runtime.onStartup.addListener(() => ensureUpdateAlarm());
+
 // Re-hydrate the in-memory lock flag whenever the worker cold-starts, so
 // tabs.onUpdated re-locks new tabs even after the service worker was suspended.
 chrome.storage.local.get("activeLock").then(({ activeLock }) => {
@@ -571,7 +607,10 @@ chrome.storage.local.get("activeLock").then(({ activeLock }) => {
 // Clicking a notification opens the welcome page (install) or clears others.
 chrome.notifications.onClicked.addListener((id) => {
     chrome.notifications.clear(id);
-    if (id.startsWith("welcome-pin-")) {
+    if (id === UPDATE_NOTIFICATION) {
+        // Applies the downloaded version (open extension pages close).
+        chrome.runtime.reload();
+    } else if (id.startsWith("welcome-pin-")) {
         chrome.tabs.create({
             url: chrome.runtime.getURL("welcome.html")
         });

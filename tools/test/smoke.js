@@ -42,7 +42,8 @@ function chromeStub() {
     runtime: {
       sendMessage: () => Promise.resolve({}), getURL: (x) => x,
       getContexts: () => Promise.resolve([]),
-      onMessage: listener, onInstalled: listener, onStartup: listener
+      onMessage: listener, onInstalled: listener, onStartup: listener, onUpdateAvailable: listener,
+      requestUpdateCheck: () => Promise.resolve({ status: "no_update" }), reload: noop
     },
     offscreen: { createDocument: () => Promise.resolve(), closeDocument: () => Promise.resolve() },
     tabs: {
