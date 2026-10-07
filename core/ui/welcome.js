@@ -58,6 +58,7 @@ function applyLanguage() {
   document.title = L.appTitle;
 
   document.getElementById("welcome-title").textContent = L.welcomeTitle;
+  fillLegalLinks(L);
   document.getElementById("welcome-prayer-break").textContent = L.prayerBreak;
   document.getElementById("welcome-lead").textContent = L.welcomeLead;
   document.getElementById("welcome-pin-title").textContent = L.welcomePinTitle;

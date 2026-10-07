@@ -96,6 +96,26 @@ button { font: inherit; cursor: pointer; }
   line-height: 1.6;
 }
 .guest-note .link { padding: 0; font-weight: 700; }
+/* "Try again" after a failed load. */
+.retry { margin-inline-start: 6px; font-weight: 700; }
+/* Loading placeholders (lists, profile line, year view). */
+.skeleton, .skeleton-line, .skeleton-block {
+  display: block;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.11) 50%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+.skeleton { height: 44px; list-style: none; }
+.skeleton-line { width: 45%; height: 1.2em; }
+.skeleton-block { height: 120px; margin-bottom: 10px; }
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .skeleton-line, .skeleton-block { animation: none; }
+}
 @keyframes reward-arrive {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: none; }

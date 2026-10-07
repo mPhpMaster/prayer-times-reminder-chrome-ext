@@ -15,16 +15,43 @@
          before anything is shown (html.nt-pending hides it until then). -->
     <div class="sky" id="sky" aria-hidden="true"><div class="stars"></div><div class="sun"></div></div>
 
+    <header class="corner-bar">
+      <div class="corner start">
+        <span class="weather" id="weather" hidden>
+          <span class="w-icon" id="w-icon"></span>
+          <span class="w-temp" id="w-temp"></span>
+        </span>
+      </div>
+      <nav class="corner end">
+        <a class="icon-btn" id="go-times" href="popup.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm1 3v4.59l3.2 3.2-1.4 1.42L11 12.4V7h2Z"/></svg>
+        </a>
+        <a class="icon-btn" id="go-game" href="game.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 14.9 8.6 22 9.3l-5.4 4.8 1.6 7L12 17.5 5.8 21.1l1.6-7L2 9.3l7.1-.7L12 2Z"/></svg>
+        </a>
+        <button type="button" class="icon-btn" id="open-settings" aria-haspopup="dialog" aria-controls="settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Zm8.4 4.5a8.6 8.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a8 8 0 0 0-1.7-1L16 3.3h-4l-.4 2.6a8 8 0 0 0-1.7 1l-2.5-1-2 3.5L7.6 11a8.6 8.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5-2.3-1.6Z" transform="translate(-2 0)"/></svg>
+        </button>
+      </nav>
+    </header>
+
     <main class="nt">
-      <section class="clock" aria-live="off">
+      <section class="clock">
         <div class="time" id="clock"></div>
         <div class="date" id="date"></div>
       </section>
 
+      <!-- Next prayer, as in the app: hours / minutes / seconds boxes and the
+           share of the wait already behind. -->
       <section class="next" id="next" hidden>
         <span class="next-label" id="next-label"></span>
         <span class="next-name" id="next-name"></span>
-        <span class="next-in" id="next-in"></span>
+        <div class="boxes" role="timer" id="boxes">
+          <div class="box"><b id="cd-h"></b><span id="cd-h-l"></span></div>
+          <div class="box"><b id="cd-m"></b><span id="cd-m-l"></span></div>
+          <div class="box sec"><b id="cd-s"></b><span id="cd-s-l"></span></div>
+        </div>
+        <div class="wait" aria-hidden="true"><span id="wait-bar"></span></div>
       </section>
 
       <form class="search" id="search" role="search">
@@ -42,16 +69,44 @@
         <div class="card dhikr-card">
           <p class="dhikr-main" id="dhikr-main"></p>
           <p class="dhikr-ar" id="dhikr-ar" lang="ar" dir="rtl" hidden></p>
-          <button type="button" class="ghost-btn" id="dhikr-next"></button>
+          <div class="dhikr-actions">
+            <button type="button" class="chip-btn" id="dhikr-copy"></button>
+            <button type="button" class="chip-btn fav" id="dhikr-fav" aria-pressed="false"></button>
+            <button type="button" class="chip-btn" id="dhikr-next"></button>
+          </div>
         </div>
 
         <div class="card tasks-card" id="tasks-card" hidden>
-          <p class="tasks-text" id="tasks-text"></p>
+          <div class="tasks-row">
+            <div class="ring-wrap" aria-hidden="true">
+              <svg class="ring" viewBox="0 0 44 44">
+                <circle class="ring-track" cx="22" cy="22" r="18" />
+                <circle class="ring-fill" id="ring-fill" cx="22" cy="22" r="18" />
+              </svg>
+              <span class="ring-pct" id="ring-pct"></span>
+            </div>
+            <p class="tasks-text" id="tasks-text"></p>
+          </div>
           <div class="bar" aria-hidden="true"><span id="tasks-bar"></span></div>
           <a class="card-link" id="tasks-open" href="game.html"></a>
         </div>
       </section>
     </main>
+
+    <!-- Settings: background and weather (kept in this browser). -->
+    <div class="settings" id="settings" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+      <div class="settings-card">
+        <div class="settings-head">
+          <h2 id="settings-title"></h2>
+          <button type="button" class="icon-btn" id="close-settings">✕</button>
+        </div>
+        <h3 id="bg-title"></h3>
+        <div class="bg-choices" id="bg-choices"></div>
+        <label class="toggle"><input type="checkbox" id="weather-on" /> <span id="weather-label"></span></label>
+      </div>
+    </div>
+
+    <p class="toast" id="toast" role="status" hidden></p>
 
     <script src="i18n.js"></script>
     <script src="tasbih-phrases.js"></script>

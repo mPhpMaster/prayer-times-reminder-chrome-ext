@@ -29,7 +29,7 @@
 </head>
 <body>
   <h1>Privacy Policy — Prayer Times Reminder</h1>
-  <p class="updated">Last updated: 29 September 2026 &middot; Applies to the Chrome extension, the Windows app, and the Android app.</p>
+  <p class="updated">Last updated: 8 October 2026 &middot; Applies to the Chrome extension, the Windows app, and the Android app.</p>
 
   <div class="card">
     <p><strong>Prayer Times Reminder</strong> (“the app”) is built to respect your privacy.
@@ -64,6 +64,7 @@
   sending only the minimum needed — never any account or personal identifier:</p>
   <ul>
     <li><strong>AlAdhan API</strong> (<code>api.aladhan.com</code>) — your city/country and the calculation method, to return prayer times. This is only a fallback for a saved city whose coordinates could not be found; normally all apps compute prayer times offline, on your device.</li>
+    <li><strong>Open-Meteo</strong> (<code>api.open-meteo.com</code>) — only for the weather on the Chrome extension’s new tab, if it is shown: your saved city’s coordinates <em>rounded to about 10 km</em>. No account, name or identifier is sent; the weather can be turned off in the new tab’s settings.</li>
     <li><strong>CountriesNow API</strong> (<code>countriesnow.space</code>) — a country name, to return its list of cities.</li>
     <li><strong>Nominatim / OpenStreetMap</strong> (<code>nominatim.openstreetmap.org</code>) — the <em>name</em> of the city you select (with its country), to find its coordinates for the offline calculation and, when the interface language is Arabic, to show its Arabic label. Your device coordinates are not sent.</li>
   </ul>
@@ -84,7 +85,9 @@
     <li><strong>scripting</strong> and the optional <strong>access to your open tabs</strong> (<code>&lt;all_urls&gt;</code>) — place the prayer-break overlay and the dhikr card on your open tabs. Tab access is not granted at install; the extension asks for it when you first turn on the prayer break or dhikr reminders, and you can decline. The overlay and card do not read page content, forms, passwords or browsing history, and send nothing from the page anywhere.</li>
     <li><strong>offscreen</strong> — play the adhan or chime packaged with the extension at prayer time.</li>
     <li><strong>identity</strong> — only for the optional “Continue with Google” in the game (see below).</li>
+    <li><strong>search</strong> — the search box on the extension’s new tab sends what you type to <em>your browser’s own default search engine</em>, as Chrome’s address bar would; the extension does not see or keep it.</li>
   </ul>
+  <p>The extension replaces Chrome’s new tab with a prayer-times page (clock, next prayer, today’s times, a dhikr, your adhkar progress). It can be switched off in the game’s “My account”, and then new tabs open Chrome’s own page. Its background, weather and favorite adhkar are kept only in your browser.</p>
   <p>The microphone is not an extension permission: the game page asks Chrome for it the first time you tap “Start reading”, and you can revoke it in Chrome’s site settings.</p>
 
   <h2>Android app</h2>
