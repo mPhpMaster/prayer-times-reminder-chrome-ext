@@ -10,6 +10,7 @@ web-ext-artifacts/
 targets/extension/build/
 targets/desktop/src/
 targets/mobile/www/
+targets/web/build/
 
 # ---- Store-screenshot transient harness (written by make_store_screenshots.py) ----
 _store_harness.html

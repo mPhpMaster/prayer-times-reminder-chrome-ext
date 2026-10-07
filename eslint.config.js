@@ -37,6 +37,7 @@ module.exports = [
     // speech-web.js is shared by the extension and the desktop app.
     files: [
       "core/platform/speech-web.js",
+      "targets/web/google-auth-web.js",
       "targets/extension/google-auth-chrome.js",
       "targets/desktop/web/google-auth-desktop.js"
     ],

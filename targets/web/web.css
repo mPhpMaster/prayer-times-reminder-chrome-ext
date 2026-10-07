@@ -1,0 +1,4 @@
+/* Website build: the app pages (popup, game, about, admin) were laid out for a
+   360px popup / phone. In a full browser window, center them in a column. */
+html { background: var(--background, #0b1716); }
+body { max-width: 480px; margin-inline: auto !important; min-height: 100vh; }
