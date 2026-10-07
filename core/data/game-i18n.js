@@ -3034,56 +3034,67 @@ const GAME_I18N_GUEST = {
     guestWarning: "أنت غير مسجّل: نقاطك تُحفظ على هذا الجهاز فقط، ولا تظهر في المتصدرين، ولن تنتقل إلى حسابك إن سجّلت لاحقًا. سجّل الدخول قبل أن تبدأ حتى لا تضيع.",
     guestSignIn: "سجّل الدخول",
     guestBoardNote: "سجّل الدخول لتظهر في المتصدرين.",
+    newTabToggle: "اعرض صفحة مواقيت الصلاة في كل تبويب جديد بكروم",
   },
   en: {
     guestWarning: "You're not signed in: your points are kept on this device only, don't appear on the leaderboard, and won't move to an account if you sign in later. Sign in before you start so they aren't lost.",
     guestSignIn: "Sign in",
     guestBoardNote: "Sign in to appear on the leaderboard.",
+    newTabToggle: "Show the prayer-times page in every new Chrome tab",
   },
   de: {
     guestWarning: "Du bist nicht angemeldet: Deine Punkte bleiben nur auf diesem Gerät, erscheinen nicht in der Rangliste und gehen bei einer späteren Anmeldung nicht auf ein Konto über. Melde dich vorher an, damit sie nicht verloren gehen.",
     guestSignIn: "Anmelden",
     guestBoardNote: "Melde dich an, um in der Rangliste zu erscheinen.",
+    newTabToggle: "Die Gebetszeiten-Seite in jedem neuen Chrome-Tab zeigen",
   },
   fr: {
     guestWarning: "Vous n’êtes pas connecté : vos points restent sur cet appareil, n’apparaissent pas au classement et ne passeront pas sur un compte si vous vous connectez plus tard. Connectez-vous avant de commencer pour ne pas les perdre.",
     guestSignIn: "Se connecter",
     guestBoardNote: "Connectez-vous pour apparaître au classement.",
+    newTabToggle: "Afficher la page des prières dans chaque nouvel onglet Chrome",
   },
   es: {
     guestWarning: "No has iniciado sesión: tus puntos se guardan solo en este dispositivo, no aparecen en la clasificación y no pasarán a una cuenta si inicias sesión después. Inicia sesión antes de empezar para no perderlos.",
     guestSignIn: "Iniciar sesión",
     guestBoardNote: "Inicia sesión para aparecer en la clasificación.",
+    newTabToggle: "Mostrar la página de oraciones en cada pestaña nueva de Chrome",
   },
   id: {
     guestWarning: "Kamu belum masuk: poinmu hanya tersimpan di perangkat ini, tidak muncul di papan peringkat, dan tidak akan pindah ke akun jika kamu masuk nanti. Masuklah sebelum mulai agar tidak hilang.",
     guestSignIn: "Masuk",
     guestBoardNote: "Masuk agar muncul di papan peringkat.",
+    newTabToggle: "Tampilkan halaman jadwal salat di setiap tab baru Chrome",
   },
   ur: {
     guestWarning: "آپ سائن ان نہیں ہیں: آپ کے پوائنٹس صرف اسی آلے پر رہتے ہیں، لیڈر بورڈ پر نظر نہیں آتے، اور بعد میں سائن ان کرنے پر اکاؤنٹ میں منتقل نہیں ہوں گے۔ شروع کرنے سے پہلے سائن ان کریں تاکہ یہ ضائع نہ ہوں۔",
     guestSignIn: "سائن ان کریں",
     guestBoardNote: "لیڈر بورڈ پر آنے کے لیے سائن ان کریں۔",
+    newTabToggle: "کروم کے ہر نئے ٹیب میں اوقاتِ نماز کا صفحہ دکھائیں",
   },
   hi: {
     guestWarning: "आप साइन इन नहीं हैं: आपके अंक सिर्फ़ इसी डिवाइस पर रहते हैं, लीडरबोर्ड पर नहीं दिखते, और बाद में साइन इन करने पर खाते में नहीं जाएँगे। शुरू करने से पहले साइन इन करें ताकि वे खोएँ नहीं।",
     guestSignIn: "साइन इन करें",
     guestBoardNote: "लीडरबोर्ड पर आने के लिए साइन इन करें।",
+    newTabToggle: "Chrome के हर नए टैब में नमाज़ के समय का पेज दिखाएँ",
   },
   ru: {
     guestWarning: "Вы не вошли в аккаунт: очки хранятся только на этом устройстве, не попадают в таблицу лидеров и не перейдут в аккаунт, если вы войдёте позже. Войдите до начала, чтобы не потерять их.",
     guestSignIn: "Войти",
     guestBoardNote: "Войдите, чтобы попасть в таблицу лидеров.",
+    newTabToggle: "Показывать страницу времени намаза в каждой новой вкладке Chrome",
   },
   kk: {
     guestWarning: "Сіз кірмегенсіз: ұпайларыңыз тек осы құрылғыда сақталады, көшбасшылар тізімінде көрінбейді және кейін кірсеңіз, аккаунтқа ауыспайды. Жоғалмас үшін бастамас бұрын кіріңіз.",
     guestSignIn: "Кіру",
     guestBoardNote: "Көшбасшылар тізіміне шығу үшін кіріңіз.",
+    newTabToggle: "Chrome-дағы әр жаңа қойындыда намаз уақыттары бетін көрсету",
   },
   uz: {
     guestWarning: "Siz kirmagansiz: ballaringiz faqat shu qurilmada saqlanadi, peshqadamlar ro‘yxatida ko‘rinmaydi va keyin kirsangiz, hisobga o‘tmaydi. Yo‘qolmasligi uchun boshlashdan oldin kiring.",
     guestSignIn: "Kirish",
     guestBoardNote: "Peshqadamlar ro‘yxatiga chiqish uchun kiring.",
+    newTabToggle: "Chrome’ning har bir yangi varag‘ida namoz vaqtlari sahifasini ko‘rsatish",
   },
 };
 for (const [code, more] of Object.entries(GAME_I18N_GUEST)) Object.assign(GAME_I18N[code], more);

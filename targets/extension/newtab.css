@@ -1,0 +1,186 @@
+/* The extension's new tab. The sky follows the prayer times (body[data-phase]):
+   dawn · morning · noon · afternoon · sunset · night. Cards are dark glass so
+   text stays readable on every sky. */
+
+.nt-pending body { visibility: hidden; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  color: #f4fbf9;
+  font-family: var(--font-display, system-ui), system-ui, sans-serif;
+  /* Transparent: the sky (z-index -1) must show through; the base color sits on <html>. */
+  background: transparent;
+  overflow-x: hidden;
+}
+html { background: #031a17; }
+html:lang(ar) body, html:lang(ur) body { font-family: "Segoe UI", Tahoma, system-ui, sans-serif; }
+[hidden] { display: none !important; }
+
+/* ---- sky ---- */
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--sky);
+  transition: background 2s ease;
+  --sky: linear-gradient(180deg, #020b1a 0%, #06213a 55%, #0b3a3a 100%);
+}
+body[data-phase="dawn"] .sky { --sky: linear-gradient(180deg, #1b1c4a 0%, #5b3a78 38%, #e0839a 72%, #f6c58f 100%); }
+body[data-phase="morning"] .sky { --sky: linear-gradient(180deg, #4aa3d8 0%, #8fd0e8 55%, #d9f1ea 100%); }
+body[data-phase="noon"] .sky { --sky: linear-gradient(180deg, #1f7fd0 0%, #4fb2ea 50%, #a8e1f4 100%); }
+body[data-phase="afternoon"] .sky { --sky: linear-gradient(180deg, #2f78b5 0%, #e7b35c 65%, #f2d390 100%); }
+body[data-phase="sunset"] .sky { --sky: linear-gradient(180deg, #2a1b4d 0%, #8a3b6b 40%, #e8644a 75%, #f7a64c 100%); }
+body[data-phase="night"] .sky { --sky: linear-gradient(180deg, #020b1a 0%, #06213a 55%, #0b3a3a 100%); }
+
+/* Stars only at night and before dawn; a soft sun by day. */
+.stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 2s ease;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 28% 42%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 46% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 63% 30%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 78% 16%, #fff, transparent),
+    radial-gradient(1px 1px at 88% 48%, #fff, transparent),
+    radial-gradient(1px 1px at 8% 64%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 36% 72%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 66%, #fff, transparent),
+    radial-gradient(1px 1px at 92% 82%, #fff, transparent);
+}
+body[data-phase="night"] .stars { opacity: 0.8; }
+body[data-phase="dawn"] .stars { opacity: 0.3; }
+.sun {
+  position: absolute;
+  width: 46vmin;
+  height: 46vmin;
+  border-radius: 50%;
+  inset-inline-end: -8vmin;
+  top: -10vmin;
+  background: radial-gradient(circle, rgba(255, 244, 214, 0.55), rgba(255, 220, 150, 0.12) 55%, transparent 70%);
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+body[data-phase="morning"] .sun, body[data-phase="noon"] .sun, body[data-phase="afternoon"] .sun { opacity: 1; }
+body[data-phase="sunset"] .sun, body[data-phase="dawn"] .sun { opacity: 0.6; top: auto; bottom: -22vmin; }
+
+/* ---- layout ---- */
+.nt {
+  min-height: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(28px, 7vh, 80px) 20px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+.clock { text-align: center; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35); }
+.time { font-size: clamp(56px, 11vw, 112px); font-weight: 700; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.date { margin-top: 8px; font-size: clamp(16px, 2vw, 20px); opacity: 0.9; }
+
+.next {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 12px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: rgba(2, 20, 18, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.next-label { font-size: 13px; opacity: 0.75; }
+.next-name { font-size: 18px; font-weight: 700; }
+.next-in { font-size: 15px; color: #7ff0cf; font-variant-numeric: tabular-nums; }
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(640px, 100%);
+  padding: 0 18px;
+  height: 54px;
+  border-radius: 999px;
+  color: #3c4a48;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+}
+.search:focus-within { box-shadow: 0 0 0 3px rgba(58, 212, 170, 0.6), 0 12px 40px -12px rgba(0, 0, 0, 0.5); }
+.search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 17px;
+  color: #10201e;
+}
+
+.cards { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; width: 100%; margin-top: 6px; }
+.card {
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(2, 20, 18, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.6);
+}
+.times-card { grid-row: span 2; }
+.card h2 { margin: 0 0 10px; font-size: 15px; font-weight: 700; opacity: 0.85; }
+.times { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.times li { display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 12px; font-size: 15px; }
+.times li.info { opacity: 0.7; font-size: 14px; }
+.times li.is-past { opacity: 0.5; }
+.times li.is-next { background: rgba(58, 212, 170, 0.18); border: 1px solid rgba(58, 212, 170, 0.45); font-weight: 700; }
+.times .t { font-variant-numeric: tabular-nums; font-weight: 700; }
+
+.dhikr-card { display: flex; flex-direction: column; justify-content: center; gap: 6px; text-align: center; }
+.dhikr-main { margin: 0; font-size: 20px; line-height: 1.6; }
+.dhikr-main:lang(ar) { font-family: "Amiri", serif; font-size: 26px; }
+.dhikr-ar { margin: 0; font-family: "Amiri", serif; font-size: 20px; opacity: 0.85; }
+.ghost-btn {
+  align-self: center;
+  margin-top: 6px;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+.ghost-btn:hover { background: rgba(255, 255, 255, 0.16); }
+
+.tasks-text { margin: 0 0 10px; font-size: 15px; }
+.bar { height: 8px; border-radius: 8px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; border-radius: 8px; background: linear-gradient(90deg, #3ad4aa, #eebc4a); transition: width 0.6s ease; }
+.tasks-card.all-done .tasks-text { color: #eebc4a; font-weight: 700; }
+.card-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7ff0cf;
+  text-decoration: none;
+}
+.card-link:hover { text-decoration: underline; }
+
+a:focus-visible, button:focus-visible { outline: 2px solid #7ff0cf; outline-offset: 3px; }
+
+@media (max-width: 720px) {
+  .cards { grid-template-columns: 1fr; }
+  .times-card { grid-row: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sky, .stars, .sun, .bar span { transition: none; }
+}

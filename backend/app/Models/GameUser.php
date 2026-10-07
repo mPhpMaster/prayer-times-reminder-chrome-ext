@@ -19,8 +19,8 @@ class GameUser extends Model
 
     protected $hidden = ['password', 'google_sub', 'email'];
 
-    /** The game options kept with the account (all on/off). */
-    public const SETTINGS = ['alerts', 'journey', 'sound'];
+    /** The game options kept with the account (all on/off). newTab: the Chrome extension's new-tab page. */
+    public const SETTINGS = ['alerts', 'journey', 'sound', 'newTab'];
 
     protected function casts(): array
     {

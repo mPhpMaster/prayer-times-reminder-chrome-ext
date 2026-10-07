@@ -36,7 +36,7 @@ function manifestChecks() {
   const m = JSON.parse(read("manifest.json"));
   ok("manifest v3", m.manifest_version === 3);
   ok("no key field (the store rejects it)", !("key" in m));
-  const allowed = ["alarms", "notifications", "storage", "geolocation", "scripting", "offscreen", "identity"];
+  const allowed = ["alarms", "notifications", "storage", "geolocation", "scripting", "offscreen", "identity", "search"];
   ok("only the expected permissions", m.permissions.every((p) => allowed.includes(p)) && m.permissions.length === allowed.length);
   ok("identity permission for Google sign-in", m.permissions.includes("identity"));
   ok("no identity.email (install warning, not needed)", !m.permissions.includes("identity.email"));
@@ -45,8 +45,10 @@ function manifestChecks() {
   ok("default (strict) extension CSP", !m.content_security_policy);
   ok("no externally_connectable / oauth2 leftovers", !m.externally_connectable && !m.oauth2);
   ok("popup is the prayer-times page", m.action.default_popup === "popup.html");
+  ok("new tab is the extension's page", m.chrome_url_overrides && m.chrome_url_overrides.newtab === "newtab.html");
+  ok("newtab.js can step aside when the option is off", /chrome:\/\/new-tab-page/.test(read("newtab.js")) && /newTabPage === false/.test(read("newtab.js")));
 
-  for (const page of ["popup.html", "game.html", "welcome.html", "about.html", "admin.html", "offscreen.html"]) {
+  for (const page of ["popup.html", "game.html", "welcome.html", "about.html", "admin.html", "offscreen.html", "newtab.html"]) {
     if (!fs.existsSync(path.join(BUILD, page))) continue;
     const html = read(page);
     ok(`${page}: no inline <script>`, !/<script(?![^>]*\bsrc=)[^>]*>\s*\S/i.test(html));
