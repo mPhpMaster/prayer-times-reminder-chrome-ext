@@ -24,6 +24,9 @@ class GameAuth
         if (! $user) {
             GameRules::fail(401, 'unauthorized');
         }
+        if ($user->isBanned()) {
+            GameRules::fail(403, 'banned');
+        }
         if (! $row->last_used_at || now()->diffInMinutes($row->last_used_at, true) >= 60) {
             DB::table('game_tokens')->where('id', $row->id)->update(['last_used_at' => now()]);
         }

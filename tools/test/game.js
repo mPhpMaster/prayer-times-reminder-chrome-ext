@@ -407,6 +407,21 @@ ok("same account: nothing to re-send", !Y.adoptSyncAccount(sa, "old"));
 ok("new account: re-send everything", Y.adoptSyncAccount(sa, "new"));
 eq("all 125 local items are pending for the new account", Y.pendingCompletions(sa).length, 125);
 eq("first sign-in on this device also re-sends", Y.adoptSyncAccount(S.emptyGameState(), "someone"), true);
+
+// ---- a guest's progress stays on the device --------------------------------------
+{
+  const g = S.emptyGameState();
+  S.markTaskDone(g, "2026-10-01:Fajr", "tasbih-33", 10, 1); // played signed out (before any account)
+  S.markTaskDone(g, "2026-10-01:Dhuhr", "tasbih-33", 10, 2).local = true; // stamped by game.js while signed out
+  eq("a stamped guest task is never pending", Y.pendingCompletions(g).map((r) => r.windowKey), ["2026-10-01:Fajr"]);
+  ok("first sign-in adopts the device", Y.adoptSyncAccount(g, "me"));
+  eq("first sign-in sends nothing played before it", Y.pendingCompletions(g), []);
+  S.markTaskDone(g, "2026-10-02:Fajr", "tasbih-33", 10, 3); // signed in now
+  eq("progress made signed in is sent", Y.pendingCompletions(g).map((r) => r.windowKey), ["2026-10-02:Fajr"]);
+  Y.markSynced(g, Y.pendingCompletions(g));
+  ok("switching accounts re-sends account progress", Y.adoptSyncAccount(g, "other"));
+  eq("…but never the guest's", Y.pendingCompletions(g).map((r) => r.windowKey), ["2026-10-02:Fajr"]);
+}
 const batches = Y.syncBatches(Y.pendingCompletions(sa));
 eq("sent in batches under the server's 500-row limit", Y.syncBatches(Array.from({ length: 450 }, (_, i) => i)).map((b) => b.length), [200, 200, 50]);
 ok("batches cover every row once", batches.flat().length === 125);

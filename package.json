@@ -16,7 +16,7 @@
     "version:rollback": "node tools/version.mjs rollback",
     "version:release": "node tools/version.mjs bump --build",
     "ship": "node tools/release.mjs",
-    "test": "node tools/sync-core.mjs extension && node tools/test/run.js && node tools/test/logic.js && node tools/test/game.js && node tools/test/dedications.js && node tools/test/smoke.js && node tools/test/chrome-shell.js",
+    "test": "node tools/sync-core.mjs extension && node tools/test/run.js && node tools/test/logic.js && node tools/test/game.js && node tools/test/family.js && node tools/test/dedications.js && node tools/test/smoke.js && node tools/test/chrome-shell.js",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,css,html,json,md}\""
   },

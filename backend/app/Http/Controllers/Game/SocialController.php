@@ -3,17 +3,24 @@
 namespace App\Http\Controllers\Game;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\GameAuth;
 use App\Models\GameUser;
+use App\Support\GamePeriods;
 use App\Support\GameRules;
 use App\Support\GameStats;
+use App\Support\GameWinners;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Players, follows (one-way, no approval) and the monthly leaderboard.
+ * Players, follows (one-way, no approval), the leaderboard and period prizes.
+ * Points are never reset: the board ranks all-time points or the points of
+ * the current year / half / quarter / month, and each ended period crowns its
+ * top player(s) (GameWinners).
  * "Hide my progress" is enforced here, not in the app: a hidden player never
- * appears on a board and nobody else sees their points, followers included.
+ * appears on a board and nobody else sees their points, followers included —
+ * but they can still win a period; the prize then shows their name only.
  */
 class SocialController extends Controller
 {
@@ -24,7 +31,12 @@ class SocialController extends Controller
 
     private function target(string $username): GameUser
     {
-        return GameUser::findByUsername($username) ?? GameRules::fail(404, 'no-such-user');
+        $u = GameUser::findByUsername($username);
+        if (! $u || $u->isBanned()) {
+            GameRules::fail(404, 'no-such-user');
+        }
+
+        return $u;
     }
 
     private static function monthPoints(int $userId, string $month): int
@@ -47,7 +59,7 @@ class SocialController extends Controller
         }
         // No LIKE escaping: SQLite has no default escape char, and a stray "_"
         // wildcard only widens a prefix search slightly.
-        $users = GameUser::where('username_lower', 'like', $q.'%')->orderBy('username')->limit(20)->get();
+        $users = GameUser::where('username_lower', 'like', $q.'%')->whereNull('banned_at')->orderBy('username')->limit(20)->get();
 
         return response()->json(['users' => $users->map->toPublic()]);
     }
@@ -69,6 +81,7 @@ class SocialController extends Controller
         $today = GameRules::day($request->query('today'));
         $self = $u->id === $me->id;
         $visible = $self || ! $u->hide_progress;
+        GameWinners::settle((int) now()->getTimestampMs());
 
         $stats = null;
         $achievements = null;
@@ -88,6 +101,8 @@ class SocialController extends Controller
             'points' => $visible ? self::monthPoints($u->id, $month) : null,
             'stats' => $stats,
             'achievements' => $achievements,
+            // Prizes are public (like the winners list), even for hidden players.
+            'wins' => GameWinners::of($u->id),
         ]);
     }
 
@@ -120,25 +135,51 @@ class SocialController extends Controller
     public function following(Request $request): JsonResponse
     {
         $users = GameUser::whereIn('id', DB::table('game_follows')->where('follower_id', $this->me($request)->id)->select('followee_id'))
-            ->orderBy('username')->get();
+            ->whereNull('banned_at')->orderBy('username')->get();
 
         return response()->json(['users' => $users->map->toPublic()]);
     }
 
-    /** GET /v1/leaderboard?month=&scope=all|following -> {month, scope, rows, me} (resets monthly) */
+    /**
+     * GET /v1/leaderboard?period=all|year|half|quarter|month&today=YYYY-MM-DD&scope=all|following
+     *   -> {period, periodKey, month, scope, rows, me, winners}
+     *
+     * period "all" ranks all-time points; the others rank the points earned in
+     * the current period, taken from the viewer's local `today`. Older apps
+     * send only `month` and get that month, as before. `winners` is the most
+     * recently decided period of each type (GameWinners::latest).
+     */
     public function leaderboard(Request $request): JsonResponse
     {
-        $me = $this->me($request);
-        $month = GameRules::month($request->query('month'), (int) now()->getTimestampMs());
-        $scope = $request->query('scope') === 'following' ? 'following' : 'all';
+        // Public: a valid token (not a banned player's) adds "me" and the following scope.
+        $me = GameAuth::userForToken($request->bearerToken());
+        if ($me && $me->isBanned()) {
+            $me = null;
+        }
+        $nowMs = (int) now()->getTimestampMs();
+        $scope = $me && $request->query('scope') === 'following' ? 'following' : 'all';
+        $asked = $request->query('period');
+        $period = in_array($asked, ['all', ...GamePeriods::TYPES], true) ? $asked : 'month';
+        if ($asked === null) {
+            $key = GameRules::month($request->query('month'), $nowMs); // older apps
+        } elseif ($period === 'all') {
+            $key = null;
+        } else {
+            $today = GameRules::day($request->query('today')) ?? gmdate('Y-m-d', intdiv($nowMs, 1000));
+            $key = GamePeriods::key($period, $today);
+        }
+        GameWinners::settle($nowMs);
 
         $q = DB::table('game_completions as c')
             ->join('game_users as u', 'u.id', '=', 'c.user_id')
-            ->where('c.window_key', 'like', $month.'%')
             ->where('u.hide_progress', false)
+            ->whereNull('u.banned_at')
             ->groupBy('u.id', 'u.username', 'u.display_name')
             ->select('u.id', 'u.username', 'u.display_name', DB::raw('SUM(c.points) AS points'))
             ->orderByDesc('points')->orderBy('u.username')->limit(100);
+        if ($key !== null) {
+            GamePeriods::scope($q, $period, $key, 'c.window_key');
+        }
         if ($scope === 'following') {
             $ids = DB::table('game_follows')->where('follower_id', $me->id)->pluck('followee_id')->push($me->id);
             $q->whereIn('c.user_id', $ids);
@@ -152,11 +193,19 @@ class SocialController extends Controller
             'points' => (int) $r->points,
         ]);
 
+        $mine = $me ? DB::table('game_completions')->where('user_id', $me->id) : null;
+        if ($mine && $key !== null) {
+            GamePeriods::scope($mine, $period, $key);
+        }
+
         return response()->json([
-            'month' => $month,
+            'period' => $period,
+            'periodKey' => $key,
+            'month' => $period === 'month' ? $key : null,
             'scope' => $scope,
             'rows' => $rows,
-            'me' => $me->toPublic() + ['points' => self::monthPoints($me->id, $month)],
+            'me' => $me ? $me->toPublic() + ['points' => (int) $mine->sum('points')] : null,
+            'winners' => GameWinners::latest(),
         ]);
     }
 }

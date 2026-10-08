@@ -17,5 +17,7 @@ public class BootReceiver extends BroadcastReceiver {
         LockState.rearmIfActive(context);
         // The daily "new version" check.
         UpdateChecker.schedule(context);
+        // A parent's family checks.
+        FamilyAlertScheduler.armNext(context);
     }
 }

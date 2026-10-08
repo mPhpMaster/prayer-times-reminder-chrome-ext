@@ -174,16 +174,16 @@ class GameAdminTest extends TestCase
         $this->as($owner)->postJson('/v1/admin/admins', ['email' => self::OWNER])->assertStatus(409);
         $this->as($helper)->getJson('/v1/me')->assertJsonPath('user.admin', true)->assertJsonPath('user.superAdmin', false);
 
-        // A second admin can add admins, but only the owner removes them — and nobody removes the owner.
-        $this->as($helper)->postJson('/v1/admin/admins', ['email' => 'third@example.com'])->assertCreated();
-        $this->as($helper)->deleteJson('/v1/admin/admins/third@example.com')->assertForbidden()->assertJsonPath('error', 'super-admin-only');
+        // Only the owner adds or removes admins — and nobody removes the owner.
+        $this->as($helper)->postJson('/v1/admin/admins', ['email' => 'third@example.com'])->assertForbidden()->assertJsonPath('error', 'super-admin-only');
+        $this->as($helper)->deleteJson('/v1/admin/admins/helper@example.com')->assertForbidden()->assertJsonPath('error', 'super-admin-only');
         $this->as($helper)->deleteJson('/v1/admin/admins/'.self::OWNER)->assertForbidden()->assertJsonPath('error', 'super-admin');
         $this->as($owner)->deleteJson('/v1/admin/admins/'.self::OWNER)->assertForbidden();
         $this->as($owner)->deleteJson('/v1/admin/admins/helper@example.com')->assertNoContent();
         $this->as($helper)->getJson('/v1/admin/overview')->assertForbidden();
 
         $actions = DB::table('game_admin_log')->orderBy('id')->pluck('action')->all();
-        $this->assertSame(['admin.add', 'admin.add', 'admin.remove'], $actions);
+        $this->assertSame(['admin.add', 'admin.remove'], $actions);
     }
 
     public function test_an_added_admin_email_needs_verifying_first(): void
@@ -387,5 +387,89 @@ class GameAdminTest extends TestCase
         $this->assertNull(DB::table('dedication_requests')->value('user_id'));
         $this->assertSame(0, DB::table('dedication_requests')->where('user_id', $saraId)->count());
         $this->getJson('/v1/dedications')->assertJsonPath('dedications.5.names.ar', 'مقبول');
+    }
+
+    // ---- bans and edits --------------------------------------------------------
+
+    private function idOf(string $username): int
+    {
+        return (int) DB::table('game_users')->where('username', $username)->value('id');
+    }
+
+    public function test_a_banned_player_is_signed_out_hidden_and_can_be_unbanned(): void
+    {
+        $owner = $this->owner();
+        $helper = $this->verified('helper@example.com', 'helper');
+        $this->as($owner)->postJson('/v1/admin/admins', ['email' => 'helper@example.com'])->assertCreated();
+        $bad = $this->register('bad@example.com', 'badguy');
+        $fan = $this->register('fan@example.com', 'fan');
+        $this->as($fan)->putJson('/v1/follows/badguy')->assertOk();
+        $this->as($bad)->postJson('/v1/progress', ['completions' => [[
+            'windowKey' => '2026-09-29:Dhuhr', 'itemId' => 'tasbih-33', 'kind' => 'task', 'points' => 30,
+            'startedAt' => now()->getTimestampMs() - 60000, 'doneAt' => now()->getTimestampMs() - 1000,
+        ]]])->assertOk();
+
+        // Any admin (not only the owner) bans a player.
+        $this->as($helper)->postJson('/v1/admin/users/'.$this->idOf('badguy').'/ban', ['reason' => "spam\u{202E}"])->assertNoContent();
+        $this->as($bad)->getJson('/v1/me')->assertUnauthorized(); // every device signed out
+        $this->postJson('/v1/auth/login', ['email' => 'bad@example.com', 'password' => 'secret-pass-1'])
+            ->assertStatus(403)->assertJson(['error' => 'banned']);
+
+        $this->as($fan)->getJson('/v1/users/badguy')->assertNotFound();
+        $this->assertSame([], $this->as($fan)->getJson('/v1/users?q=badg')->json('users'));
+        $this->assertSame([], $this->as($fan)->getJson('/v1/follows')->json('users'));
+        $this->assertNotContains('badguy', collect($this->as($fan)->getJson('/v1/leaderboard?period=all')->json('rows'))->pluck('username')->all());
+
+        $row = collect($this->as($helper)->getJson('/v1/admin/users?q=badguy')->json('users'))->first();
+        $this->assertTrue($row['banned']);
+        $this->assertSame('spam', $row['banReason']);
+        $this->assertSame('helper@example.com', $row['bannedBy']);
+
+        $this->as($helper)->deleteJson('/v1/admin/users/'.$this->idOf('badguy').'/ban')->assertNoContent();
+        $this->postJson('/v1/auth/login', ['email' => 'bad@example.com', 'password' => 'secret-pass-1'])->assertOk();
+        $this->as($fan)->getJson('/v1/users/badguy')->assertOk()->assertJsonPath('points', 30);
+
+        $actions = DB::table('game_admin_log')->orderBy('id')->pluck('action')->all();
+        $this->assertSame(['admin.add', 'user.ban', 'user.unban'], $actions);
+    }
+
+    public function test_admins_cant_be_banned_or_edited_and_nobody_bans_themselves(): void
+    {
+        $owner = $this->owner();
+        $this->verified('helper@example.com', 'helper');
+        $this->as($owner)->postJson('/v1/admin/admins', ['email' => 'helper@example.com'])->assertCreated();
+        $this->as($owner)->postJson('/v1/admin/users/'.$this->idOf('helper').'/ban')->assertForbidden()->assertJson(['error' => 'is-admin']);
+        $this->as($owner)->patchJson('/v1/admin/users/'.$this->idOf('helper'), ['username' => 'x_x_x'])->assertForbidden();
+        $this->as($owner)->postJson('/v1/admin/users/'.$this->idOf('owner').'/ban')->assertStatus(400);
+        $t = $this->register('p@example.com', 'player');
+        $this->as($t)->postJson('/v1/admin/users/'.$this->idOf('owner').'/ban')->assertForbidden();
+    }
+
+    public function test_an_admin_edits_a_players_name_email_and_privacy(): void
+    {
+        $owner = $this->owner();
+        $t = $this->verified('old@example.com', 'oldname');
+        $this->register('other@example.com', 'taken');
+        $id = $this->idOf('oldname');
+        $url = "/v1/admin/users/$id";
+
+        $this->as($owner)->patchJson($url, ['username' => 'Taken'])->assertStatus(409)->assertJson(['error' => 'username-taken']);
+        $this->as($owner)->patchJson($url, ['username' => 'a b'])->assertStatus(400)->assertJson(['error' => 'bad-username']);
+        $this->as($owner)->patchJson($url, ['email' => 'other@example.com'])->assertStatus(409)->assertJson(['error' => 'email-taken']);
+        $this->as($owner)->patchJson($url, ['email' => self::OWNER])->assertStatus(409);
+
+        $this->as($owner)->patchJson($url, [
+            'username' => 'NewName', 'displayName' => "  Ali\u{200B}  ", 'email' => 'New@Example.com', 'hideProgress' => true,
+        ])->assertNoContent();
+        $me = $this->as($t)->getJson('/v1/me')->assertOk()->json('user'); // still signed in
+        $this->assertSame(['NewName', 'Ali', 'new@example.com', false, true],
+            [$me['username'], $me['displayName'], $me['email'], $me['emailVerified'], $me['hideProgress']]);
+        $this->postJson('/v1/auth/login', ['email' => 'new@example.com', 'password' => 'secret-pass-1'])->assertOk();
+        // Same name in another case is the same name.
+        $this->as($owner)->patchJson($url, ['username' => 'newname'])->assertNoContent();
+
+        $log = DB::table('game_admin_log')->where('action', 'user.edit')->orderBy('id')->get();
+        $this->assertCount(2, $log);
+        $this->assertStringContainsString('oldname', $log[0]->details);
     }
 }

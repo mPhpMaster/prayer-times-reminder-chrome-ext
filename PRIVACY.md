@@ -1,6 +1,6 @@
 # Privacy Policy — Prayer Times Reminder
 
-_Last updated: 29 September 2026_
+_Last updated: 8 October 2026_
 
 **Prayer Times Reminder** ("the extension") is designed to respect your privacy.
 This policy explains what data the extension uses and how.
@@ -38,6 +38,10 @@ Prayer times are calculated **offline, on your device**. To populate the city
 dropdown and locate the city you pick, the extension sends requests to these
 free public APIs:
 
+- **Open-Meteo** (`api.open-meteo.com`) — only for the weather on the Chrome
+  extension’s new tab, if shown: the saved city’s coordinates **rounded to about
+  10 km**. No account, name or identifier is sent; the weather can be turned off
+  in the new tab’s settings.
 - **CountriesNow API** (`countriesnow.space`) — receives a country name in order
   to return its list of cities.
 - **Nominatim API** (`nominatim.openstreetmap.org`) — receives the **name of the

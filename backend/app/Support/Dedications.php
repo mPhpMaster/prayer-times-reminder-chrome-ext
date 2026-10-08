@@ -57,7 +57,7 @@ final class Dedications
     }
 
     /** One line: control/format characters out (ZWNJ/ZWJ kept), whitespace collapsed, NFC. */
-    private static function clean(string $v): string
+    public static function clean(string $v): string
     {
         $v = preg_replace('/(?:(?![\x{200C}\x{200D}])[\p{Cc}\p{Cf}])+/u', ' ', $v) ?? '';
         $v = trim(preg_replace('/\s+/u', ' ', $v) ?? '');

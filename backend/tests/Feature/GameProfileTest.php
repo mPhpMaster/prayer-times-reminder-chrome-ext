@@ -51,7 +51,10 @@ class GameProfileTest extends TestCase
             'startedAt' => $doneAt - 60000, 'doneAt' => $doneAt];
     }
 
-    /** Every task of a window (10 points each) plus its gift, finished from $hour on. */
+    /**
+     * Every task of a window (10 points each), finished from $hour on, plus the
+     * gift row an older app still sends — the server now drops it (no points).
+     */
     private static function fullWindow(string $day, string $prayer, int $hour): array
     {
         $key = "$day:$prayer";
@@ -97,13 +100,14 @@ class GameProfileTest extends TestCase
             $rows = array_merge($rows, self::fullWindow($day, $p, 5 + 3 * $i));
         }
         $new = $this->push($t, $rows)->json('newAchievements');
-        $this->assertSame(['first-task', 'first-window', 'first-gift', 'full-day'], $new);
+        // No first-gift: gift rows from older apps are dropped.
+        $this->assertSame(['first-task', 'first-window', 'full-day'], $new);
 
         $ach = collect($this->as($t)->getJson('/v1/users/sara')->json('achievements'))->pluck('earnedAt', 'id');
         $this->assertSame(self::at($day, 5, 0), $ach['first-task']);
-        // Fajr's 11th task completes the window (before its gift at :30).
+        // Fajr's 11th task completes the window.
         $this->assertSame(self::at($day, 5, 10), $ach['first-window']);
-        $this->assertSame(self::at($day, 5, 30), $ach['first-gift']);
+        $this->assertArrayNotHasKey('first-gift', $ach->all());
         // The day is full when its last window (Isha, 17:00) is complete.
         $this->assertSame(self::at($day, 17, 8), $ach['full-day']);
     }
@@ -131,7 +135,7 @@ class GameProfileTest extends TestCase
         $tb = $this->register('bilal');
         $this->push($ta, array_merge(
             self::fullWindow('2026-09-29', 'Dhuhr', 13),
-            [self::row('2026-08-31:Isha', 'tasbih-33', 40, self::at('2026-08-31', 21))],
+            [self::row('2026-10-01:Isha', 'tasbih-33', 40, self::at('2026-09-30', 19))], // already Oct 1 in UTC+14
         ));
         $this->as($tb)->putJson('/v1/follows/amina')->assertOk();
 
@@ -139,20 +143,20 @@ class GameProfileTest extends TestCase
         $p->assertJsonPath('self', false)->assertJsonPath('following', true)
             ->assertJsonPath('followers', 1)->assertJsonPath('followingCount', 0)
             ->assertJsonPath('joined', '2026-09')
-            ->assertJsonPath('points', 100) // September only
-            ->assertJsonPath('stats.totalPoints', 140)
+            ->assertJsonPath('points', 90) // September only (the gift row earns nothing)
+            ->assertJsonPath('stats.totalPoints', 130)
             ->assertJsonPath('stats.tasks', 10)
-            ->assertJsonPath('stats.gifts', 1)
+            ->assertJsonPath('stats.gifts', 0)
             ->assertJsonPath('stats.windows', 1)
             ->assertJsonPath('stats.fullDays', 0)
-            ->assertJsonPath('stats.lastActive', '2026-09-29');
+            ->assertJsonPath('stats.lastActive', '2026-10-01');
 
         $this->as($ta)->patchJson('/v1/me', ['hideProgress' => true])->assertOk();
         $this->as($tb)->getJson('/v1/users/amina')
             ->assertJsonPath('points', null)->assertJsonPath('stats', null)->assertJsonPath('achievements', null)
             ->assertJsonPath('followers', 1)->assertJsonPath('following', true);
         // The player still sees their own.
-        $this->as($ta)->getJson('/v1/users/amina')->assertJsonPath('self', true)->assertJsonPath('stats.totalPoints', 140);
+        $this->as($ta)->getJson('/v1/users/amina')->assertJsonPath('self', true)->assertJsonPath('stats.totalPoints', 130);
     }
 
     public function test_a_merge_stores_each_achievement_once_dated_by_the_earliest_finish(): void

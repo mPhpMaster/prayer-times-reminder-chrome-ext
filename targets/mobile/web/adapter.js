@@ -682,7 +682,6 @@
   // window the player already finished (gameState), and the whole set is
   // re-planned after each finished window via Platform.gameAlerts.refresh().
   // Setting: store key "gameAlerts" (default on).
-  const PRAYER_AR = { Fajr: "الفجر", Dhuhr: "الظهر", Asr: "العصر", Maghrib: "المغرب", Isha: "العشاء" };
   const NEXT_PRAYER = { Fajr: "Dhuhr", Dhuhr: "Asr", Asr: "Maghrib", Maghrib: "Isha", Isha: "Fajr" };
 
   async function scheduleGameAlerts() {
@@ -694,7 +693,10 @@
         .map((n) => ({ id: n.id }));
       if (old.length) await LocalNotifications.cancel({ notifications: old });
 
-      const s = await store.get(["location", "gameAlerts", "gameState"]);
+      const s = await store.get(["location", "gameAlerts", "gameState", "lang"]);
+      // In the app's language (i18n.js), like every other notification.
+      const L = tr(s.lang || "en");
+      const pName = (p, at) => prayerLabel(L, p, new Date(at));
       if (s.gameAlerts === false || !s.location || s.location.latitude == null) return;
       const windows = (s.gameState && s.gameState.windows) || {};
       const finished = (key) => {
@@ -705,10 +707,10 @@
         .filter((a) => a.kind === "open" || !finished(a.key))
         .map((a) => ({
           id: a.id,
-          title: a.kind === "open" ? `فُتحت مهمات صلاة ${PRAYER_AR[a.prayer]}` : `بقيت نصف ساعة على صلاة ${PRAYER_AR[NEXT_PRAYER[a.prayer]]}`,
-          body: a.kind === "open"
-            ? "ابدأ الآن لتأخذ النقاط كاملة."
-            : `أكمل مهمات صلاة ${PRAYER_AR[a.prayer]} قبل أن تفوتك.`,
+          title: a.kind === "open"
+            ? L.gameOpenTitle(pName(a.prayer, a.when))
+            : L.gameClosingTitle(pName(a.prayer, a.when), pName(NEXT_PRAYER[a.prayer], a.when)),
+          body: a.kind === "open" ? L.gameOpenBody : L.gameClosingBody(pName(a.prayer, a.when)),
           schedule: { at: new Date(a.when), allowWhileIdle: true },
           channelId: PRAYER_CHANNEL,
           extra: { game: a.kind, key: a.key },
@@ -720,12 +722,43 @@
   }
   globalThis.__PTPlatform.gameAlerts = { refresh: scheduleGameAlerts };
 
+  // --- family alerts: a parent's "the children didn't finish" ----------------
+  // Planned here (family-alerts.js) and handed to AlarmManager with ready-made
+  // templates; at each check the native side asks the server and fills them in
+  // (FamilyAlertScheduler.java), with the app closed too. The game page caches
+  // { mode, role } in "familyAlerts" and calls Platform.familyAlerts.refresh().
+  async function scheduleFamilyAlerts() {
+    if (!Lock || !Lock.scheduleFamilyAlerts) return;
+    // A page without the planner must not send an empty schedule (that disarms it).
+    if (typeof planFamilyChecks !== "function") return;
+    try {
+      const s = await store.get(["location", "familyAlerts", "gameAccount", "gameApiUrl", "lang"]);
+      const fa = s.familyAlerts;
+      const token = (s.gameAccount && s.gameAccount.token) || "";
+      let entries = [];
+      if (fa && fa.role === "parent" && token && s.location && s.location.latitude != null) {
+        const lang = s.lang || "en";
+        entries = planFamilyChecks(PrayerEngine, s.location, new Date(), fa.mode, SCHED_DAYS).map((c) => ({
+          when: c.when,
+          kind: c.kind,
+          keys: c.keys,
+          tpl: familyAlertTemplates(lang, c),
+        }));
+      }
+      await Lock.scheduleFamilyAlerts({ entries, api: s.gameApiUrl || FAMILY_API_DEFAULT, token });
+    } catch {
+      /* best effort — re-tried on next resume */
+    }
+  }
+  globalThis.__PTPlatform.familyAlerts = { refresh: scheduleFamilyAlerts };
+
   async function scheduleAll() {
     await ensureChannels();
     scheduleNotifications();
     schedulePrayerLockAlarms();
     syncDhikrSchedule();
     scheduleGameAlerts();
+    scheduleFamilyAlerts();
     runPermissionFlow();
   }
 

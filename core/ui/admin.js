@@ -11,8 +11,10 @@
 //   Names    — the names on the About page: add, edit, hide, reorder, delete.
 //   Admins   — add an admin by email (their rights start once they sign in
 //              with that email confirmed); only the owner removes admins.
-//   Accounts — search players; reset their data or delete their account
-//              (typing the username confirms, both are irreversible).
+//   Accounts — search players; edit their username / display name / email /
+//              privacy, ban or unban them (any admin; not other admins), reset
+//              their data or delete their account (typing the username
+//              confirms, both are irreversible).
 //   Log      — every admin action.
 
 let lang = "ar";
@@ -48,7 +50,8 @@ function notice(text, autoHide = true) {
   clearTimeout(noticeTimer);
   $("admin-notice").textContent = text || "";
   $("admin-notice").hidden = !text;
-  if (text && autoHide) noticeTimer = setTimeout(() => notice(""), 4000);
+  // A toast: success fades after 4 s, a problem after 7 s; a tap closes either.
+  if (text) noticeTimer = setTimeout(() => notice(""), autoHide ? 4000 : 7000);
 }
 
 function errorText(e) {
@@ -432,8 +435,92 @@ function confirmTyped(action, username) {
   return typed !== null && typed.trim().toLowerCase() === String(username).toLowerCase();
 }
 
+// Inline form in a player's card: username, display name, email, privacy.
+function userEditor(u, li, onDone) {
+  const field = (label, input) => el("label", {}, el("span", { textContent: label }), input);
+  const username = el("input", { value: u.username, dir: "auto", maxLength: 20, autocomplete: "off" });
+  const display = el("input", { value: u.displayName || "", dir: "auto", maxLength: 40, autocomplete: "off" });
+  const email = u.email ? el("input", { value: u.email, dir: "ltr", type: "email", maxLength: 191, autocomplete: "off" }) : null;
+  const hide = el("input", { type: "checkbox", checked: !!u.hideProgress });
+  const save = el("button", {
+    type: "button",
+    class: "primary",
+    textContent: A.save,
+    on: {
+      click: () => {
+        const patch = {};
+        if (username.value.trim() !== u.username) patch.username = username.value.trim();
+        if (display.value.trim() !== (u.displayName || "")) patch.displayName = display.value.trim();
+        if (email && email.value.trim().toLowerCase() !== u.email) patch.email = email.value.trim();
+        if (hide.checked !== !!u.hideProgress) patch.hideProgress = hide.checked;
+        if (!Object.keys(patch).length) return onDone();
+        busy(save, async () => {
+          await api().updateUser(u.id, patch);
+          notice(A.saved);
+          searchUsers();
+        });
+      },
+    },
+  });
+  const cancel = el("button", { type: "button", class: "ghost", textContent: A.cancel, on: { click: onDone } });
+  return el(
+    "div",
+    { class: "admin-user-edit" },
+    el(
+      "div",
+      { class: "admin-editor" },
+      field(A.usernameLabel, username),
+      field(A.displayNameLabel, display),
+      email ? field(A.emailLabel, email) : null
+    ),
+    el("label", { class: "admin-check" }, hide, el("span", { textContent: A.hideProgressLabel })),
+    email ? el("p", { class: "muted note", textContent: A.emailChangeNote }) : null,
+    el("div", { class: "admin-actions" }, save, cancel)
+  );
+}
+
 function userRow(u) {
   const isMe = me && u.username === me.username;
+  const isAdmin = u.admin || u.superAdmin;
+  const editBtn = el("button", {
+    type: "button",
+    class: "ghost",
+    textContent: A.edit,
+    on: {
+      click: () => {
+        const form = userEditor(u, li, () => {
+          form.remove();
+          actions.hidden = false;
+        });
+        actions.hidden = true;
+        li.append(form);
+      },
+    },
+  });
+  const banBtn = el("button", {
+    type: "button",
+    class: u.banned ? "ghost" : "danger",
+    textContent: u.banned ? A.unban : A.ban,
+    on: {
+      click: () => {
+        if (u.banned) {
+          busy(banBtn, async () => {
+            await api().unbanUser(u.id);
+            notice(A.unbanDone);
+            searchUsers();
+          });
+          return;
+        }
+        const reason = window.prompt(A.banReasonPrompt(u.username), "");
+        if (reason === null) return;
+        busy(banBtn, async () => {
+          await api().banUser(u.id, reason.trim());
+          notice(A.banDone);
+          searchUsers();
+        });
+      },
+    },
+  });
   const reset = el("button", {
     type: "button",
     class: "ghost",
@@ -464,13 +551,17 @@ function userRow(u) {
       },
     },
   });
-  return el(
+  const actions = isMe || u.superAdmin
+    ? null
+    : el("div", { class: "admin-actions" }, isAdmin ? null : editBtn, isAdmin ? null : banBtn, reset, del);
+  const li = el(
     "li",
-    { class: "admin-card" },
+    { class: u.banned ? "admin-card is-banned" : "admin-card" },
     el(
       "div",
       { class: "admin-name-line" },
       el("b", { textContent: u.username }),
+      u.banned ? badge(A.bannedBadge, "st-rejected") : null,
       u.displayName ? el("span", { class: "muted", dir: "auto", textContent: u.displayName }) : null,
       u.superAdmin ? badge(A.superBadge, "st-approved") : u.admin ? badge(A.adminBadge, "st-approved") : null,
       u.google ? badge(A.googleBadge) : null,
@@ -478,8 +569,24 @@ function userRow(u) {
     ),
     u.email ? el("p", { class: "muted", dir: "ltr", textContent: u.email }) : null,
     el("p", { class: "muted", textContent: `${A.points(u.points)} · ${A.joined(when(u.createdAt))} · ${A.lastSeen(when(u.lastSeen))}` }),
-    isMe || u.superAdmin ? null : el("div", { class: "admin-actions" }, reset, del)
+    u.banned ? el("p", { class: "muted", dir: "auto", textContent: A.bannedInfo(when(u.bannedAt), u.bannedBy || "—", u.banReason) }) : null,
+    actions
   );
+  return li;
+}
+
+// What changed, for the log: "username: old → new", "reason: …".
+function logDetails(r) {
+  const d = r.details;
+  if (!d || typeof d !== "object") return null;
+  if (r.action === "user.edit") {
+    const labels = { username: A.usernameLabel, displayName: A.displayNameLabel, email: A.emailLabel, hideProgress: A.hideProgressLabel };
+    return Object.entries(d)
+      .map(([k, v]) => `${labels[k] || k}: ${Array.isArray(v) ? v.map((x) => (x === null || x === "" ? "—" : x === true ? "✓" : x === false ? "✗" : String(x))).join(" → ") : String(v)}`)
+      .join(" · ");
+  }
+  if (r.action === "user.ban" && d.reason) return `${A.reasonLabel}: ${d.reason}`;
+  return null;
 }
 
 // ---- Log --------------------------------------------------------------------------
@@ -498,7 +605,8 @@ async function loadLog() {
           el("span", { class: "muted", textContent: when(r.at) }),
           el("b", { textContent: A.actions[r.action] || r.action }),
           r.target ? el("span", { dir: "auto", textContent: r.target }) : null,
-          el("span", { class: "muted", dir: "ltr", textContent: r.admin })
+          el("span", { class: "muted", dir: "ltr", textContent: r.admin }),
+          logDetails(r) ? el("span", { class: "muted admin-log-details", dir: "auto", textContent: logDetails(r) }) : null
         )
       )
     );
@@ -554,6 +662,11 @@ $("user-search").addEventListener("submit", searchUsers);
 window.__ptPopupReset = () => {
   location.href = "popup.html";
 };
+
+// The toast floats over the screen: it lives on <body>, not inside the glass card
+// (a backdrop-filter would pin position:fixed to the card instead of the screen).
+document.body.appendChild($("admin-notice"));
+$("admin-notice").addEventListener("click", () => notice(""));
 
 async function init() {
   const s = await Platform.store.get(["lang", "theme", GAME_ACCOUNT_KEY, GAME_API_KEY]);

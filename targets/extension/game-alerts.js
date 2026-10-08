@@ -17,21 +17,8 @@ const GAME_ALERT_DAYS = 2;
 const GAME_ALERT_PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 const GAME_NEXT_PRAYER = { Fajr: "Dhuhr", Dhuhr: "Asr", Asr: "Maghrib", Maghrib: "Isha", Isha: "Fajr" };
 
-// Arabic-first; every other UI language gets English.
-const GAME_ALERT_TEXT = {
-  ar: {
-    openTitle: (p) => `فُتحت مهمات صلاة ${p}`,
-    openBody: () => "ابدأ الآن لتأخذ النقاط كاملة.",
-    closingTitle: (p, next) => `بقيت نصف ساعة على صلاة ${next}`,
-    closingBody: (p) => `أكمل مهمات صلاة ${p} قبل أن تفوتك.`,
-  },
-  en: {
-    openTitle: (p) => `${p} adhkar tasks are open`,
-    openBody: () => "Start now to earn full points.",
-    closingTitle: (p, next) => `Half an hour until ${next}`,
-    closingBody: (p) => `Finish the ${p} adhkar tasks before they close.`,
-  },
-};
+// Wording: gameOpenTitle / gameOpenBody / gameClosingTitle / gameClosingBody
+// in i18n.js, in every language the app speaks.
 
 async function clearGameAlarms() {
   const all = await chrome.alarms.getAll();
@@ -71,19 +58,55 @@ async function fireGameAlert(name) {
   const s = await chrome.storage.local.get(["gameAlerts", "gameState", "lang"]);
   if (s.gameAlerts === false) return;
   if (kind === "closing" && windowFinished(s.gameState, key)) return;
-  const lang = s.lang || "en";
-  const text = GAME_ALERT_TEXT[lang] || GAME_ALERT_TEXT.en;
-  const L = tr(text === GAME_ALERT_TEXT.ar ? "ar" : "en");
+  const L = tr(s.lang || "en");
   const name_ = prayerLabel(L, prayer);
   const next = prayerLabel(L, GAME_NEXT_PRAYER[prayer]);
   chrome.notifications.create(`game-${kind}-${key}-${Date.now()}`, {
     type: "basic",
     iconUrl: "icons/icon128.png",
-    title: kind === "open" ? text.openTitle(name_) : text.closingTitle(name_, next),
-    message: kind === "open" ? text.openBody(name_) : text.closingBody(name_),
+    title: kind === "open" ? L.gameOpenTitle(name_) : L.gameClosingTitle(name_, next),
+    message: kind === "open" ? L.gameOpenBody : L.gameClosingBody(name_),
     priority: 1,
   });
 }
+
+// ---- family alerts (family-alerts.js) ------------------------------------------
+// A parent's "the children didn't finish" checks, as alarms named by the check
+// id. The game page caches { mode, role } in "familyAlerts" whenever it loads
+// the family; the server has the final say when the alarm fires.
+const FAMILY_STALE_MS = 30 * 60000; // Chrome was closed: skip checks this late
+
+async function scheduleFamilyAlerts() {
+  try {
+    const all = await chrome.alarms.getAll();
+    await Promise.all(all.filter((a) => a.name.startsWith(FAMILY_ALERT_PREFIX)).map((a) => chrome.alarms.clear(a.name)));
+    const s = await chrome.storage.local.get(["location", "familyAlerts"]);
+    const fa = s.familyAlerts;
+    if (!fa || fa.role !== "parent" || !s.location || s.location.latitude == null) return;
+    for (const c of planFamilyChecks(PrayerEngine, s.location, new Date(), fa.mode)) {
+      chrome.alarms.create(c.id, { when: c.when });
+    }
+  } catch {
+    // best effort — re-planned with the next prayer-alarm refresh
+  }
+}
+
+async function fireFamilyAlert(name) {
+  const s = await chrome.storage.local.get(["gameAccount", "gameApiUrl", "lang"]);
+  if (!s.gameAccount || !s.gameAccount.token) return;
+  const msg = await familyAlertFor(s.gameApiUrl, s.gameAccount.token, s.lang || "en", parseFamilyCheck(name));
+  if (!msg) return;
+  chrome.notifications.create(`family-${Date.now()}`, {
+    type: "basic",
+    iconUrl: "icons/icon128.png",
+    title: msg.title,
+    message: msg.body,
+    priority: 1,
+  });
+}
+
+const isFamilyAlarm = (name) => name.startsWith(FAMILY_ALERT_PREFIX);
+const isFamilyNotification = (id) => id.startsWith("family-");
 
 // storage.onChanged: the game page saved its first state (first time played).
 const isFirstGameState = (changes) => !!(changes.gameState && changes.gameState.newValue && !changes.gameState.oldValue);

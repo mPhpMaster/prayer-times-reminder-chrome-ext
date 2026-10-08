@@ -18,16 +18,29 @@ class AccountController extends Controller
         return response()->json(['user' => $request->attributes->get('gameUser')->toPrivate()]);
     }
 
-    /** PATCH /v1/me {displayName?, hideProgress?} */
+    /** PATCH /v1/me {displayName?, hideProgress?, settings?: {alerts?, journey?, sound?}} */
     public function update(Request $request): JsonResponse
     {
         /** @var GameUser $me */
         $me = $request->attributes->get('gameUser');
         if (is_string($request->input('displayName'))) {
-            $me->display_name = mb_substr(trim($request->input('displayName')), 0, 40) ?: null;
+            // Same cleaning as dedication names: control/format characters
+            // (bidi overrides, zero-width) can't be used to fake another name.
+            $me->display_name = mb_substr(\App\Support\Dedications::clean($request->input('displayName')), 0, 40) ?: null;
         }
         if (is_bool($request->input('hideProgress'))) {
             $me->hide_progress = $request->input('hideProgress');
+        }
+        // Game options: only the known on/off keys; the rest of the stored set is kept.
+        $settings = $request->input('settings');
+        if (is_array($settings)) {
+            $known = array_filter(
+                array_intersect_key($settings, array_flip(GameUser::SETTINGS)),
+                'is_bool',
+            );
+            if ($known) {
+                $me->settings = array_merge($me->settings ?? [], $known);
+            }
         }
         $me->save();
 

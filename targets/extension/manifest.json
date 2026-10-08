@@ -6,10 +6,13 @@
     "version": "2.3.4",
     "description": "__MSG_appDesc__",
     "minimum_chrome_version": "111",
-    "permissions": ["alarms", "notifications", "storage", "geolocation", "scripting", "offscreen", "identity"],
+    "permissions": ["alarms", "notifications", "storage", "geolocation", "scripting", "offscreen", "identity", "search"],
     "optional_host_permissions": ["<all_urls>"],
     "background": {
         "service_worker": "background.js"
+    },
+    "chrome_url_overrides": {
+        "newtab": "newtab.html"
     },
     "action": {
         "default_popup": "popup.html",

@@ -14,7 +14,8 @@
 // name-only account from before is "legacy" and is linked on sign-in.
 
 const $ = (id) => document.getElementById(id);
-const NOTICE_HIDE_MS = 4000; // success messages fade out; errors and hints stay
+const NOTICE_HIDE_MS = 4000; // a toast: success fades after 4 s,
+const NOTICE_ERROR_MS = 7000; // a problem stays a little longer; a tap closes either
 const CELEBRATE_HIDE_MS = 7000;
 
 let lang = "ar";
@@ -37,6 +38,7 @@ let apiUrl = "";
 const api = () => gameApi(apiUrl, account && account.token);
 let authCfg = null; // /v1/auth/config, fetched once
 let boardScope = "all";
+let boardPeriod = "month"; // all | year | half | quarter | month
 let profileName = null;
 
 // Reader state
@@ -103,11 +105,17 @@ function save() {
 // ---- routing (Android back) -------------------------------------------------
 // history.state.depth = how many screens were pushed above the home screen.
 function parseRoute(hash) {
-  const h = decodeURIComponent(String(hash || "").replace(/^#/, ""));
+  let h = String(hash || "").replace(/^#/, "");
+  try {
+    h = decodeURIComponent(h);
+  } catch {
+    h = ""; // malformed escape: home screen
+  }
   const [name, ...rest] = h.split("/");
   const arg = rest.join("/");
   if (name === "board" || name === "me" || name === "gift") return { name };
-  if ((name === "read" || name === "profile") && arg) return { name, arg };
+  if (name === "family") return { name };
+  if ((name === "read" || name === "profile" || name === "member") && arg) return { name, arg };
   return { name: "tasks" };
 }
 const routeHash = (r) => (r.arg ? `#${r.name}/${encodeURIComponent(r.arg)}` : `#${r.name}`);
@@ -141,6 +149,8 @@ function selectTab(name) {
 }
 function parentOf(r) {
   if (r.name === "profile") return { name: "board" };
+  if (r.name === "member") return { name: "family" };
+  if (r.name === "family") return { name: "me" };
   return { name: "tasks" };
 }
 
@@ -163,22 +173,28 @@ function render(r) {
     leaveReader(); // partial progress is already saved with every recognized phrase
   }
   // A profile keeps the tab it was opened from (board or account) highlighted.
-  const tab = isTab(r) ? r.name : r.name === "profile" ? currentTab() : "tasks";
+  const tab = isTab(r) ? r.name : r.name === "profile" ? currentTab() : r.name === "family" || r.name === "member" ? "me" : "tasks";
   for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === tab));
   const onTasks = r.name === "tasks" || r.name === "read" || r.name === "gift";
   document.body.classList.toggle("reader-active", r.name === "read" || r.name === "gift");
   document.querySelector(".scores").hidden = !onTasks;
   $("list-view").hidden = r.name !== "tasks";
+  $("guest-note").hidden = !!account || !apiUrl;
   $("reader").hidden = !(r.name === "read" || r.name === "gift");
   $("board-view").hidden = r.name !== "board";
   $("me-view").hidden = r.name !== "me";
   $("profile-view").hidden = r.name !== "profile";
+  $("family-view").hidden = r.name !== "family";
+  $("member-view").hidden = r.name !== "member";
 
   if (r.name === "tasks" && current) renderList();
   if (r.name === "board") renderBoard();
   if (r.name === "me") renderMe();
   if (r.name === "profile") openProfile(r.arg);
-  if (r.name === "read" || r.name === "gift") {
+  if (r.name === "family") renderFamily();
+  if (r.name === "member") openMember(r.arg);
+  if (r.name === "gift") return replaceRoute({ name: "tasks" }); // gifts are gone (an old link)
+  if (r.name === "read") {
     if (!current) return replaceRoute({ name: "tasks" });
     const task = r.name === "gift" ? giftForWindow(current.key) : tasks.find((t) => t.id === r.arg);
     const giftReady = r.name !== "gift" || allTasksDone(entry(), tasks.map((t) => t.id));
@@ -372,9 +388,9 @@ function tick() {
   $("done-count").textContent = G.doneCount(doneCount, tasks.length);
   renderResume(open, e);
 
-  const done = allTasksDone(e, tasks.map((t) => t.id));
-  const giftDone = e && e.gift && e.gift.doneAt;
-  $("gift").hidden = !(open && done && !giftDone);
+  // Finishing a window no longer opens a gift: the prize goes to each
+  // period's top player (the board's winners), so the button stays hidden.
+  $("gift").hidden = true;
 
   $("pts-window").textContent = windowPoints(e);
   $("pts-day").textContent = pointsWithPrefix(state, current.day);
@@ -411,7 +427,7 @@ function showNotice(text, { autoHide = false } = {}) {
   $("notice").hidden = !text;
   $("notice").textContent = text || "";
   $("notice").classList.toggle("reward", Boolean(text && autoHide));
-  if (text && autoHide) noticeTimer = setTimeout(() => showNotice(""), NOTICE_HIDE_MS);
+  if (text) noticeTimer = setTimeout(() => showNotice(""), autoHide ? NOTICE_HIDE_MS : NOTICE_ERROR_MS);
 }
 
 // ---- celebration ------------------------------------------------------------
@@ -694,11 +710,9 @@ async function finishReading() {
     return;
   }
   const started = isGift ? entry() && entry().gift && entry().gift.startedAt : entry() && entry().tasks[task.id] && entry().tasks[task.id].startedAt;
-  if (isGift) markGiftDone(state, current.key, task.id, points, now);
-  else {
-    markTaskDone(state, current.key, task.id, points, now); // once: a done task is never re-banked
-    if (started) recordDuration(state, durationKey(task.id, task.repeat), now - started);
-  }
+  const rec = isGift ? markGiftDone(state, current.key, task.id, points, now) : markTaskDone(state, current.key, task.id, points, now); // once: a done task is never re-banked
+  if (!account) rec.local = true; // a guest's points stay on this device (never sent, even after signing in)
+  if (!isGift && started) recordDuration(state, durationKey(task.id, task.repeat), now - started);
   await save();
   syncNow();
   // A finished window no longer needs its "30 min left" alert.
@@ -753,8 +767,63 @@ async function forgetAccount() {
   await Platform.store.remove(GAME_ACCOUNT_KEY);
 }
 
+// ---- the game's options, kept with the account ---------------------------------
+// Task alerts, the day's journey, the soft sound and the Chrome new tab are saved on the server
+// (PATCH /v1/me settings) and read back at sign-in, so they follow the player
+// to any device. The first time an account has none, this device's choices
+// become the account's.
+function pushSettings(patch) {
+  if (account && apiUrl) api().updateMe({ settings: patch }).catch(() => {});
+}
+
+async function adoptAccountSettings(s) {
+  if (!s) {
+    const { gameAlerts, newTabPage } = await Platform.store.get(["gameAlerts", "newTabPage"]);
+    return pushSettings({ alerts: gameAlerts !== false, journey: journeyOn, sound: soundOn, newTab: newTabPage !== false });
+  }
+  if (typeof s.newTab === "boolean") {
+    await Platform.store.set({ newTabPage: s.newTab });
+    $("newtab-on").checked = s.newTab;
+  }
+  if (typeof s.alerts === "boolean") {
+    await Platform.store.set({ gameAlerts: s.alerts });
+    $("alerts").checked = s.alerts;
+    if (Platform.gameAlerts) Platform.gameAlerts.refresh();
+  }
+  if (typeof s.journey === "boolean") {
+    journeyOn = s.journey;
+    await Platform.store.set({ gameJourney: journeyOn });
+    $("journey-on").checked = journeyOn;
+  }
+  if (typeof s.sound === "boolean") {
+    soundOn = s.sound;
+    await Platform.store.set({ gameSound: soundOn });
+    $("sound-on").checked = soundOn;
+  }
+}
+
 // ---- tabs: board ------------------------------------------------------------
 const month = () => (current ? current.day.slice(0, 7) : new Date().toISOString().slice(0, 7));
+
+// A "Try again" button for a screen that couldn't reach the server.
+function retryButton(onRetry) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "link retry";
+  b.textContent = tr(lang).uiRetry;
+  b.addEventListener("click", onRetry);
+  return b;
+}
+
+// Shimmering placeholders while a list loads from the server.
+function skeletonItems(n) {
+  return Array.from({ length: n }, () => {
+    const li = document.createElement("li");
+    li.className = "skeleton";
+    li.setAttribute("aria-hidden", "true");
+    return li;
+  });
+}
 
 function messageItem(text) {
   const li = document.createElement("li");
@@ -788,31 +857,86 @@ function rowButton(parts, label, onClick) {
   return li;
 }
 
+// "2026-10" / "2026-Q4" / "2026-H2" / "2026" -> a name in the player's language.
+function periodName(type, key) {
+  if (!key) return "";
+  const y = key.slice(0, 4);
+  if (type === "month") return fmtMonth(key);
+  if (type === "quarter") return G.quarterN(Number(key.slice(6)), y);
+  if (type === "half") return G.halfN(Number(key.slice(6)), y);
+  return y;
+}
+
+// The latest winners: for the selected period type, or every type on "all".
+function renderWinners(winners) {
+  const box = $("board-winners");
+  const types = boardPeriod === "all" ? ["month", "quarter", "half", "year"] : [boardPeriod];
+  const groups = types.map((t) => [t, winners && winners[t]]).filter(([, w]) => w && w.winners.length);
+  box.hidden = !groups.length;
+  box.replaceChildren(
+    ...groups.map(([type, w]) => {
+      const div = document.createElement("div");
+      const h = document.createElement("p");
+      h.className = "winners-title";
+      h.textContent = G.winnersOf(periodName(type, w.key));
+      const ol = document.createElement("ol");
+      ol.className = "board";
+      for (const u of w.winners) {
+        ol.appendChild(
+          rowButton(
+            [["rank", "🏆"], ["name", u.displayName], ["p", u.points == null ? "—" : u.points]],
+            G.winnerRow(u.displayName, u.points),
+            () => go({ name: "profile", arg: u.username })
+          )
+        );
+      }
+      div.append(h, ol);
+      return div;
+    })
+  );
+}
+
 async function renderBoard() {
   const box = $("board");
   $("board-me").textContent = "";
-  $("board-month").textContent = G.boardMonth(month());
-  if (!apiUrl || !account) return box.replaceChildren(messageItem(socialUnavailableText()));
-  box.replaceChildren();
+  $("board-month").textContent = "";
+  if (!apiUrl) {
+    $("board-winners").hidden = true;
+    return box.replaceChildren(messageItem(socialUnavailableText()));
+  }
+  // Anyone can see the board; "following" needs an account.
+  const scopes = document.querySelector("#board-view [data-scope]").parentElement;
+  scopes.hidden = !account;
+  if (!account && boardScope !== "all") {
+    boardScope = "all";
+    for (const x of document.querySelectorAll("#board-view [data-scope]")) x.setAttribute("aria-pressed", String(x.dataset.scope === "all"));
+  }
+  box.replaceChildren(...skeletonItems(6));
   try {
-    await syncNow();
-    const data = await api().leaderboard(month(), boardScope);
+    if (account) await syncNow();
+    const data = await api().leaderboard(boardPeriod, boardScope, localDay());
+    // An older server ignores `period` and answers with this month.
+    const type = data.period || "month";
+    $("board-month").textContent = type === "all" ? G.boardAll : G.boardPeriod(periodName(type, data.periodKey || data.month));
+    renderWinners(data.winners);
     for (const r of data.rows) {
       const li = rowButton(
         [["rank", r.rank], ["name", r.displayName], ["p", r.points]],
         G.boardRow(r.rank, r.displayName, r.points),
         () => go({ name: "profile", arg: r.username })
       );
-      if (r.username === account.username) {
+      if (account && r.username === account.username) {
         li.classList.add("me");
         li.firstChild.setAttribute("aria-current", "true");
       }
       box.appendChild(li);
     }
     if (!data.rows.length) box.replaceChildren(messageItem(G.boardEmpty));
-    $("board-me").textContent = data.me.hideProgress ? G.myPointsHidden(data.me.points) : G.myPoints(data.me.points);
+    $("board-me").textContent = !data.me ? G.guestBoardNote : data.me.hideProgress ? G.myPointsHidden(data.me.points) : G.myPoints(data.me.points);
   } catch {
-    box.replaceChildren(messageItem(G.offline));
+    const li = messageItem(G.offline);
+    li.append(retryButton(renderBoard));
+    box.replaceChildren(li);
   }
 }
 
@@ -830,6 +954,7 @@ function authErrorText(e) {
     "weak-password": G.weakPassword,
     "email-taken": G.emailTaken,
     "bad-credentials": G.badCredentials,
+    banned: G.accountBanned,
     "bad-username": G.badUsername,
     "username-taken": G.usernameTaken,
     "account-conflict": G.accountConflict,
@@ -877,6 +1002,7 @@ async function renderMe() {
   $("alerts").checked = s.gameAlerts !== false;
   $("journey-on").checked = journeyOn;
   $("sound-on").checked = soundOn;
+  $("newtab-on").checked = (await Platform.store.get(["newTabPage"])).newTabPage !== false;
   if (!apiUrl) {
     $("auth").hidden = false;
     $("auth-main").hidden = true;
@@ -897,6 +1023,7 @@ async function renderMe() {
       };
       await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
       $("hide-progress").checked = user.hideProgress;
+      await adoptAccountSettings(user.settings);
     } catch (e) {
       if (e.status === 401) await forgetAccount();
     }
@@ -904,6 +1031,7 @@ async function renderMe() {
   const signedIn = account && !account.legacy;
   $("auth").hidden = !!signedIn;
   $("account").hidden = !account;
+  refreshFamilyButton();
   $("logout").hidden = !signedIn; // a name-only account has nothing to sign back in with
   $("legacy-note").hidden = !(account && account.legacy);
   if (account && account.legacy) $("legacy-note").textContent = G.legacyNote(account.username);
@@ -1106,7 +1234,8 @@ async function openProfile(name) {
   profileName = name;
   $("profile-name").textContent = name;
   $("profile-meta").textContent = "";
-  $("profile-points").textContent = "…";
+  $("profile-points").replaceChildren(Object.assign(document.createElement("span"), { className: "skeleton-line" }));
+  $("profile-wins").hidden = true;
   $("profile-follow").hidden = true;
   $("profile-stats").hidden = true;
   $("profile-ach").hidden = true;
@@ -1124,11 +1253,23 @@ async function openProfile(name) {
     $("profile-follow").hidden = p.self;
     $("profile-follow").textContent = p.following ? G.unfollow : G.follow;
     $("profile-follow").dataset.following = String(p.following);
+    renderWins(p.wins);
     renderStats(p.stats, p.points);
     renderAchievements(p.achievements);
   } catch {
-    $("profile-points").textContent = G.profileFail;
+    $("profile-points").replaceChildren(G.profileFail, " ", retryButton(() => openProfile(name)));
   }
+}
+
+// Period prizes: public even when progress is hidden (the winners list shows
+// the name anyway). "Last month's winner", then counts by period type.
+function renderWins(w) {
+  const el = $("profile-wins");
+  if (!w || !w.total) return (el.hidden = true);
+  const labels = { month: G.periodMonth, quarter: G.periodQuarter, half: G.periodHalf, year: G.periodYear };
+  const parts = ["month", "quarter", "half", "year"].filter((t) => w[t]).map((t) => `${labels[t]} ×${fmtNum(w[t])}`);
+  el.textContent = [w.lastMonth ? G.lastMonthWinner : "", G.winsLine(parts.join(" · "))].filter(Boolean).join("\n");
+  el.hidden = false;
 }
 
 function renderStats(s, monthPoints) {
@@ -1163,7 +1304,9 @@ function renderAchievements(list) {
   $("profile-ach").hidden = !list;
   if (!list) return;
   const earned = new Map(list.map((a) => [a.id, a.earnedAt]));
-  const ids = [...earned.keys(), ...Object.keys(G.ach).filter((id) => !earned.has(id))];
+  // "first-gift" can no longer be earned (gifts are gone): kept only if already won.
+  const RETIRED = ["first-gift"];
+  const ids = [...earned.keys(), ...Object.keys(G.ach).filter((id) => !earned.has(id) && !RETIRED.includes(id))];
   $("ach-list").replaceChildren(
     ...ids
       .filter((id) => G.ach[id]) // an id newer than this app: skip until it knows the name
@@ -1202,24 +1345,38 @@ async function toggleFollow() {
 
 // ---- wiring ---------------------------------------------------------------
 for (const b of document.querySelectorAll(".tabs button")) b.addEventListener("click", () => selectTab(b.dataset.tab));
-for (const b of document.querySelectorAll("#board-view .seg button")) {
+for (const b of document.querySelectorAll("#board-view [data-scope]")) {
   b.addEventListener("click", () => {
     boardScope = b.dataset.scope;
-    for (const x of document.querySelectorAll("#board-view .seg button")) x.setAttribute("aria-pressed", String(x === b));
+    for (const x of document.querySelectorAll("#board-view [data-scope]")) x.setAttribute("aria-pressed", String(x === b));
+    renderBoard();
+  });
+}
+for (const b of document.querySelectorAll("#board-view [data-period]")) {
+  b.addEventListener("click", () => {
+    boardPeriod = b.dataset.period;
+    for (const x of document.querySelectorAll("#board-view [data-period]")) x.setAttribute("aria-pressed", String(x === b));
     renderBoard();
   });
 }
 $("alerts").addEventListener("change", async (e) => {
   await Platform.store.set({ gameAlerts: e.target.checked });
   if (Platform.gameAlerts) Platform.gameAlerts.refresh();
+  pushSettings({ alerts: e.target.checked });
 });
 $("journey-on").addEventListener("change", async (e) => {
   journeyOn = e.target.checked;
   await Platform.store.set({ gameJourney: journeyOn });
+  pushSettings({ journey: journeyOn });
+});
+$("newtab-on").addEventListener("change", async (e) => {
+  await Platform.store.set({ newTabPage: e.target.checked });
+  pushSettings({ newTab: e.target.checked });
 });
 $("sound-on").addEventListener("change", async (e) => {
   soundOn = e.target.checked;
   await Platform.store.set({ gameSound: soundOn });
+  pushSettings({ sound: soundOn });
   if (soundOn) softChime(); // let the player hear how quiet it is
 });
 $("mode-in").addEventListener("click", () => setAuthMode("in"));
@@ -1251,7 +1408,15 @@ $("hide-progress").addEventListener("change", async (e) => {
 });
 $("profile-back").addEventListener("click", () => goBack({ name: "board" }));
 $("profile-follow").addEventListener("click", toggleFollow);
+// The toast floats over the screen: it lives on <body>, not inside the glass card
+// (a backdrop-filter would pin position:fixed to the card instead of the screen).
+document.body.appendChild($("notice"));
+$("notice").addEventListener("click", () => showNotice(""));
+$("guest-signin").addEventListener("click", () => selectTab("me"));
 $("my-profile").addEventListener("click", () => account && go({ name: "profile", arg: account.username }));
+$("family-btn").addEventListener("click", () => go({ name: "family" }));
+$("family-back").addEventListener("click", () => goBack({ name: "me" }));
+$("member-back").addEventListener("click", () => goBack({ name: "family" }));
 $("delete-account").addEventListener("click", deleteAccount);
 $("verify-send").addEventListener("click", sendVerifyCode);
 $("verify").addEventListener("submit", submitVerify);

@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\DB;
  * - Removing an admin, and deleting or resetting another admin's account, is
  *   for the super admin only, so one admin can't lock the others out.
  * - An admin deletes their own account from "My account", not from here.
+ * - Banning and editing a player are for players who aren't admins (remove
+ *   the admin first).
  */
 class AdminController extends Controller
 {
@@ -55,10 +57,13 @@ class AdminController extends Controller
         ])->values()->all()]);
     }
 
-    /** POST /v1/admin/admins {email} -> 201. The owner of that email becomes admin once their email is verified. */
+    /** POST /v1/admin/admins {email} -> 201. Super admin only. The owner of that email becomes admin once their email is verified. */
     public function addAdmin(Request $request): JsonResponse
     {
         $me = $this->me($request);
+        if (! GameAdmins::isSuperAdmin($me)) {
+            GameRules::fail(403, 'super-admin-only');
+        }
         $email = GameRules::email($request->input('email'));
         if (GameAdmins::isAdminEmail($email)) {
             GameRules::fail(409, 'already-admin');
@@ -120,7 +125,103 @@ class AdminController extends Controller
             'items' => (int) ($points[$u->id]->items ?? 0),
             'createdAt' => (string) $u->created_at,
             'lastSeen' => isset($seen[$u->id]) ? (string) $seen[$u->id]->seen : null,
+            'hideProgress' => (bool) $u->hide_progress,
+            'banned' => $u->isBanned(),
+            'bannedAt' => $u->banned_at === null ? null : (string) $u->banned_at,
+            'banReason' => $u->ban_reason,
+            'bannedBy' => $u->banned_by,
         ])->values()->all()]);
+    }
+
+    /**
+     * PATCH /v1/admin/users/{id} {username?, displayName?, email?, hideProgress?} -> 204.
+     * A changed email must be confirmed again by its owner.
+     */
+    public function updateUser(Request $request, int $id): Response
+    {
+        $me = $this->me($request);
+        $user = $this->player($me, $id);
+        $changes = [];
+
+        if ($request->has('username')) {
+            $name = GameRules::username($request->input('username')) ?? GameRules::fail(400, 'bad-username');
+            if ($name !== $user->username) {
+                $lower = mb_strtolower($name);
+                if (GameUser::where('username_lower', $lower)->where('id', '!=', $user->id)->exists()) {
+                    GameRules::fail(409, 'username-taken');
+                }
+                $changes['username'] = [$user->username, $name];
+                $user->username = $name;
+                $user->username_lower = $lower;
+            }
+        }
+        if ($request->has('displayName')) {
+            $display = mb_substr(Dedications::clean((string) $request->input('displayName')), 0, 40) ?: null;
+            if ($display !== $user->display_name) {
+                $changes['displayName'] = [$user->display_name, $display];
+                $user->display_name = $display;
+            }
+        }
+        if ($request->has('email')) {
+            $email = GameRules::email($request->input('email'));
+            if ($email !== $user->email) {
+                if (GameUser::where('email', $email)->where('id', '!=', $user->id)->exists()) {
+                    GameRules::fail(409, 'email-taken');
+                }
+                if (GameAdmins::isAdminEmail($email)) {
+                    GameRules::fail(409, 'admin-email'); // would hand admin rights over
+                }
+                DB::table('game_password_resets')->where('email', $user->email)->delete();
+                $changes['email'] = [$user->email, $email];
+                $user->email = $email;
+                $user->email_verified_at = null;
+            }
+        }
+        if (is_bool($request->input('hideProgress')) && $request->input('hideProgress') !== (bool) $user->hide_progress) {
+            $changes['hideProgress'] = [(bool) $user->hide_progress, $request->input('hideProgress')];
+            $user->hide_progress = $request->input('hideProgress');
+        }
+
+        if ($changes) {
+            $user->save();
+            GameAdmins::log($me, 'user.edit', $user->username, $changes);
+        }
+
+        return response()->noContent();
+    }
+
+    /** POST /v1/admin/users/{id}/ban {reason?} -> 204. Signs them out everywhere. */
+    public function ban(Request $request, int $id): Response
+    {
+        $me = $this->me($request);
+        $user = $this->player($me, $id);
+        $reason = mb_substr(Dedications::clean((string) $request->input('reason', '')), 0, 200) ?: null;
+        DB::transaction(function () use ($user, $me, $reason) {
+            $user->banned_at = now();
+            $user->ban_reason = $reason;
+            $user->banned_by = $me->email;
+            $user->save();
+            DB::table('game_tokens')->where('user_id', $user->id)->delete();
+        });
+        GameAdmins::log($me, 'user.ban', $user->username, $reason === null ? [] : ['reason' => $reason]);
+
+        return response()->noContent();
+    }
+
+    /** DELETE /v1/admin/users/{id}/ban -> 204. */
+    public function unban(Request $request, int $id): Response
+    {
+        $me = $this->me($request);
+        $user = $this->player($me, $id);
+        if ($user->isBanned()) {
+            $user->banned_at = null;
+            $user->ban_reason = null;
+            $user->banned_by = null;
+            $user->save();
+            GameAdmins::log($me, 'user.unban', $user->username);
+        }
+
+        return response()->noContent();
     }
 
     /** DELETE /v1/admin/users/{id} -> 204. */
@@ -337,6 +438,17 @@ class AdminController extends Controller
         }
         if (GameAdmins::isAdminEmail($user->email) && ! GameAdmins::isSuperAdmin($me)) {
             GameRules::fail(403, 'super-admin-only');
+        }
+
+        return $user;
+    }
+
+    /** A player (not an admin) an admin may ban or edit. */
+    private function player(GameUser $me, int $id): GameUser
+    {
+        $user = $this->target($me, $id);
+        if (GameAdmins::isAdminEmail($user->email)) {
+            GameRules::fail(403, 'is-admin');
         }
 
         return $user;

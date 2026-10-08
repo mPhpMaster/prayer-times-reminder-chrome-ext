@@ -60,6 +60,62 @@ button { font: inherit; cursor: pointer; }
   line-height: 1.7;
 }
 .notice.reward { animation: reward-arrive 480ms ease-out both; }
+/* Messages float as a toast at the bottom of the screen (tap to close). */
+#notice {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  max-width: 440px;
+  margin-inline: auto;
+  border: 1px solid var(--next-item-border, var(--border));
+  box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  animation: toast-in 220ms ease-out both;
+}
+#notice.reward { animation: toast-in 220ms ease-out both, reward-arrive 480ms ease-out both; }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #notice, #notice.reward { animation: none; }
+}
+/* Signed out: a calm warning above the tasks. */
+.guest-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(238, 188, 74, 0.45);
+  background: rgba(238, 188, 74, 0.1);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.guest-note .link { padding: 0; font-weight: 700; }
+/* "Try again" after a failed load. */
+.retry { margin-inline-start: 6px; font-weight: 700; }
+/* Loading placeholders (lists, profile line, year view). */
+.skeleton, .skeleton-line, .skeleton-block {
+  display: block;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.11) 50%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+.skeleton { height: 44px; list-style: none; }
+.skeleton-line { width: 45%; height: 1.2em; }
+.skeleton-block { height: 120px; margin-bottom: 10px; }
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .skeleton-line, .skeleton-block { animation: none; }
+}
 @keyframes reward-arrive {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: none; }
@@ -232,6 +288,13 @@ input[type="search"], #username, #search, #auth input {
 .board .name, .people .name { flex: 1; }
 .board .p { font-weight: 700; font-variant-numeric: tabular-nums; }
 .board li.me .row-btn { border-color: var(--primary); }
+/* Period tabs + the latest winners (points never reset; each period crowns its top player). */
+.seg.periods { margin-top: 6px; }
+.seg.periods button { font-size: 12px; padding-inline: 2px; }
+.winners { display: grid; gap: 6px; margin-top: 8px; }
+.winners-title { margin: 0 0 4px; font-size: 13px; font-weight: 700; color: var(--gold); }
+.winners .row-btn { border-color: var(--gold); }
+.wins { margin: 4px 0 0; font-size: 14px; color: var(--gold); white-space: pre-line; }
 .me-line { font-size: 14px; margin: 0; }
 .row { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.6; }
 #me-view h3 { font-size: 15px; margin: 14px 0 4px; }
@@ -268,6 +331,56 @@ input[type="search"], #username, #search, #auth input {
   align-self: flex-start;
 }
 .ghost.wide { width: 100%; margin-top: 14px; padding: 10px; }
+
+/* ---- family ---- */
+.count-badge {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #1b1405;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+#family-view h2 { margin: 10px 0 4px; }
+#family-view h3 { font-size: 15px; margin: 16px 0 6px; }
+.family-card { background: var(--secondary); border: 1px solid var(--gold); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 6px; }
+.family-card p { margin: 0 0 8px; }
+.family-actions { display: flex; gap: 8px; }
+.family-actions button { flex: 1; padding: 8px; }
+.family-member { display: flex; flex-direction: column; gap: 2px; }
+.family-member .row-btn.static { cursor: default; box-sizing: border-box; }
+.family-who { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.family-today { font-size: 12px; color: var(--muted-foreground); overflow-wrap: anywhere; }
+.family-role { font-size: 11.5px; padding: 1px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); white-space: nowrap; }
+.family-role.parent { color: #04211c; background: var(--teal, var(--primary)); }
+.danger-link { color: var(--destructive); align-self: flex-end; font-size: 13px; padding: 2px 4px; }
+.family-form { display: flex; flex-direction: column; gap: 6px; }
+.family-form input { font: inherit; color: var(--foreground); background: var(--input); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 10px; }
+.family-notify button { font-size: 13px; }
+.primary.wide { width: 100%; padding: 10px; margin-top: 6px; }
+.wide-danger { width: 100%; margin-top: 18px; }
+.family-year-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 6px 0; }
+.family-year-nav button { padding: 4px 14px; font-size: 18px; }
+.family-year-nav button:disabled { opacity: 0.35; }
+.family-summary { text-align: center; font-weight: 700; margin: 4px 0 8px; }
+.cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px 10px; }
+.cal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-bottom: 4px; font-size: 13px; }
+.cal-head .muted { font-size: 11.5px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-cell { aspect-ratio: 1; border-radius: 3px; background: rgba(255, 255, 255, 0.07); }
+.cal-cell.blank { background: transparent; }
+.cal-cell.active.w0 { background: rgba(200, 148, 45, 0.25); }
+.cal-cell.w1 { background: color-mix(in srgb, var(--primary) 25%, transparent); }
+.cal-cell.w2 { background: color-mix(in srgb, var(--primary) 42%, transparent); }
+.cal-cell.w3 { background: color-mix(in srgb, var(--primary) 60%, transparent); }
+.cal-cell.w4 { background: color-mix(in srgb, var(--primary) 80%, transparent); }
+.cal-cell.w5 { background: var(--primary); }
+.cal-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-bottom: 10px; font-size: 12px; }
+.cal-key { display: inline-flex; align-items: center; gap: 4px; }
+.cal-key .cal-cell { width: 12px; height: 12px; }
 
 /* ---- the day's journey ---- */
 .journey { background: var(--muted); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; }

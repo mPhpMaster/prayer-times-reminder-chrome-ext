@@ -91,7 +91,8 @@ class GameApiTest extends TestCase
         $this->as($t)->postJson('/v1/progress', ['completions' => array_slice($flood, 3)]);
 
         $mine = collect($this->as($t)->getJson('/v1/progress?month=2026-09')->json('completions'));
-        $this->assertSame(400, $mine->where('windowKey', '2026-09-25:Asr')->sum('points'));
+        // A window's tasks are capped at 300 (gifts no longer add 100 on top).
+        $this->assertSame(300, $mine->where('windowKey', '2026-09-25:Asr')->sum('points'));
         $this->assertSame(27, $mine->firstWhere('itemId', 'tasbih-33')['points']);
     }
 
@@ -159,5 +160,73 @@ class GameApiTest extends TestCase
     public function test_unknown_v1_path_is_json_404(): void
     {
         $this->getJson('/v1/nope')->assertStatus(404)->assertJson(['error' => 'not-found']);
+    }
+
+    public function test_forged_dates_zero_points_and_junk_rows_are_dropped(): void
+    {
+        $t = $this->register('guard');
+        $bad = [
+            self::done('1900-01-01:Fajr', 'tasbih-33', 50),  // before launch
+            self::done('2026-08-31:Fajr', 'tasbih-33', 50),  // the day before launch
+            self::done('2026-02-30:Fajr', 'tasbih-33', 50),  // not a real date
+            self::done('2026-09-27:Fajr', 'tasbih-33', 50),  // later than anyone's today
+            self::done('2026-09-25:Fajr', 'tasbih-33', 0),   // worth nothing
+        ];
+        $this->as($t)->postJson('/v1/progress', ['completions' => $bad])->assertJson(['accepted' => 0]);
+        // Tomorrow (UTC) is someone's today in UTC+14.
+        $this->as($t)->postJson('/v1/progress', ['completions' => [self::done('2026-09-26:Fajr', 'tasbih-33', 5)]])
+            ->assertJson(['accepted' => 1]);
+
+        // A window holds at most its task count (Asr: 10) + 3 rows, whatever the item ids.
+        $junk = array_map(fn ($i) => self::done('2026-09-25:Asr', "junk-$i", 1), range(1, 30));
+        $this->as($t)->postJson('/v1/progress', ['completions' => $junk])->assertJson(['accepted' => 13]);
+        $this->as($t)->postJson('/v1/progress', ['completions' => [self::done('2026-09-25:Asr', 'junk-99', 1)]])
+            ->assertJson(['accepted' => 0]);
+    }
+
+    public function test_prizes_ignore_pre_launch_rows(): void
+    {
+        $t = $this->register('early');
+        \Illuminate\Support\Facades\DB::table('game_completions')->insert([
+            'user_id' => \App\Models\GameUser::where('username', 'early')->value('id'),
+            'window_key' => '0001-01-01:Fajr', 'item_id' => 'tasbih-33', 'kind' => 'task', 'points' => 99,
+            'started_at' => 0, 'done_at' => 0,
+        ]);
+        $this->as($t)->getJson('/v1/leaderboard?period=all')->assertOk();
+        $this->assertSame(0, \Illuminate\Support\Facades\DB::table('game_settled_periods')->count());
+    }
+
+    public function test_display_names_lose_invisible_and_bidi_characters(): void
+    {
+        $t = $this->register('plain');
+        $this->as($t)->patchJson('/v1/me', ['displayName' => "\u{202E}nimda\u{200B} \u{2066}x"])->assertOk();
+        $this->assertSame('nimda x', $this->as($t)->getJson('/v1/me')->json('user.displayName'));
+    }
+
+    public function test_the_leaderboard_is_public_and_a_token_adds_me(): void
+    {
+        $t = $this->register('runner');
+        $this->as($t)->postJson('/v1/progress', ['completions' => [self::done('2026-09-25:Dhuhr', 'tasbih-33', 40)]]);
+
+        $this->flushHeaders();
+        $anon = $this->getJson('/v1/leaderboard?period=all&scope=following')->assertOk()
+            ->assertJsonPath('me', null)->assertJsonPath('scope', 'all'); // following needs an account
+        $this->assertSame(['runner'], collect($anon->json('rows'))->pluck('username')->all());
+        $this->withHeader('Authorization', 'Bearer '.str_repeat('0', 64))
+            ->getJson('/v1/leaderboard?period=all')->assertOk()->assertJsonPath('me', null); // a dead token is just anonymous
+        $this->as($t)->getJson('/v1/leaderboard?period=all')->assertJsonPath('me.points', 40);
+    }
+
+    public function test_game_settings_are_kept_with_the_account(): void
+    {
+        $t = $this->register('settler');
+        $this->as($t)->getJson('/v1/me')->assertJsonPath('user.settings', null);
+        $this->as($t)->patchJson('/v1/me', ['settings' => ['alerts' => false, 'sound' => true, 'evil' => true, 'journey' => 'yes']])
+            ->assertOk()->assertJsonPath('user.settings', ['alerts' => false, 'sound' => true]);
+        // A later change merges; another device signing in reads the same set.
+        $this->as($t)->patchJson('/v1/me', ['settings' => ['journey' => false]]);
+        $this->flushHeaders();
+        $this->postJson('/v1/auth/login', ['email' => 'u'.substr(md5('settler'), 0, 10).'@example.com', 'password' => 'secret-pass-1'])
+            ->assertOk()->assertJsonPath('user.settings', ['alerts' => false, 'sound' => true, 'journey' => false]);
     }
 }

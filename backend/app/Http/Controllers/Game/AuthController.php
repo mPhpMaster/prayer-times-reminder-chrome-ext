@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Throwable;
 
 /**
@@ -74,12 +75,20 @@ class AuthController extends Controller
     {
         $email = mb_strtolower(trim((string) $request->input('email')));
         $password = (string) $request->input('password');
+        // Wrong passwords per email, whatever the IP: 5 a minute, 20 an hour.
+        $keys = ['login-m:'.sha1($email), 'login-h:'.sha1($email)];
+        if (RateLimiter::tooManyAttempts($keys[0], 5) || RateLimiter::tooManyAttempts($keys[1], 20)) {
+            GameRules::fail(429, 'too-many-attempts');
+        }
         $user = $email !== '' ? GameUser::where('email', $email)->first() : null;
         // Always run one hash check, so response time doesn't reveal which emails exist.
         $ok = Hash::check($password, $user?->password ?? '$2y$12$'.str_repeat('x', 53));
         if (! $user || ! $user->password || ! $ok) {
+            RateLimiter::hit($keys[0], 60);
+            RateLimiter::hit($keys[1], 3600);
             GameRules::fail(401, 'bad-credentials');
         }
+        RateLimiter::clear($keys[0]);
         $this->absorbLegacy($request, $user);
 
         return $this->signedIn($user);
@@ -156,7 +165,10 @@ class AuthController extends Controller
     {
         $email = mb_strtolower(trim((string) $request->input('email')));
         $user = $email !== '' ? GameUser::where('email', $email)->first() : null;
-        if ($user) {
+        // At most 3 codes an hour per email (still 204: no enumeration, no mail flood).
+        $sendKey = 'forgot:'.sha1($email);
+        if ($user && ! RateLimiter::tooManyAttempts($sendKey, 3)) {
+            RateLimiter::hit($sendKey, 3600);
             $code = (string) random_int(100000, 999999);
             DB::table('game_password_resets')->updateOrInsert(
                 ['email' => $email],
@@ -182,19 +194,22 @@ class AuthController extends Controller
     public function reset(Request $request): JsonResponse
     {
         $email = mb_strtolower(trim((string) $request->input('email')));
-        $row = DB::table('game_password_resets')->where('email', $email)->first();
-        if (! $row) {
-            GameRules::fail(400, 'bad-code');
-        }
-        if (now()->greaterThan($row->expires_at)) {
-            DB::table('game_password_resets')->where('email', $email)->delete();
-            GameRules::fail(400, 'code-expired');
-        }
-        if ($row->attempts >= self::RESET_ATTEMPTS) {
+        // Every failure looks the same — no code, an expired or used-up code,
+        // a wrong code, an unknown email — so this never tells whether an
+        // email has an account. Wrong tries are capped per email either way.
+        $wrongKey = 'reset-wrong:'.sha1($email);
+        if (RateLimiter::tooManyAttempts($wrongKey, 10)) {
             GameRules::fail(429, 'too-many-attempts');
         }
-        if (! Hash::check((string) $request->input('code'), $row->code_hash)) {
-            DB::table('game_password_resets')->where('email', $email)->increment('attempts');
+        $row = DB::table('game_password_resets')->where('email', $email)->first();
+        $fresh = $row && now()->lessThanOrEqualTo($row->expires_at) && $row->attempts < self::RESET_ATTEMPTS;
+        // One hash check either way, so timing doesn't tell either.
+        $match = Hash::check((string) $request->input('code'), $row->code_hash ?? '$2y$12$'.str_repeat('x', 53));
+        if (! $fresh || ! $match) {
+            if ($row) {
+                DB::table('game_password_resets')->where('email', $email)->increment('attempts');
+            }
+            RateLimiter::hit($wrongKey, 86400);
             GameRules::fail(400, 'bad-code');
         }
         $password = GameRules::password($request->input('password'));
@@ -225,6 +240,11 @@ class AuthController extends Controller
         if ($me->email_verified_at !== null) {
             GameRules::fail(409, 'already-verified');
         }
+        $sendKey = 'verify-send:'.$me->id;
+        if (RateLimiter::tooManyAttempts($sendKey, 3)) {
+            GameRules::fail(429, 'too-many-attempts');
+        }
+        RateLimiter::hit($sendKey, 3600);
         $code = (string) random_int(100000, 999999);
         DB::table('game_email_verifications')->updateOrInsert(
             ['user_id' => $me->id],
@@ -263,11 +283,13 @@ class AuthController extends Controller
             DB::table('game_email_verifications')->where('user_id', $me->id)->delete();
             GameRules::fail(400, 'code-expired');
         }
-        if ($row->attempts >= self::VERIFY_ATTEMPTS) {
+        $wrongKey = 'verify-wrong:'.$me->id;
+        if ($row->attempts >= self::VERIFY_ATTEMPTS || RateLimiter::tooManyAttempts($wrongKey, 10)) {
             GameRules::fail(429, 'too-many-attempts');
         }
         if (! Hash::check((string) $request->input('code'), $row->code_hash)) {
             DB::table('game_email_verifications')->where('user_id', $me->id)->increment('attempts');
+            RateLimiter::hit($wrongKey, 86400);
             GameRules::fail(400, 'bad-code');
         }
         DB::table('game_email_verifications')->where('user_id', $me->id)->delete();
@@ -314,6 +336,9 @@ class AuthController extends Controller
     private function signedIn(GameUser $user, int $status = 200): JsonResponse
     {
         $user->refresh();
+        if ($user->isBanned()) {
+            GameRules::fail(403, 'banned'); // every sign-in path ends here
+        }
 
         return response()->json(['user' => $user->toPrivate(), 'token' => GameAccounts::issueToken($user)], $status);
     }

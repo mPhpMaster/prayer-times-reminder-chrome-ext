@@ -220,6 +220,7 @@ function applyLanguage() {
   document.getElementById("about-desc").textContent = L.aboutDesc;
   document.getElementById("about-sadaqah-heading").textContent = L.aboutSadaqah;
   document.getElementById("about-back").textContent = L.back;
+  fillLegalLinks(L);
   renderDedication(L);
   renderRequestSection();
 }

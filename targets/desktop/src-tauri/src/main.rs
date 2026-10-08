@@ -672,6 +672,7 @@ fn main() {
             show_prayer_times,
             updater::store_update_version,
             updater::notify_update,
+            updater::notify_family,
             google_sign_in,
             log_js
         ])

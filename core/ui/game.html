@@ -45,6 +45,11 @@
 
         <!-- Task list -->
         <section id="list-view">
+            <!-- Signed out: points stay on this device only (and never move to an account). -->
+            <div class="guest-note" id="guest-note" role="note" hidden>
+                <span data-g="guestWarning"></span>
+                <button type="button" class="link" id="guest-signin" data-g="guestSignIn"></button>
+            </div>
             <!-- The day's journey (optional; "حسابي" toggles it) -->
             <section class="journey" id="journey" hidden>
                 <div class="journey-head">
@@ -106,12 +111,21 @@
             <p class="heard" id="heard" lang="ar" dir="rtl" aria-live="polite"></p>
         </section>
 
-        <!-- Leaderboard (monthly) -->
+        <!-- Leaderboard: all-time points or the current year / half / quarter /
+             month (points never reset), with each period's latest winners. -->
         <section id="board-view" hidden>
             <div class="seg" role="group" data-g-aria="scopeLabel" aria-label="نطاق القائمة">
                 <button type="button" data-scope="all" aria-pressed="true" data-g="scopeAll">الكل</button>
                 <button type="button" data-scope="following" aria-pressed="false" data-g="scopeFollowing">من أتابعهم</button>
             </div>
+            <div class="seg periods" role="group" data-g-aria="periodLabel" aria-label="فترة الترتيب">
+                <button type="button" data-period="all" aria-pressed="false" data-g="periodAll">كل الأوقات</button>
+                <button type="button" data-period="year" aria-pressed="false" data-g="periodYear">السنة</button>
+                <button type="button" data-period="half" aria-pressed="false" data-g="periodHalf">نصف السنة</button>
+                <button type="button" data-period="quarter" aria-pressed="false" data-g="periodQuarter">الربع</button>
+                <button type="button" data-period="month" aria-pressed="true" data-g="periodMonth">الشهر</button>
+            </div>
+            <div class="winners" id="board-winners" hidden></div>
             <p class="muted" id="board-month"></p>
             <ol class="board" id="board"></ol>
             <p class="me-line" id="board-me"></p>
@@ -122,6 +136,8 @@
             <label class="row"><input type="checkbox" id="alerts" /> <span data-g="alerts"></span></label>
             <label class="row"><input type="checkbox" id="journey-on" /> <span data-g="journeyToggle"></span></label>
             <label class="row"><input type="checkbox" id="sound-on" /> <span data-g="soundToggle"></span></label>
+            <!-- The Chrome extension's new tab; kept with the account, so any app can switch it. -->
+            <label class="row"><input type="checkbox" id="newtab-on" /> <span data-g="newTabToggle"></span></label>
 
             <!-- Sign-in (signed out, or a legacy name-only account to link) -->
             <div class="auth" id="auth" hidden>
@@ -188,6 +204,7 @@
                     </div>
                 </form>
                 <button type="button" class="ghost wide" id="my-profile" data-g="myProfile">ملفي</button>
+                <button type="button" class="ghost wide family-btn" id="family-btn" hidden><span data-g="familyBtn">👪 العائلة</span> <span class="count-badge" id="family-badge" hidden></span></button>
                 <label class="row"><input type="checkbox" id="hide-progress" /> <span data-g="hideProgress"></span></label>
                 <h3 data-g="findPlayer">ابحث عن لاعب</h3>
                 <input id="search" maxlength="20" autocomplete="off" data-g-ph="searchPh" data-g-aria="searchPh" />
@@ -211,6 +228,7 @@
                 <p class="muted" id="profile-meta"></p>
             </div>
             <p id="profile-points"></p>
+            <p class="wins" id="profile-wins" hidden></p>
             <button type="button" class="primary" id="profile-follow"></button>
             <section id="profile-stats" hidden>
                 <h3 data-g="statsTitle">إحصاءات</h3>
@@ -220,6 +238,17 @@
                 <h3 data-g="achTitle">الإنجازات</h3>
                 <ul class="achievements" id="ach-list"></ul>
             </section>
+        </section>
+
+        <!-- Family (game-family.js): members, invitations, alerts; a member's year. -->
+        <section id="family-view" hidden>
+            <button type="button" id="family-back" class="ghost" data-g="profileBack">→ رجوع</button>
+            <h2 data-g="familyTitle">العائلة</h2>
+            <div id="family-body"></div>
+        </section>
+        <section id="member-view" hidden>
+            <button type="button" id="member-back" class="ghost" data-g="profileBack">→ رجوع</button>
+            <div id="member-body"></div>
         </section>
 
         <p class="privacy" data-g="privacy"></p>
@@ -246,12 +275,14 @@
          load/resume; this page is the Android home, so it needs the planners. -->
     <script src="lock-config.js"></script>
     <script src="notify-plan.js"></script>
+    <script src="family-alerts.js"></script>
     <script src="recitation-match.js"></script>
     <script src="game-score.js"></script>
     <script src="game-windows.js"></script>
     <script src="game-state.js"></script>
     <script src="game-tasks.js"></script>
     <script src="game-sync.js"></script>
+    <script src="game-family.js"></script>
     <script src="game.js?v=230"></script>
 </body>
 

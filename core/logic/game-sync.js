@@ -10,8 +10,11 @@
 //                                           me, updateMe, deleteMe, pushProgress, users, profile,
 //                                           follow, unfollow, following, leaderboard,
 //                                           dedications, myDedicationRequests, requestDedication,
+//                                           family: { get, create, invite, accept, dropInvite, remove,
+//                                                     leave, settings, status, year },
 //                                           admin: { overview, admins, addAdmin, removeAdmin, users,
-//                                                    deleteUser, resetUser, requests, updateRequest,
+//                                                    deleteUser, resetUser, updateUser, banUser, unbanUser,
+//                                                    requests, updateRequest,
 //                                                    approve, reject, dedications, addDedication,
 //                                                    updateDedication, reorder, deleteDedication, log } }
 //   pendingCompletions(state)          -> rows for POST /v1/progress
@@ -73,11 +76,25 @@ function gameApi(baseUrl, token) {
     follow: (name) => call("PUT", `/v1/follows/${u(name)}`),
     unfollow: (name) => call("DELETE", `/v1/follows/${u(name)}`),
     following: () => call("GET", "/v1/follows"),
-    leaderboard: (month, scope) => call("GET", `/v1/leaderboard?month=${month}&scope=${scope}`),
+    // period: all | year | half | quarter | month (points never reset; see GameWinners).
+    leaderboard: (period, scope, today) => call("GET", `/v1/leaderboard?period=${period}&scope=${scope}&today=${today}`),
     // The About page's dedication names (public) and a player's requests to add one.
     dedications: () => call("GET", "/v1/dedications"),
     myDedicationRequests: () => call("GET", "/v1/dedications/requests"),
     requestDedication: (names, note) => call("POST", "/v1/dedications/requests", { names, note }),
+    // Families: parents follow their children (FamilyController).
+    family: {
+      get: () => call("GET", "/v1/family"),
+      create: () => call("POST", "/v1/family"),
+      invite: (username, role) => call("POST", "/v1/family/invites", { username, role }),
+      accept: (id) => call("POST", `/v1/family/invites/${id}/accept`),
+      dropInvite: (id) => call("DELETE", `/v1/family/invites/${id}`),
+      remove: (name) => call("DELETE", `/v1/family/members/${u(name)}`),
+      leave: () => call("POST", "/v1/family/leave"),
+      settings: (notify) => call("PATCH", "/v1/family/me", { notify }),
+      status: (keys) => call("GET", `/v1/family/status?keys=${u(keys.join(","))}`),
+      year: (name, year) => call("GET", `/v1/family/members/${u(name)}/year?year=${year}`),
+    },
     // The Admin page. The server checks admin rights on every call.
     admin: {
       overview: () => call("GET", "/v1/admin/overview"),
@@ -87,6 +104,9 @@ function gameApi(baseUrl, token) {
       users: (q) => call("GET", `/v1/admin/users?q=${u(q)}`),
       deleteUser: (id) => call("DELETE", `/v1/admin/users/${id}`),
       resetUser: (id) => call("POST", `/v1/admin/users/${id}/reset`),
+      updateUser: (id, patch) => call("PATCH", `/v1/admin/users/${id}`, patch),
+      banUser: (id, reason) => call("POST", `/v1/admin/users/${id}/ban`, { reason }),
+      unbanUser: (id) => call("DELETE", `/v1/admin/users/${id}/ban`),
       requests: (status) => call("GET", `/v1/admin/requests?status=${u(status)}`),
       updateRequest: (id, patch) => call("PATCH", `/v1/admin/requests/${id}`, patch),
       approve: (id, names) => call("POST", `/v1/admin/requests/${id}/approve`, names ? { names } : {}),
@@ -106,10 +126,10 @@ function pendingCompletions(state) {
   const rows = [];
   for (const [windowKey, w] of Object.entries(state.windows)) {
     for (const [itemId, t] of Object.entries(w.tasks || {})) {
-      if (t.doneAt && !t.synced) rows.push({ windowKey, itemId, kind: "task", points: t.points, startedAt: t.startedAt, doneAt: t.doneAt });
+      if (t.doneAt && !t.synced && !t.local) rows.push({ windowKey, itemId, kind: "task", points: t.points, startedAt: t.startedAt, doneAt: t.doneAt });
     }
     const g = w.gift;
-    if (g && g.doneAt && !g.synced) rows.push({ windowKey, itemId: g.id, kind: "gift", points: g.points, startedAt: g.startedAt, doneAt: g.doneAt });
+    if (g && g.doneAt && !g.synced && !g.local) rows.push({ windowKey, itemId: g.id, kind: "gift", points: g.points, startedAt: g.startedAt, doneAt: g.doneAt });
   }
   return rows;
 }
@@ -134,14 +154,22 @@ function syncBatches(rows) {
 }
 
 // Signing in to a different account than the one this device last synced to:
-// clear every `synced` flag so the whole local history is sent to the new
-// account. The server keeps one row per (window, item), so anything it
+// clear every `synced` flag so the account history on this device is sent to
+// the new account. The server keeps one row per (window, item), so anything it
 // already has is ignored — progress moves over without being counted twice.
+//
+// Progress made while signed out is never sent: it is marked `local` when it
+// is finished (game.js), and on the very first sign-in on a device (no
+// syncAccount yet) whatever was never synced was a guest's, so it stays local.
 function adoptSyncAccount(state, username) {
   if (state.syncAccount === username) return false;
+  const firstAccount = !state.syncAccount;
   for (const w of Object.values(state.windows)) {
-    for (const t of Object.values(w.tasks || {})) delete t.synced;
-    if (w.gift) delete w.gift.synced;
+    for (const item of [...Object.values(w.tasks || {}), w.gift].filter(Boolean)) {
+      if (!item.doneAt || item.local) continue;
+      if (firstAccount && !item.synced) item.local = true;
+      else delete item.synced;
+    }
   }
   state.syncAccount = username;
   return true;
