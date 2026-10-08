@@ -16,10 +16,18 @@ A Manifest V3 Chrome extension that:
 - 🌙 **Hijri date** shown alongside the Gregorian date.
 - 📿 **Periodic dhikr** — optional floating reminder with 151 unique phrases on your open tabs; tap to dismiss or auto-hide after 10 seconds.
 - 🎙️ **Prayer Adhkar game (optional)** — opens in its own tab from the popup's Settings: read each prayer's adhkar aloud, Chrome's speech recognition follows along, and you earn points per prayer, day and month. Plays without an account; email or Google sign-in only for the leaderboard and following friends. Prayer times never need an account.
+- 🗂️ **New tab (optional)** — Chrome’s new tab shows a clock, the next prayer as hours/minutes/seconds, today’s prayer times, a web search, a dhikr and your adhkar progress, over a sky that follows the prayer times. Switch it off from the game’s “My account”, in any app.
 
 [English](README.en.md) · [Deutsch](README.de.md) · [العربية](README.ar.md) · [اردو](README.ur.md) · [Français](README.fr.md) · [Español](README.es.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md)
 
 Prayer times are calculated offline on your device with [adhan-js](https://github.com/batoulapps/adhan-js) (the free [AlAdhan API](https://aladhan.com/prayer-times-api) is only a fallback for older saved locations without coordinates); the city list comes from the free [CountriesNow API](https://countriesnow.space). No API keys required.
+
+## Other platforms
+
+- **Website** — the whole app in your browser: https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/app/
+- **Android** — Google Play (testing): https://play.google.com/apps/testing/com.mphpmaster.prayer
+- **Windows** — Microsoft Store: https://apps.microsoft.com/detail/9PFTWDWLNL7C
+- **Discord** — a Vencord plugin; install steps: [../targets/vencord/README.md](../targets/vencord/README.md)
 
 ## Install
 
