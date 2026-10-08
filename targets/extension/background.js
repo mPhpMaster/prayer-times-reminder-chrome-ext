@@ -13,6 +13,15 @@ importScripts(
     "notify-plan.js", "family-alerts.js", "game-alerts.js"
 );
 
+// While this worker is being stopped or restarted (an extension reload or
+// update), Chrome rejects extension calls still in flight with "No SW" /
+// "Extension context invalidated". Nothing can be done about those then, so
+// they are not reported as errors; every other rejection still is.
+if (typeof self.addEventListener === "function") self.addEventListener("unhandledrejection", (e) => {
+    const msg = String((e.reason && e.reason.message) || e.reason || "");
+    if (/^No SW$|context invalidated|process for the extension is not found/i.test(msg)) e.preventDefault();
+});
+
 // The five obligatory prayers we notify for. Sunrise is shown in the popup
 // but is not a prayer, so we don't fire a notification for it.
 const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
@@ -610,7 +619,7 @@ chrome.runtime.onStartup.addListener(() => ensureUpdateAlarm());
 // tabs.onUpdated re-locks new tabs even after the service worker was suspended.
 chrome.storage.local.get("activeLock").then(({ activeLock }) => {
     activeLockActive = !!(activeLock && activeLock.unlockAt > Date.now());
-});
+}).catch(() => {});
 
 // Clicking a notification opens the welcome page (install) or clears others.
 chrome.notifications.onClicked.addListener((id) => {
