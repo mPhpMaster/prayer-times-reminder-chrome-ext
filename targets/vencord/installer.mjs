@@ -247,8 +247,9 @@ function setPluginEnabled(enabled) {
         if (!enabled) return;
     }
     data.plugins ??= {};
-    if (enabled) data.plugins[PLUGIN_NAME] = { ...(data.plugins[PLUGIN_NAME] || {}), enabled: true };
-    else delete data.plugins[PLUGIN_NAME];
+    // Removing only switches it off: the city and other choices come back on reinstall.
+    if (!enabled && !data.plugins[PLUGIN_NAME]) return;
+    data.plugins[PLUGIN_NAME] = { ...(data.plugins[PLUGIN_NAME] || {}), enabled };
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, JSON.stringify(data, null, 4));
 }
@@ -275,7 +276,7 @@ async function main() {
     const installed = !!pluginDir && fs.existsSync(pluginDir);
 
     if (haveSource) console.log(L.vencordAt(vencordDir));
-    else if (linked.some((d) => d.vencord)) console.log(L.vencordOfficial);
+    else if (!vencordDir && linked.some((d) => d.vencord)) console.log(L.vencordOfficial);
     else console.log(L.vencordNone);
     console.log(installed ? L.pluginOn : L.pluginOff);
     if (ACTION === "status") return;
@@ -323,7 +324,7 @@ async function main() {
     const built = path.join(REPO, "targets", "vencord", "build", PLUGIN_FOLDER);
 
     if (!haveSource) {
-        const fallback = path.join(os.homedir(), "Vencord");
+        const fallback = vencordDir || path.join(os.homedir(), "Vencord"); // --vencord-dir / $VENCORD_DIR first
         for (;;) {
             vencordDir = path.resolve(YES ? fallback : (await ask(`\n${L.askDir(fallback)}`)) || fallback);
             if (isVencordSource(vencordDir) || !fs.existsSync(vencordDir) || !fs.readdirSync(vencordDir).length) break;
