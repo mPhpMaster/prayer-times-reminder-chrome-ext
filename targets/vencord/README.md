@@ -16,11 +16,34 @@ Brings Prayer Times Reminder into Discord through [Vencord](https://github.com/V
 - `/prayertimes-test` — shows the prayer notification and a **one-minute** lock right now (with an
   unlock button), so you can try it without waiting for a prayer.
 
-### Install
+### Easy install (recommended)
+
+One script does everything: it installs what is missing (Git, Node.js 22+, pnpm), downloads and
+builds Vencord if you don't have it, adds the plugin, turns it on and restarts Discord. Run it
+again later to **update** or **remove** the plugin (it asks you).
+
+- **Windows**: double-click `targets/vencord/install.cmd`. Without this repository, open
+  PowerShell and paste:
+
+  ```powershell
+  iwr -useb https://raw.githubusercontent.com/mPhpMaster/prayer-times-reminder-chrome-ext/main/targets/vencord/install.ps1 -OutFile $env:TEMP\ptb-install.ps1; powershell -ExecutionPolicy Bypass -File $env:TEMP\ptb-install.ps1
+  ```
+
+- **macOS / Linux**: run `bash targets/vencord/install.sh`, or without this repository:
+
+  ```sh
+  curl -fsSL https://raw.githubusercontent.com/mPhpMaster/prayer-times-reminder-chrome-ext/main/targets/vencord/install.sh | bash
+  ```
+
+If Vencord is new on this computer, its installer may ask which Discord to change: pick yours
+(usually **Stable**). Options: `--update`, `--remove`, `--status`, `--yes` (no questions),
+`--no-restart` (leave Discord open), `--vencord-dir <folder>`.
+
+### Manual install
 
 Vencord loads personal ("user") plugins only in a Vencord **built from its source code**, so the
 plugin is added to that source and Vencord is built once. You need [Git](https://git-scm.com/),
-[Node.js](https://nodejs.org/) 18 or newer, and pnpm (`npm install -g pnpm`).
+[Node.js](https://nodejs.org/) 22 or newer, and pnpm (`npm install -g pnpm`).
 
 **1. Build the plugin folder** (in this repository):
 
@@ -74,7 +97,8 @@ To update the plugin later, repeat step 1, copy the folder again (replace the ol
 
 ### How it is built
 
-`targets/vencord/plugin/` holds the thin Discord shell: `index.ts` (commands), `settings.ts`,
+`install.cmd` / `install.ps1` / `install.sh` only make sure Git, Node.js and pnpm exist; the
+setup itself is `installer.mjs`, shared by every OS. `targets/vencord/plugin/` holds the thin Discord shell: `index.ts` (commands), `settings.ts`,
 `citySearch.tsx` (the City setting), `native.ts` (the city search, run in Discord's main process
 because the page's security rules block the request) and `runtime.ts`. `tools/sync-core.mjs vencord`
 copies them and generates `core.generated.js`: the shared `core/` scripts (adhan, tz-lookup, i18n,
@@ -98,11 +122,34 @@ overlays. Never edit the generated folder — edit `core/` or `targets/vencord/p
 - الأمر `/prayertimes-test` — يُظهر تنبيه الصلاة وقفلًا **لدقيقة واحدة** الآن (مع زر فتح)،
   لتجربته دون انتظار وقت الصلاة.
 
-### التثبيت
+### التثبيت السهل (موصى به)
+
+سكربت واحد يتولّى كل شيء: يثبّت ما ينقصك (Git و Node.js 22 أو أحدث و pnpm)، ويُنزّل Vencord
+ويبنيه إن لم يكن عندك، ويضيف الإضافة ويفعّلها ويعيد تشغيل ديسكورد. وشغّله لاحقًا مرة أخرى
+**لتحديث** الإضافة أو **حذفها** (سيسألك).
+
+- **ويندوز**: انقر نقرًا مزدوجًا على `targets/vencord/install.cmd`. وبدون هذا المستودع: افتح
+  PowerShell والصق:
+
+  ```powershell
+  iwr -useb https://raw.githubusercontent.com/mPhpMaster/prayer-times-reminder-chrome-ext/main/targets/vencord/install.ps1 -OutFile $env:TEMP\ptb-install.ps1; powershell -ExecutionPolicy Bypass -File $env:TEMP\ptb-install.ps1
+  ```
+
+- **ماك / لينكس**: شغّل `bash targets/vencord/install.sh`، أو بدون هذا المستودع:
+
+  ```sh
+  curl -fsSL https://raw.githubusercontent.com/mPhpMaster/prayer-times-reminder-chrome-ext/main/targets/vencord/install.sh | bash
+  ```
+
+إذا كان Vencord جديدًا على جهازك فقد يسألك مثبّته أي ديسكورد يعدّل: اختر ديسكورد الخاص بك
+(غالبًا **Stable**). الخيارات: `--update` و `--remove` و `--status` و `--yes` (بلا أسئلة)
+و `--no-restart` (يترك ديسكورد مفتوحًا) و `--vencord-dir <مجلد>`.
+
+### التثبيت اليدوي
 
 لا يحمّل Vencord الإضافات الشخصية إلا في نسخة **مبنية من شيفرته المصدرية**، لذلك تُضاف الإضافة
 إلى تلك الشيفرة ثم يُبنى Vencord مرة واحدة. تحتاج إلى [Git](https://git-scm.com/) و
-[Node.js](https://nodejs.org/) الإصدار 18 أو أحدث، وأداة pnpm (`npm install -g pnpm`).
+[Node.js](https://nodejs.org/) الإصدار 22 أو أحدث، وأداة pnpm (`npm install -g pnpm`).
 
 **١. ابنِ مجلد الإضافة** (داخل هذا المستودع):
 
