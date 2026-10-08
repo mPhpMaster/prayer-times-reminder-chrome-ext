@@ -12,7 +12,7 @@ import { ApplicationCommandInputType, sendBotMessage } from "@api/Commands";
 import definePlugin from "@utils/types";
 
 import { tr } from "./core.generated";
-import { start, stop, todayReport } from "./runtime";
+import { previewLock, start, stop, todayReport } from "./runtime";
 import { settings } from "./settings";
 
 const EN = tr("en");
@@ -38,6 +38,15 @@ export default definePlugin({
                     console.error("[PrayerTimesBreak] /prayertimes failed", e);
                 }
                 sendBotMessage(ctx.channel.id, { content });
+            }
+        },
+        {
+            inputType: ApplicationCommandInputType.BUILT_IN,
+            name: "prayertimes-test",
+            description: EN.vencordTestDesc,
+            execute: (_args, ctx) => {
+                previewLock();
+                sendBotMessage(ctx.channel.id, { content: tr(String(settings.store.language || "ar")).vencordTestDone });
             }
         }
     ],

@@ -17,6 +17,7 @@ import {
     TASBIH_POSITIONS,
     tr
 } from "./core.generated";
+import { CitySearch } from "./citySearch";
 
 // Settings UI text comes from the shared core i18n (English: Vencord's
 // settings pages are English-only); the runtime text follows `language`.
@@ -33,6 +34,18 @@ const onChange = () => changeHandler();
 const inRange = (min: number, max: number) => (v: number) => Number.isFinite(Number(v)) && v >= min && v <= max;
 
 export const settings = definePluginSettings({
+    // Type a city and pick it: fills latitude / longitude below.
+    city: {
+        type: OptionType.COMPONENT,
+        component: CitySearch
+    },
+    cityLabel: {
+        type: OptionType.STRING,
+        description: "",
+        default: "",
+        hidden: true,
+        onChange
+    },
     latitude: {
         type: OptionType.NUMBER,
         description: EN.vencordLatHint,

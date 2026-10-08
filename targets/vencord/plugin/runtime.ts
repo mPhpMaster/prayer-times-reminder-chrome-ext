@@ -160,6 +160,44 @@ function onPrayerTime(prayer: string) {
     }
 }
 
+// /prayertimes-test: the notification and a one-minute lock (with an unlock
+// button), for the next prayer, right now — to try the plugin.
+export function previewLock() {
+    const L = tr(lang());
+    const loc = configuredLocation();
+    const next = loc ? nextPrayerName() : "Dhuhr";
+    const name = prayerLabel(L, next, new Date());
+    showNotification({ title: L.notifTitle(name), body: L.notifBody(name) });
+    const config = buildLockConfig({
+        lang: lang(),
+        theme: normalizeTheme(settings.store.theme),
+        lockMinutes: 1,
+        allowUnlock: true,
+        prayerSound: settings.store.sound === "none" ? "none" : "beep",
+        arabicDigits: false
+    }, { prayerName: name });
+    config.onUnlock = () => { lockUntil = 0; };
+    lockUntil = config.unlockAt;
+    win().__prayerTasbihClear?.();
+    installOverlays();
+    win().__prayerTabLockActivate?.(config);
+}
+
+function nextPrayerName(): string {
+    try {
+        const loc = configuredLocation();
+        if (!loc) return "Fajr";
+        const now = new Date();
+        const data = PrayerEngine.timings(loc, now);
+        const tz = data.meta && data.meta.timezone;
+        for (const p of ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]) {
+            const at = prayerTimestamp(data.timings[p], now, tz);
+            if (at && at > now.getTime()) return p;
+        }
+    } catch { /* fall through */ }
+    return "Fajr";
+}
+
 // ---- dhikr reminders --------------------------------------------------------
 
 function showDhikr() {
