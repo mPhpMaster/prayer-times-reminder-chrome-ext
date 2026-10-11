@@ -147,6 +147,7 @@
     $("privacy").textContent = L.webPrivacy;
     $("terms").textContent = L.webTerms;
     $("source").textContent = L.webSource;
+    $("donate").textContent = L.webDonate;
     renderPreview();
   }
 

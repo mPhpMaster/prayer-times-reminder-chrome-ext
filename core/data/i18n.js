@@ -94,6 +94,7 @@ const I18N = {
         webLangsTitle: "Available in 11 languages",
         webSource: "Source code",
         webTerms: "Terms",
+        webDonate: "Support the project",
         webPrivacy: "Privacy",
         ntSearchPh: "Search the web",
         ntTodayTitle: "Today's prayers",
@@ -288,6 +289,7 @@ const I18N = {
         webLangsTitle: "متوفر بـ 11 لغة",
         webSource: "الشيفرة المصدرية",
         webTerms: "الشروط",
+        webDonate: "ادعم المشروع",
         webPrivacy: "الخصوصية",
         ntSearchPh: "ابحث في الويب",
         ntTodayTitle: "مواقيت اليوم",
@@ -482,6 +484,7 @@ const I18N = {
         webLangsTitle: "11 زبانوں میں دستیاب",
         webSource: "سورس کوڈ",
         webTerms: "شرائط",
+        webDonate: "منصوبے کی مدد کریں",
         webPrivacy: "رازداری",
         ntSearchPh: "ویب پر تلاش کریں",
         ntTodayTitle: "آج کی نمازیں",
@@ -676,6 +679,7 @@ const I18N = {
         webLangsTitle: "Disponible en 11 langues",
         webSource: "Code source",
         webTerms: "Conditions",
+        webDonate: "Soutenir le projet",
         webPrivacy: "Confidentialité",
         ntSearchPh: "Rechercher sur le web",
         ntTodayTitle: "Prières du jour",
@@ -870,6 +874,7 @@ const I18N = {
         webLangsTitle: "Disponible en 11 idiomas",
         webSource: "Código fuente",
         webTerms: "Términos",
+        webDonate: "Apoya el proyecto",
         webPrivacy: "Privacidad",
         ntSearchPh: "Buscar en la web",
         ntTodayTitle: "Oraciones de hoy",
@@ -1064,6 +1069,7 @@ const I18N = {
         webLangsTitle: "11 भाषाओं में उपलब्ध",
         webSource: "सोर्स कोड",
         webTerms: "शर्तें",
+        webDonate: "प्रोजेक्ट का समर्थन करें",
         webPrivacy: "गोपनीयता",
         ntSearchPh: "वेब पर खोजें",
         ntTodayTitle: "आज की नमाज़ें",
@@ -1258,6 +1264,7 @@ const I18N = {
         webLangsTitle: "Tersedia dalam 11 bahasa",
         webSource: "Kode sumber",
         webTerms: "Ketentuan",
+        webDonate: "Dukung proyek ini",
         webPrivacy: "Privasi",
         ntSearchPh: "Cari di web",
         ntTodayTitle: "Salat hari ini",
@@ -1452,6 +1459,7 @@ const I18N = {
         webLangsTitle: "In 11 Sprachen verfügbar",
         webSource: "Quellcode",
         webTerms: "Bedingungen",
+        webDonate: "Projekt unterstützen",
         webPrivacy: "Datenschutz",
         ntSearchPh: "Im Web suchen",
         ntTodayTitle: "Gebete heute",
@@ -1646,6 +1654,7 @@ const I18N = {
         webLangsTitle: "Доступно на 11 языках",
         webSource: "Исходный код",
         webTerms: "Условия",
+        webDonate: "Поддержать проект",
         webPrivacy: "Конфиденциальность",
         ntSearchPh: "Поиск в интернете",
         ntTodayTitle: "Намазы сегодня",
@@ -1840,6 +1849,7 @@ const I18N = {
         webLangsTitle: "11 тілде қолжетімді",
         webSource: "Бастапқы код",
         webTerms: "Шарттар",
+        webDonate: "Жобаны қолдау",
         webPrivacy: "Құпиялық",
         ntSearchPh: "Интернеттен іздеу",
         ntTodayTitle: "Бүгінгі намаздар",
@@ -2034,6 +2044,7 @@ const I18N = {
         webLangsTitle: "11 tilda mavjud",
         webSource: "Manba kodi",
         webTerms: "Shartlar",
+        webDonate: "Loyihani qo‘llab-quvvatlash",
         webPrivacy: "Maxfiylik",
         ntSearchPh: "Internetdan qidirish",
         ntTodayTitle: "Bugungi namozlar",
@@ -2257,6 +2268,16 @@ function fillLegalLinks(L) {
     const t = document.getElementById("terms-link");
     if (p) p.textContent = L.webPrivacy;
     if (t) t.textContent = L.webTerms;
+    // "Support the project" (PayPal). Not in the Android app: Google Play only
+    // allows payments there through Play Billing.
+    const d = document.getElementById("donate-link");
+    if (d) {
+        d.textContent = L.webDonate;
+        const android = typeof Platform !== "undefined" && Platform.name === "capacitor";
+        d.hidden = android;
+        const sep = document.getElementById("donate-sep");
+        if (sep) sep.hidden = android;
+    }
 }
 
 function prayerLabel(L, key, date = new Date()) {

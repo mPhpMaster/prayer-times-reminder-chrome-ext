@@ -106,6 +106,10 @@ dhikr phrases, prayer engine, lock config, scheduler) evaluated in one function 
 re-exported as ES module exports, plus `installOverlays()` which runs the shared lock/dhikr
 overlays. Never edit the generated folder — edit `core/` or `targets/vencord/plugin/` and re-sync.
 
+### Support
+
+Free, with no ads or tracking. To help keep the project running: [PayPal](https://paypal.me/mfsafadi).
+
 ---
 
 ## العربية
@@ -200,3 +204,7 @@ pnpm inject                 # يوجّه ديسكورد إلى هذه النسخ
 ١. اختر مدينتك من الإعدادات.
 ٢. اكتب `/prayertimes` في أي محادثة: مواقيت اليوم والصلاة القادمة.
 ٣. اكتب `/prayertimes-test`: يظهر تنبيه الصلاة وقفل لدقيقة واحدة فورًا.
+
+### دعم المشروع
+
+الإضافة مجانية بلا إعلانات ولا تتبّع. لمن أحب أن يدعم استمرار المشروع: [PayPal](https://paypal.me/mfsafadi).
