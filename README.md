@@ -130,6 +130,10 @@ The settings dropdown exposes common AlAdhan methods — ISNA (North America), M
 See [PRIVACY.md](PRIVACY.md) for what data is stored locally and which third-party APIs are contacted.
 See [TERMS.md](TERMS.md) for the terms that apply to prayer-time calculations, the optional game, and game accounts.
 
+## Support the project
+
+The app is free, with no ads and no tracking. If you'd like to help keep it (and its game server) running, you can support it on [PayPal](https://paypal.me/mfsafadi). Thank you! Every feature stays free either way.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
