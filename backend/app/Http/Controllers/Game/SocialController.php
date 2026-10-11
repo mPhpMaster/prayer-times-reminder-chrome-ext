@@ -174,8 +174,8 @@ class SocialController extends Controller
             ->join('game_users as u', 'u.id', '=', 'c.user_id')
             ->where('u.hide_progress', false)
             ->whereNull('u.banned_at')
-            ->groupBy('u.id', 'u.username', 'u.display_name')
-            ->select('u.id', 'u.username', 'u.display_name', DB::raw('SUM(c.points) AS points'))
+            ->groupBy('u.id', 'u.username', 'u.display_name', 'u.integrity_status', 'u.integrity_checked_at')
+            ->select('u.id', 'u.username', 'u.display_name', 'u.integrity_status', 'u.integrity_checked_at', DB::raw('SUM(c.points) AS points'))
             ->orderByDesc('points')->orderBy('u.username')->limit(100);
         if ($key !== null) {
             GamePeriods::scope($q, $period, $key, 'c.window_key');
@@ -190,6 +190,7 @@ class SocialController extends Controller
             'username' => $r->username,
             'displayName' => $r->display_name ?: $r->username,
             'hideProgress' => false,
+            'playVerified' => GameUser::playVerified($r->integrity_status, $r->integrity_checked_at),
             'points' => (int) $r->points,
         ]);
 

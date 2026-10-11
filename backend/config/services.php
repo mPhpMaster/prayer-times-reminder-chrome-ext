@@ -20,6 +20,16 @@ return [
         'client_id' => env('GOOGLE_WEB_CLIENT_ID'),
     ],
 
+    // Google Play Integrity (Android app only). credentials = path to the
+    // service-account JSON key (kept outside the web root) allowed to call
+    // decodeIntegrityToken; project_number = the Google Cloud project linked
+    // in Play Console. Either unset = integrity checks off.
+    'play_integrity' => [
+        'credentials' => env('PLAY_INTEGRITY_CREDENTIALS'),
+        'project_number' => env('PLAY_INTEGRITY_PROJECT_NUMBER'),
+        'package' => env('PLAY_INTEGRITY_PACKAGE', 'com.mphpmaster.prayer'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

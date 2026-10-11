@@ -922,9 +922,17 @@ async function renderBoard() {
     for (const r of data.rows) {
       const li = rowButton(
         [["rank", r.rank], ["name", r.displayName], ["p", r.points]],
-        G.boardRow(r.rank, r.displayName, r.points),
+        G.boardRow(r.rank, r.displayName, r.points) + (r.playVerified ? ` (${G.verifiedTitle})` : ""),
         () => go({ name: "profile", arg: r.username })
       );
+      if (r.playVerified) {
+        const mark = document.createElement("span");
+        mark.className = "verified";
+        mark.textContent = "✓";
+        mark.title = G.verifiedTitle;
+        mark.setAttribute("aria-hidden", "true");
+        li.querySelector(".name").append(" ", mark);
+      }
       if (account && r.username === account.username) {
         li.classList.add("me");
         li.firstChild.setAttribute("aria-current", "true");
@@ -1060,6 +1068,25 @@ async function renderMe() {
 
 // Every successful sign-in lands here: store the account, move this device's
 // local progress to it (re-sent in full; the server ignores duplicates).
+// Android only: prove to the server that this is our Play build on a genuine
+// device (PlayIntegrityPlugin -> IntegrityController), right after sign-in and
+// then about once a day. A pass shows the "verified" mark next to the name;
+// failures are only reported to the admins. Silent: nothing here blocks play.
+const INTEGRITY_KEY = "gameIntegrityAt"; // { username, at }
+async function checkIntegrity(force) {
+  if (!Platform.integrity || !account || !account.token || account.legacy) return;
+  try {
+    const last = (await Platform.store.get([INTEGRITY_KEY]))[INTEGRITY_KEY];
+    if (!force && last && last.username === account.username && Date.now() - last.at < 20 * 3600 * 1000) return;
+    const { nonce, projectNumber } = await api().integrityChallenge();
+    const token = await Platform.integrity.token(nonce, projectNumber);
+    await api().integrityVerify(token);
+    await Platform.store.set({ [INTEGRITY_KEY]: { username: account.username, at: Date.now() } });
+  } catch {
+    // Off on this server, no Play services, offline: try again next time.
+  }
+}
+
 async function signedIn({ user, token }, message) {
   account = {
     username: user.username,
@@ -1077,6 +1104,7 @@ async function signedIn({ user, token }, message) {
   showAuthPane("main");
   await renderMe();
   syncNow();
+  checkIntegrity(true);
   showNotice(message || G.welcome(user.username), { autoHide: true });
 }
 
@@ -1456,4 +1484,5 @@ $("tools").addEventListener("click", () => {
   render(parseRoute(location.hash)); // reopen the screen we were on (reload / back from Tools)
   setInterval(tick, 1000);
   syncNow();
+  checkIntegrity(false);
 })();
