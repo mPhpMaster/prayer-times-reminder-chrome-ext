@@ -217,9 +217,10 @@ function requestCard(r) {
 
 async function refreshPendingCount() {
   try {
-    const { pendingRequests } = await api().overview();
+    const { pendingRequests, integrityFailed } = await api().overview();
     const b = document.querySelector('.admin-tabs button[data-tab="requests"]');
     b.textContent = pendingRequests ? `${A.tabRequests} (${pendingRequests})` : A.tabRequests;
+    $("user-suspicious").textContent = A.suspicious(integrityFailed || 0);
   } catch {
     // keep the plain label
   }
@@ -414,13 +415,15 @@ function addAdmin(ev) {
 
 // ---- Accounts ---------------------------------------------------------------------
 
+let userFilter = ""; // "fail" = players whose latest Play Integrity check failed
+
 function searchUsers(ev) {
   if (ev) ev.preventDefault();
   const list = $("user-list");
   loadingInto(list);
   busy($("user-search-btn"), async () => {
     try {
-      const { users } = await api().users($("user-q").value.trim());
+      const { users } = await api().users($("user-q").value.trim(), userFilter);
       if (emptyInto(list, users)) return;
       list.replaceChildren(...users.map(userRow));
     } catch (e) {
@@ -565,11 +568,14 @@ function userRow(u) {
       u.displayName ? el("span", { class: "muted", dir: "auto", textContent: u.displayName }) : null,
       u.superAdmin ? badge(A.superBadge, "st-approved") : u.admin ? badge(A.adminBadge, "st-approved") : null,
       u.google ? badge(A.googleBadge) : null,
-      u.legacy ? badge(A.legacyBadge) : u.email && !u.emailVerified ? badge(A.notVerified, "st-pending") : null
+      u.legacy ? badge(A.legacyBadge) : u.email && !u.emailVerified ? badge(A.notVerified, "st-pending") : null,
+      u.integrity && u.integrity.status === "fail" ? badge(A.playFailedBadge, "st-rejected") : null,
+      u.integrity && u.integrity.verified ? badge(A.playVerifiedBadge, "st-approved") : null
     ),
     u.email ? el("p", { class: "muted", dir: "ltr", textContent: u.email }) : null,
     el("p", { class: "muted", textContent: `${A.points(u.points)} · ${A.joined(when(u.createdAt))} · ${A.lastSeen(when(u.lastSeen))}` }),
     u.banned ? el("p", { class: "muted", dir: "auto", textContent: A.bannedInfo(when(u.bannedAt), u.bannedBy || "—", u.banReason) }) : null,
+    u.integrity ? el("p", { class: "muted", dir: "auto", textContent: A.playInfo(when(u.integrity.checkedAt), u.integrity.detail) }) : null,
     actions
   );
   return li;
@@ -634,6 +640,7 @@ function applyLanguage() {
   $("admin-add-btn").textContent = A.addAdmin;
   $("user-q").placeholder = A.searchPh;
   $("user-search-btn").textContent = A.search;
+  $("user-suspicious").textContent = A.suspicious("…");
 }
 
 function denied(text) {
@@ -656,7 +663,17 @@ for (const b of document.querySelectorAll("#req-filter button")) {
 }
 $("name-add").addEventListener("click", openNewName);
 $("admin-add").addEventListener("submit", addAdmin);
-$("user-search").addEventListener("submit", searchUsers);
+$("user-search").addEventListener("submit", (ev) => {
+  userFilter = "";
+  $("user-suspicious").setAttribute("aria-pressed", "false");
+  searchUsers(ev);
+});
+// Players whose latest Google Play Integrity check failed (count from the overview).
+$("user-suspicious").addEventListener("click", () => {
+  userFilter = userFilter ? "" : "fail";
+  $("user-suspicious").setAttribute("aria-pressed", String(!!userFilter));
+  searchUsers();
+});
 
 // Cross-shell hooks (see about.js): back / tray-reopen return to the game.
 window.__ptPopupReset = () => {

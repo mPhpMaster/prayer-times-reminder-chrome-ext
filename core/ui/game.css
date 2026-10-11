@@ -286,6 +286,8 @@ input[type="search"], #username, #search, #auth input {
 }
 .board .rank { width: 2em; font-weight: 700; color: var(--gold); text-align: center; }
 .board .name, .people .name { flex: 1; }
+/* Play Integrity pass (Android app on a genuine device), see checkIntegrity(). */
+.board .verified { color: var(--accent, #1f8f5f); font-weight: 700; font-size: 0.85em; }
 .board .p { font-weight: 700; font-variant-numeric: tabular-nums; }
 .board li.me .row-btn { border-color: var(--primary); }
 /* Period tabs + the latest winners (points never reset; each period crowns its top player). */

@@ -3098,3 +3098,19 @@ const GAME_I18N_GUEST = {
   },
 };
 for (const [code, more] of Object.entries(GAME_I18N_GUEST)) Object.assign(GAME_I18N[code], more);
+
+// Play Integrity: the mark next to verified players on the leaderboard.
+const GAME_I18N_VERIFIED = {
+  ar: { verifiedTitle: "موثّق: تطبيق أندرويد الأصلي على جهاز حقيقي" },
+  en: { verifiedTitle: "Verified: the official Android app on a genuine device" },
+  de: { verifiedTitle: "Verifiziert: die offizielle Android-App auf einem echten Gerät" },
+  fr: { verifiedTitle: "Vérifié : l’application Android officielle sur un appareil authentique" },
+  es: { verifiedTitle: "Verificado: la app oficial de Android en un dispositivo auténtico" },
+  id: { verifiedTitle: "Terverifikasi: aplikasi Android resmi di perangkat asli" },
+  ur: { verifiedTitle: "تصدیق شدہ: اصل اینڈرائیڈ ایپ ایک حقیقی ڈیوائس پر" },
+  hi: { verifiedTitle: "सत्यापित: असली डिवाइस पर आधिकारिक Android ऐप" },
+  ru: { verifiedTitle: "Проверено: официальное Android-приложение на настоящем устройстве" },
+  kk: { verifiedTitle: "Расталған: нақты құрылғыдағы ресми Android қолданбасы" },
+  uz: { verifiedTitle: "Tasdiqlangan: haqiqiy qurilmadagi rasmiy Android ilovasi" },
+};
+for (const [code, more] of Object.entries(GAME_I18N_VERIFIED)) Object.assign(GAME_I18N[code], more);

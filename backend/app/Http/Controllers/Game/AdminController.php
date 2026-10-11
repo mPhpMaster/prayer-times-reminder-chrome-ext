@@ -35,6 +35,7 @@ class AdminController extends Controller
             'pendingRequests' => DB::table('dedication_requests')->where('status', 'pending')->count(),
             'admins' => count(GameAdmins::emails()),
             'users' => DB::table('game_users')->count(),
+            'integrityFailed' => DB::table('game_users')->where('integrity_status', 'fail')->count(),
         ]);
     }
 
@@ -100,6 +101,10 @@ class AdminController extends Controller
     {
         $q = mb_strtolower(trim((string) $request->query('q', '')));
         $query = GameUser::query();
+        // ?integrity=fail: players whose latest Play Integrity check failed.
+        if ($request->query('integrity') === 'fail') {
+            $query->where('integrity_status', 'fail');
+        }
         if ($q !== '') {
             $like = '%'.str_replace(['%', '_'], '', $q).'%'; // wildcards dropped: SQLite has no default LIKE escape
             $query->where(fn ($w) => $w->where('username_lower', 'like', $like)->orWhere('email', 'like', $like));
@@ -125,6 +130,12 @@ class AdminController extends Controller
             'items' => (int) ($points[$u->id]->items ?? 0),
             'createdAt' => (string) $u->created_at,
             'lastSeen' => isset($seen[$u->id]) ? (string) $seen[$u->id]->seen : null,
+            'integrity' => $u->integrity_status === null ? null : [
+                'status' => $u->integrity_status,
+                'detail' => $u->integrity_detail,
+                'checkedAt' => (string) $u->integrity_checked_at,
+                'verified' => $u->isPlayVerified(),
+            ],
             'hideProgress' => (bool) $u->hide_progress,
             'banned' => $u->isBanned(),
             'bannedAt' => $u->banned_at === null ? null : (string) $u->banned_at,

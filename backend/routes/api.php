@@ -5,6 +5,7 @@ use App\Http\Controllers\Game\AdminController;
 use App\Http\Controllers\Game\AuthController;
 use App\Http\Controllers\Game\DedicationController;
 use App\Http\Controllers\Game\FamilyController;
+use App\Http\Controllers\Game\IntegrityController;
 use App\Http\Controllers\Game\ProgressController;
 use App\Http\Controllers\Game\SocialController;
 use App\Http\Middleware\GameAdmin;
@@ -48,6 +49,9 @@ Route::prefix('v1')->group(function () {
         Route::put('follows/{username}', [SocialController::class, 'follow']);
         Route::delete('follows/{username}', [SocialController::class, 'unfollow']);
         Route::get('follows', [SocialController::class, 'following']);
+
+        Route::get('integrity/challenge', [IntegrityController::class, 'challenge'])->middleware('throttle:10,60');
+        Route::post('integrity', [IntegrityController::class, 'verify'])->middleware('throttle:10,60');
 
         Route::get('family', [FamilyController::class, 'show']);
         Route::post('family', [FamilyController::class, 'create']);

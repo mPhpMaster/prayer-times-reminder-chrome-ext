@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Support\GameAdmins;
+use App\Support\PlayIntegrity;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * A player. `username` is the public handle (leaderboard, follows, search);
@@ -24,7 +26,7 @@ class GameUser extends Model
 
     protected function casts(): array
     {
-        return ['hide_progress' => 'boolean', 'email_verified_at' => 'datetime', 'banned_at' => 'datetime', 'settings' => 'array'];
+        return ['hide_progress' => 'boolean', 'email_verified_at' => 'datetime', 'banned_at' => 'datetime', 'settings' => 'array', 'integrity_checked_at' => 'datetime'];
     }
 
     public static function findByUsername(string $name): ?self
@@ -43,6 +45,18 @@ class GameUser extends Model
         return $this->email === null && $this->google_sub === null;
     }
 
+    /** A Play Integrity pass in the last PlayIntegrity::VALID_DAYS days (the "verified" mark). */
+    public static function playVerified(?string $status, mixed $checkedAt): bool
+    {
+        return $status === 'ok' && $checkedAt !== null
+            && Carbon::parse($checkedAt)->gt(now()->subDays(PlayIntegrity::VALID_DAYS));
+    }
+
+    public function isPlayVerified(): bool
+    {
+        return self::playVerified($this->integrity_status, $this->integrity_checked_at);
+    }
+
     /** What other players may see. */
     public function toPublic(): array
     {
@@ -50,6 +64,7 @@ class GameUser extends Model
             'username' => $this->username,
             'displayName' => $this->display_name ?: $this->username,
             'hideProgress' => (bool) $this->hide_progress,
+            'playVerified' => $this->isPlayVerified(),
         ];
     }
 

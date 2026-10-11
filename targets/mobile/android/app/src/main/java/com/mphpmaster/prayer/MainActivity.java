@@ -11,6 +11,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(PrayerLockPlugin.class);
         registerPlugin(SpeechPlugin.class);
         registerPlugin(GoogleAuthPlugin.class);
+        registerPlugin(PlayIntegrityPlugin.class);
         super.onCreate(savedInstanceState);
         // New-version notice: daily background check + one now.
         UpdateChecker.schedule(this);

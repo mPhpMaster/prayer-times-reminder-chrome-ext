@@ -255,7 +255,14 @@
     signOut: () => GoogleAuth.signOut().catch(() => {}),
   };
 
-  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions, speech, devBuild, googleAuth };
+  // Google Play Integrity (PlayIntegrityPlugin): a token bound to the server's
+  // nonce, which the server sends to Google to check (IntegrityController).
+  const PlayIntegrity = P.PlayIntegrity;
+  const integrity = PlayIntegrity && {
+    token: (requestHash, projectNumber) => PlayIntegrity.token({ requestHash, projectNumber }).then((r) => r.token),
+  };
+
+  globalThis.__PTPlatform = { name: "capacitor", store, enforce, dhikr, geo, runtime, permissions, speech, devBuild, googleAuth, integrity };
 
   // --- scheduled prayer notifications (rolling ~7-day window) ----------------
   // Computed offline from prayer-engine + notify-plan, scheduled via

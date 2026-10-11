@@ -78,6 +78,8 @@ dependencies {
     implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"
     // Play In-App Updates: the "new version" notice + immediate update flow.
     implementation "com.google.android.play:app-update:2.1.0"
+    // Play Integrity (PlayIntegrityPlugin): the game server checks the app is our Play build.
+    implementation "com.google.android.play:integrity:1.4.0"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"

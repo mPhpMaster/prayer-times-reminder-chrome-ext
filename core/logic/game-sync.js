@@ -10,6 +10,7 @@
 //                                           me, updateMe, deleteMe, pushProgress, users, profile,
 //                                           follow, unfollow, following, leaderboard,
 //                                           dedications, myDedicationRequests, requestDedication,
+//                                           integrityChallenge, integrityVerify,
 //                                           family: { get, create, invite, accept, dropInvite, remove,
 //                                                     leave, settings, status, year },
 //                                           admin: { overview, admins, addAdmin, removeAdmin, users,
@@ -82,6 +83,9 @@ function gameApi(baseUrl, token) {
     dedications: () => call("GET", "/v1/dedications"),
     myDedicationRequests: () => call("GET", "/v1/dedications/requests"),
     requestDedication: (names, note) => call("POST", "/v1/dedications/requests", { names, note }),
+    // Google Play Integrity (Android app only): a one-time nonce, then the token Google made for it.
+    integrityChallenge: () => call("GET", "/v1/integrity/challenge"),
+    integrityVerify: (token) => call("POST", "/v1/integrity", { token }),
     // Families: parents follow their children (FamilyController).
     family: {
       get: () => call("GET", "/v1/family"),
@@ -101,7 +105,7 @@ function gameApi(baseUrl, token) {
       admins: () => call("GET", "/v1/admin/admins"),
       addAdmin: (email) => call("POST", "/v1/admin/admins", { email }),
       removeAdmin: (email) => call("DELETE", `/v1/admin/admins/${u(email)}`),
-      users: (q) => call("GET", `/v1/admin/users?q=${u(q)}`),
+      users: (q, integrity) => call("GET", `/v1/admin/users?q=${u(q)}${integrity ? `&integrity=${u(integrity)}` : ""}`),
       deleteUser: (id) => call("DELETE", `/v1/admin/users/${id}`),
       resetUser: (id) => call("POST", `/v1/admin/users/${id}/reset`),
       updateUser: (id, patch) => call("PATCH", `/v1/admin/users/${id}`, patch),
