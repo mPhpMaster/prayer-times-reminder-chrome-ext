@@ -9,7 +9,7 @@
   const REPO = "https://github.com/mPhpMaster/prayer-times-reminder-chrome-ext";
   const LINKS = {
     chrome: "https://chromewebstore.google.com/detail/prayer-times-reminder/knahkbkmbjghaiillhngjbhoinmeegoc",
-    android: "https://play.google.com/apps/testing/com.mphpmaster.prayer",
+    android: "https://play.google.com/store/apps/details?id=com.mphpmaster.prayer",
     windowsStore: "https://apps.microsoft.com/detail/9PFTWDWLNL7C",
     windowsDirect: REPO + "/releases", // replaced by the newest desktop-v release's installer below
     discord: REPO + "/tree/main/targets/vencord",
