@@ -25,7 +25,7 @@
 ## منصات أخرى
 
 - **الموقع** — التطبيق كاملًا في المتصفح: https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/app/
-- **أندرويد** — Google Play (تجريبي): https://play.google.com/apps/testing/com.mphpmaster.prayer
+- **أندرويد** — Google Play: https://play.google.com/store/apps/details?id=com.mphpmaster.prayer
 - **ويندوز** — متجر مايكروسوفت: https://apps.microsoft.com/detail/9PFTWDWLNL7C
 - **ديسكورد** — إضافة Vencord؛ خطوات التثبيت: [targets/vencord/README.md](../targets/vencord/README.md)
 
