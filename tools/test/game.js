@@ -223,8 +223,8 @@ eq("a newly finished task is pending again", Y.pendingCompletions(st2).map((r) =
 // ---- catalog ----------------------------------------------------------------------
 const C = ctx.__cat;
 ok("every window has tasks that exist", ctx.__w.GAME_PRAYERS.every((p) => C.WINDOW_TASKS[p].length && C.WINDOW_TASKS[p].every((id) => C.GAME_TASKS[id])));
-ok("every game task has title, text, source, pending review",
-  Object.values(C.GAME_TASKS).every((t) => t.id && t.title && tokenize(t.text).length && t.source && t.review === "pending"));
+ok("every game task has title, text, source, reviewed",
+  Object.values(C.GAME_TASKS).every((t) => t.id && t.title && tokenize(t.text).length && t.source && t.review === "reviewed"));
 eq("mu'awwidhat x3 in the Fajr window", C.tasksForWindow("Fajr").find((t) => t.id === "al-falaq").repeat, 3);
 eq("mu'awwidhat x1 in the Dhuhr window", C.tasksForWindow("Dhuhr").find((t) => t.id === "al-falaq").repeat, 1);
 eq("same window -> same gift", C.giftForWindow("2026-09-25:Dhuhr").id, C.giftForWindow("2026-09-25:Dhuhr").id);
@@ -350,8 +350,8 @@ const htmlKeys = [...html.matchAll(/data-g(?:-ph|-aria)?="([^"]+)"/g)].map((m) =
 eq("every data-g key in game.html exists", htmlKeys.filter((k) => typeof base[k] !== "string"), []);
 ok("recitation text stays Arabic in the page", /id="text" lang="ar"/.test(html) && /id="chunk" lang="ar"/.test(html));
 
-// ---- religious review stays pending ------------------------------------------------------
-ok("gifts stay review: pending", C.GIFTS.every((g) => g.review === "pending"));
+// ---- religious review: the live gifts were reviewed (2026-10-13) ------------------------
+ok("gifts are reviewed", C.GIFTS.every((g) => g.review === "reviewed"));
 
 // ---- measured durations (never an estimate) ----------------------------------------
 const X = ctx.__x;
