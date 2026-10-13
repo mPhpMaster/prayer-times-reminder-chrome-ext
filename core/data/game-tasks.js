@@ -9,9 +9,12 @@
 // waqf signs and ayah ends in Quran text — never edited to force a split —
 // and commas at the natural pauses of a dhikr.
 //
-// Every entry must be ma'thur and carries its source. `review` stays
+// Every entry must be ma'thur and carries its source. `review` is
 // "pending" until the wording and grading are checked; nothing pending ships
-// in a public release (docs/GAME-DESIGN-2026-09-25.md, phase 5).
+// in a public release (docs/GAME-DESIGN-2026-09-25.md, phase 5). The live
+// catalog (GAME_TASKS) and the gifts were reviewed by the owner on
+// 2026-10-13, before the Google Play production release ("reviewed").
+// The phase 0 spike tasks (developer page only) stay "pending".
 
 const SPIKE_TASKS = [
   {
@@ -69,8 +72,8 @@ const SPIKE_TASKS = [
 ];
 
 // ---- Phase 1 catalog --------------------------------------------------------
-// Tasks per prayer window. Every text is ma'thur with its source; all stay
-// review: "pending" (docs/GAME-DESIGN-2026-09-25.md, phase 5). Long surahs
+// Tasks per prayer window. Every text is ma'thur with its source; reviewed
+// by the owner on 2026-10-13 (docs/GAME-DESIGN-2026-09-25.md, phase 5). Long surahs
 // with a sunnah virtue (al-Mulk, al-Kahf, end of al-Baqarah) are not added
 // until their text is taken from a verified mushaf source, not typed by hand.
 
@@ -122,7 +125,7 @@ const GAME_TASKS = {
     source: "الترمذي (بعد الفجر والمغرب، يحتاج مراجعة درجته)",
   },
 };
-for (const [id, t] of Object.entries(GAME_TASKS)) Object.assign(t, { id, review: "pending" });
+for (const [id, t] of Object.entries(GAME_TASKS)) Object.assign(t, { id, review: "reviewed" });
 
 // Every window starts with the adhkar after the obligatory prayer; morning
 // (Fajr window) and evening (Asr window) add their own, and the mu'awwidhat
@@ -162,7 +165,7 @@ const GIFTS = [
   { id: "muqallib", text: "يَا مُقَلِّبَ الْقُلُوبِ، ثَبِّتْ قَلْبِي عَلَى دِينِكَ", source: "الترمذي" },
   { id: "aini-ala-dhikrik", text: "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ، وَشُكْرِكَ، وَحُسْنِ عِبَادَتِكَ", source: "أبو داود والنسائي" },
   { id: "afuwwun", text: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي", source: "الترمذي" },
-].map((g) => ({ ...g, kind: "gift", title: "الهدية", repeat: 1, review: "pending" }));
+].map((g) => ({ ...g, kind: "gift", title: "الهدية", repeat: 1, review: "reviewed" }));
 
 function giftForWindow(key) {
   let h = 0;
