@@ -165,6 +165,7 @@ function renderRequestSection() {
   $("ded-signin-note").textContent = D.signInFirst;
   $("ded-signin-btn").textContent = D.signInBtn;
   $("ded-open").textContent = D.openForm;
+  $("ded-review-note").textContent = D.reviewNote;
   $("ded-submit").textContent = D.submit;
   $("ded-cancel").textContent = D.cancel;
   $("ded-public-note").textContent = D.publicNote;

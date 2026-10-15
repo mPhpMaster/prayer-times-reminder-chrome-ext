@@ -78,13 +78,25 @@ h1 {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .sadaqah-names li {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 10px 4px;
+}
+
+/* A soft, centered hairline between names (fades out at both ends). */
+.sadaqah-names li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 18%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  opacity: 0.35;
 }
 
 /* Names are always shown in Arabic (prominent); a transliteration sits on a
@@ -97,9 +109,10 @@ h1 {
   line-height: 1.7;
   color: var(--color-foreground);
 }
+.sadaqah-names .ded-ar { font-size: 20px; line-height: 1.75; letter-spacing: 0.01em; }
 
 .ded-translit {
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--muted-foreground);
 }
@@ -135,7 +148,7 @@ h1 {
 
 /* Names without Arabic script (a request written only in, say, English). */
 .ded-main {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.6;
   color: var(--color-foreground);
@@ -155,6 +168,9 @@ h1 {
 .ded-request h2 { font-size: 14px; color: var(--teal); line-height: 1.6; }
 .ded-request h3 { font-size: 13px; margin-top: 6px; }
 .ded-intro, .ded-note { color: var(--muted-foreground); font-size: 13px; line-height: 1.7; }
+/* "Requests are reviewed before publishing": sits right under the request button. */
+.ded-review-note { margin-top: -4px; font-size: 12.5px; }
+#ded-open[hidden] + .ded-review-note { display: none; }
 
 .ded-btn {
   display: inline-block;

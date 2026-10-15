@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="stylesheet" href="theme.css" />
-    <link rel="stylesheet" href="game.css?v=233" />
+    <link rel="stylesheet" href="game.css?v=239" />
     <title data-g="pageTitle">أذكار الصلاة</title>
 </head>
 
@@ -138,6 +138,13 @@
         <!-- Leaderboard: all-time points or the current year / half / quarter /
              month (points never reset), with each period's latest winners. -->
         <section id="board-view" hidden>
+            <!-- A calm reminder above the ranking (Al-Mutaffifin 83:26). Other
+                 languages put the translation of its meaning first, Arabic below. -->
+            <figure class="board-verse">
+                <p class="board-verse-tr" data-g="boardVerseTr"></p>
+                <p class="board-verse-ar" lang="ar" dir="rtl">﴿وَفِي ذَٰلِكَ فَلْيَتَنَافَسِ الْمُتَنَافِسُونَ﴾</p>
+                <figcaption class="board-verse-ref" data-g="boardVerseRef">المطففين: 26</figcaption>
+            </figure>
             <div class="seg" role="group" data-g-aria="scopeLabel" aria-label="نطاق القائمة">
                 <button type="button" data-scope="all" aria-pressed="true" data-g="scopeAll">الكل</button>
                 <button type="button" data-scope="following" aria-pressed="false" data-g="scopeFollowing">من أتابعهم</button>
