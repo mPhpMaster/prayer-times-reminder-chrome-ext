@@ -1,5 +1,5 @@
 {
-  "about": "Candidate religious content for the dhikr game, awaiting shar'i review. NOT PUBLISHED: this folder is outside core/, so tools/sync-core.mjs never copies it into the extension, desktop or Android builds, and nothing in the app reads it. An item moves into core/data/game-tasks.js only after a qualified reviewer approves its wording, source and grading (docs/GAME-DESIGN-2026-09-25.md, phase 5). On 2026-10-15 the well-authenticated morning / evening adhkar moved there as the side tasks (SIDE_ADHKAR, still review: pending until the owner approves them); the disputed ones stay here. Quran text is never typed here: surahs and ayat carry only their reference (text: null) until taken from a verified mushaf source.",
+  "about": "Candidate religious content for the dhikr game, awaiting shar'i review. NOT PUBLISHED: this folder is outside core/, so tools/sync-core.mjs never copies it into the extension, desktop or Android builds, and nothing in the app reads it. An item moves into core/data/game-tasks.js only after a qualified reviewer approves its wording, source and grading (docs/GAME-DESIGN-2026-09-25.md, phase 5). On 2026-10-15 the well-authenticated morning / evening adhkar moved there as the side tasks (SIDE_ADHKAR, still review: pending until the owner approves them); «اللهم عالم الغيب والشهادة» (Abu Bakr's narration) joined the strict sets; the disputed ones (رضيت بالله ربًا، حسبي الله) moved the same day into an optional, unscored, clearly labelled section (DISPUTED_ADHKAR); the rest stay here. Quran text is never typed here: surahs and ayat carry only their reference (text: null) until taken from a verified mushaf source.",
   "policy": "Ma'thur wordings only; no disputed additions; Arabic original always shown (see docs/GAME-DESIGN-2026-09-25.md).",
   "fields": {
     "id": "stable id (a-z, 0-9, -)",
@@ -15,45 +15,6 @@
     "published": "false until moved into core/data/game-tasks.js after approval"
   },
   "items": [
-    {
-      "id": "raditu-billahi-rabba",
-      "category": "morning-evening",
-      "windows": ["Fajr", "Asr"],
-      "title": "رضيت بالله ربًا",
-      "text": "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا",
-      "repeat": 3,
-      "source": "أبو داود والترمذي",
-      "grading": "مختلف في درجته؛ يحتاج تحقيقًا",
-      "reviewNotes": "الروايات بين «نبيًّا» و«رسولًا»، والعدد ثلاثًا في بعض الطرق دون بعض. يُختار لفظ رواية واحدة ثابتة.",
-      "review": "pending",
-      "published": false
-    },
-    {
-      "id": "hasbiya-allah",
-      "category": "morning-evening",
-      "windows": ["Fajr", "Asr"],
-      "title": "حسبي الله لا إله إلا هو",
-      "text": "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
-      "repeat": 7,
-      "source": "أبو داود",
-      "grading": "مختلف فيه: رُوي موقوفًا على أبي الدرداء، ورفعه بعضهم",
-      "reviewNotes": "يُقرر المراجع قبوله من عدمه بحسب الحكم على رفعه. اللفظ جزء من آية التوبة 129 — يُراجع مع المصحف.",
-      "review": "pending",
-      "published": false
-    },
-    {
-      "id": "alim-al-ghayb",
-      "category": "morning-evening",
-      "windows": ["Fajr", "Asr"],
-      "title": "اللهم عالم الغيب والشهادة",
-      "text": "اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ، فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطَانِ وَشِرْكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءًا، أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ",
-      "repeat": 1,
-      "source": "أبو داود والترمذي",
-      "grading": "صححه الترمذي (مبدئي)",
-      "reviewNotes": "الجملة الأخيرة «وأن أقترف…» وردت في بعض الروايات؛ يُتحقق من ثبوتها في الرواية المختارة. «وشِرْكِه» وتُروى «وشَرَكِه».",
-      "review": "pending",
-      "published": false
-    },
     {
       "id": "bismika-amutu-wa-ahya",
       "category": "sleep",

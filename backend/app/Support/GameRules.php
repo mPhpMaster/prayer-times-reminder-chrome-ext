@@ -26,7 +26,7 @@ final class GameRules
      * SIDE_TASKS in core/data/game-tasks.js (tools/test/game.js checks both).
      */
     public const SIDE_POINTS = 50;
-    public const SIDE_TASK_COUNT = ['Morning' => 12, 'Evening' => 12];
+    public const SIDE_TASK_COUNT = ['Morning' => 13, 'Evening' => 13];
 
     /**
      * The first day a completion may be dated. The game went live in

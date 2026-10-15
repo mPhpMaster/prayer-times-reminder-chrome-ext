@@ -206,9 +206,9 @@ class GameApiTest extends TestCase
         $this->as($t)->postJson('/v1/progress', ['completions' => [self::done($morning, 'm9', 1)]])->assertJson(['accepted' => 1]);
         $this->as($t)->postJson('/v1/progress', ['completions' => [self::done($morning, 'm10', 1)]])->assertJson(['accepted' => 0]);
 
-        // At most its adhkar count (12) + 3 rows.
+        // At most its adhkar count (13) + 3 rows.
         $junk = array_map(fn ($i) => self::done($evening, "e$i", 1), range(1, 30));
-        $this->as($t)->postJson('/v1/progress', ['completions' => $junk])->assertJson(['accepted' => 14]); // 15 - the one above
+        $this->as($t)->postJson('/v1/progress', ['completions' => $junk])->assertJson(['accepted' => 15]); // 16 - the one above
 
         // Other names and forged dates are still refused.
         $bad = [self::done('2026-09-25:Noon', 'x', 5), self::done('2026-08-31:Morning', 'x', 5), self::done('2026-09-27:Evening', 'x', 5)];
@@ -216,17 +216,17 @@ class GameApiTest extends TestCase
 
         $mine = collect($this->as($t)->getJson('/v1/progress?month=2026-09')->json('completions'));
         $this->assertSame(50, $mine->where('windowKey', $morning)->sum('points'));
-        $this->assertSame(17, $mine->where('windowKey', $evening)->sum('points'));
+        $this->assertSame(18, $mine->where('windowKey', $evening)->sum('points'));
 
         // The bonus counts on the leaderboard and in the totals...
         $this->as($other)->postJson('/v1/progress', ['completions' => [self::done('2026-09-25:Dhuhr', 'tasbih-33', 60)]]);
         $board = $this->getJson('/v1/leaderboard?period=month&today=2026-09-25')->assertOk();
         $this->assertSame(['dhakir', 'rival'], array_column($board->json('rows'), 'username'));
-        $this->assertSame(67, $board->json('rows.0.points'));
+        $this->assertSame(68, $board->json('rows.0.points'));
 
         // ...but a side set is not a prayer window: no completed window, no full day.
         $stats = \App\Support\GameStats::compute(\App\Models\GameUser::where('username', 'dhakir')->value('id'), '2026-09-25')['stats'];
-        $this->assertSame(67, $stats['totalPoints']);
+        $this->assertSame(68, $stats['totalPoints']);
         $this->assertSame(0, $stats['windows']);
         $this->assertSame(0, $stats['fullDays']);
         $this->assertSame(2, $stats['activeDays']);
@@ -276,5 +276,27 @@ class GameApiTest extends TestCase
         $this->flushHeaders();
         $this->postJson('/v1/auth/login', ['email' => 'u'.substr(md5('settler'), 0, 10).'@example.com', 'password' => 'secret-pass-1'])
             ->assertOk()->assertJsonPath('user.settings', ['alerts' => false, 'sound' => true, 'journey' => false]);
+    }
+
+    public function test_the_disputed_adhkar_option_follows_the_account(): void
+    {
+        $t = $this->register('cautious');
+        $this->as($t)->patchJson('/v1/me', ['settings' => ['disputed' => 'yes']])
+            ->assertOk()->assertJsonPath('user.settings', null); // only on/off values
+        $this->as($t)->patchJson('/v1/me', ['settings' => ['disputed' => true]])
+            ->assertOk()->assertJsonPath('user.settings', ['disputed' => true]);
+        $this->as($t)->getJson('/v1/me')->assertJsonPath('user.settings.disputed', true);
+        $this->as($t)->patchJson('/v1/me', ['settings' => ['disputed' => false]])
+            ->assertOk()->assertJsonPath('user.settings.disputed', false);
+    }
+
+    public function test_disputed_adhkar_earn_nothing_on_the_server(): void
+    {
+        // The app never sends them (unscored, device only); an old or forged
+        // client sending one with 0 points gets nothing either.
+        $t = $this->register('nopoints');
+        $this->as($t)->postJson('/v1/progress', ['completions' => [self::done('2026-09-25:Morning', 'raditu-billahi-rabba', 0)]])
+            ->assertJson(['accepted' => 0]);
+        $this->assertDatabaseCount('game_completions', 0);
     }
 }

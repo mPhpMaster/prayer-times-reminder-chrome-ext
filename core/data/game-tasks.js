@@ -164,7 +164,7 @@ function tasksForWindow(prayer) {
 // mu'awwidhat are the reviewed entries above. The adhkar below were added
 // on 2026-10-15 and reviewed by the owner the same day. Only well
 // authenticated morning / evening adhkar; disputed ones (رضيت بالله ربًا،
-// حسبي الله سبعًا) stay in content/game-catalog.json.
+// حسبي الله سبعًا) are in the optional, unscored DISPUTED_ADHKAR below.
 const SIDE_ADHKAR = {
   "asbahna-wa-asbaha-al-mulk": {
     kind: "dhikr",
@@ -221,6 +221,17 @@ const SIDE_ADHKAR = {
     repeat: 1,
     source: "أبو داود وابن ماجه",
   },
+  // Abu Bakr's narration only: «وأن أقترف على نفسي سوءًا أو أجرّه إلى مسلم» is
+  // from another narration and is left out (owner decision, 2026-10-15).
+  "alim-al-ghayb": {
+    kind: "dhikr",
+    title: "اللهم عالم الغيب والشهادة",
+    text:
+      "اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ، فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، " +
+      "أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطَانِ وَشِرْكِهِ",
+    repeat: 1,
+    source: "أبو داود والترمذي (قال الترمذي: حسن صحيح)",
+  },
   "ya-hayyu-ya-qayyum": {
     kind: "dhikr",
     title: "يا حي يا قيوم",
@@ -257,11 +268,11 @@ for (const [id, t] of Object.entries(SIDE_ADHKAR)) Object.assign(t, { id, review
 const SIDE_TASKS = {
   Morning: [
     "ayat-al-kursi", ...MUAWWIDHAT, "asbahna-wa-asbaha-al-mulk", "allahumma-bika-asbahna", "sayyid-al-istighfar",
-    "asaluka-al-afiya", "bismillah-la-yadurru", "ya-hayyu-ya-qayyum", "subhanallah-adada-khalqih", "subhanallah-wabihamdih-100",
+    "asaluka-al-afiya", "alim-al-ghayb", "bismillah-la-yadurru", "ya-hayyu-ya-qayyum", "subhanallah-adada-khalqih", "subhanallah-wabihamdih-100",
   ],
   Evening: [
     "ayat-al-kursi", ...MUAWWIDHAT, "amsayna-wa-amsa-al-mulk", "allahumma-bika-amsayna", "sayyid-al-istighfar",
-    "asaluka-al-afiya", "bismillah-la-yadurru", "ya-hayyu-ya-qayyum", "kalimat-allah-at-tammat", "subhanallah-wabihamdih-100",
+    "asaluka-al-afiya", "alim-al-ghayb", "bismillah-la-yadurru", "ya-hayyu-ya-qayyum", "kalimat-allah-at-tammat", "subhanallah-wabihamdih-100",
   ],
 };
 const SIDE_REPEAT = { "al-ikhlas": 3, "al-falaq": 3, "an-nas": 3 };
@@ -273,6 +284,50 @@ function tasksForSide(kind) {
     const repeat = SIDE_REPEAT[id] || t.repeat;
     return { ...t, repeat, weight: tokenize(t.text).length * repeat };
   });
+}
+
+// ---- Optional: morning / evening adhkar whose authentication is disputed ----------
+// «أذكار مختلف في تصحيحها»: kept OUT of the strict sets above. Shown under the
+// side card in the same windows only when the player turns them on (setting
+// "gameDisputed", off by default), each with its source AND its grading note.
+// Read by voice, but they earn NO points and never leave the device (game.js
+// stamps them `unscored` + `local`; pendingCompletions skips them), so only
+// the strict sets compete. Approved for this clearly labelled section by the
+// owner on 2026-10-15.
+//
+// «رضيت بالله ربًا»: Abu Dawud's wording «نبيًّا». ﷺ after the Prophet's name
+// is a display mark only: normalizeArabic drops it, so it carries no token and
+// the player isn't asked to recite an addition to the narrated wording.
+// «حسبي الله…»: the words of al-Tawbah 129 (from its «حَسْبِيَ»), unchanged.
+const DISPUTED_ADHKAR = {
+  "raditu-billahi-rabba": {
+    kind: "dhikr",
+    title: "رضيت بالله ربًا",
+    text: "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا",
+    repeat: 3,
+    source: "أبو داود والترمذي (قال الترمذي: حسن غريب)",
+    grading: "مختلف في تصحيحه: حسّنه بعض العلماء وضعّفه آخرون، وأصل اللفظ صحيح عند مسلم بعد الأذان",
+  },
+  "hasbiya-allah": {
+    kind: "dhikr",
+    title: "حسبي الله لا إله إلا هو",
+    text: "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+    repeat: 7,
+    source: "أبو داود (موقوفًا على أبي الدرداء)",
+    grading: "مختلف في تصحيحه: رُوي موقوفًا على أبي الدرداء، ورفعه ضعيف",
+  },
+};
+for (const [id, t] of Object.entries(DISPUTED_ADHKAR)) Object.assign(t, { id, review: "reviewed", disputed: true });
+
+const DISPUTED_TASKS = {
+  Morning: ["raditu-billahi-rabba", "hasbiya-allah"],
+  Evening: ["raditu-billahi-rabba", "hasbiya-allah"],
+};
+
+// The optional list for a side window: empty unless the player turned it on.
+function disputedForSide(kind, enabled = false) {
+  if (enabled !== true) return [];
+  return (DISPUTED_TASKS[kind] || []).map((id) => ({ ...DISPUTED_ADHKAR[id] }));
 }
 
 // Gifts: a ma'thur du'a / ayah opened after finishing a window, read aloud for

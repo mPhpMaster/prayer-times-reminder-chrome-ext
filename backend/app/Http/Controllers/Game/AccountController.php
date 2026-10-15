@@ -18,7 +18,7 @@ class AccountController extends Controller
         return response()->json(['user' => $request->attributes->get('gameUser')->toPrivate()]);
     }
 
-    /** PATCH /v1/me {displayName?, hideProgress?, settings?: {alerts?, journey?, sound?}} */
+    /** PATCH /v1/me {displayName?, hideProgress?, settings?: {alerts?, journey?, sound?, newTab?, disputed?}} */
     public function update(Request $request): JsonResponse
     {
         /** @var GameUser $me */
