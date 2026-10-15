@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home-screen widgets: widget-picker names/descriptions, the setup prompt
+     shown before the app has published its first snapshot, and the sample
+     text of the picker previews (previewLayout). Everything else on the
+     widgets comes in the app's language from the snapshot (adapter.js). -->
+<resources>
+    <string name="widget_next_name">Next prayer</string>
+    <string name="widget_next_desc">The next prayer and its time, with a live countdown</string>
+    <string name="widget_times_name">Prayer times</string>
+    <string name="widget_times_desc">Today\'s prayer times, the next one highlighted</string>
+    <string name="widget_tasks_name">Prayer Adhkar</string>
+    <string name="widget_tasks_desc">Your adhkar tasks for the current prayer: progress, points and what\'s next</string>
+    <string name="widget_open_app">Open the app to set up this widget</string>
+    <string name="widget_today">Today</string>
+    <string name="widget_p_fajr">Fajr</string>
+    <string name="widget_p_sunrise">Sunrise</string>
+    <string name="widget_p_dhuhr">Dhuhr</string>
+    <string name="widget_p_asr">Asr</string>
+    <string name="widget_p_maghrib">Maghrib</string>
+    <string name="widget_p_isha">Isha</string>
+    <string name="widget_sample_done">3/9 done</string>
+    <string name="widget_sample_next">Next: Ayat al-Kursi</string>
+    <string name="widget_sample_points">120 pts</string>
+    <string name="widget_countdown_name">Prayer countdown</string>
+    <string name="widget_countdown_desc">Hours and minutes to the next prayer, like the card in the app</string>
+    <string name="widget_u_hours">HOURS</string>
+    <string name="widget_u_min">MIN</string>
+</resources>

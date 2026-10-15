@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">Próxima oración</string>
+    <string name="widget_next_desc">La próxima oración y su hora, con cuenta atrás</string>
+    <string name="widget_times_name">Horarios de oración</string>
+    <string name="widget_times_desc">Los horarios de hoy, con la próxima oración resaltada</string>
+    <string name="widget_tasks_name">Adhkar de la oración</string>
+    <string name="widget_tasks_desc">Tus adhkar de la oración actual: progreso, puntos y lo siguiente</string>
+    <string name="widget_open_app">Abre la app para configurar este widget</string>
+    <string name="widget_today">Hoy</string>
+    <string name="widget_p_fajr">Fajr</string>
+    <string name="widget_p_sunrise">Salida del sol</string>
+    <string name="widget_p_dhuhr">Dhuhr</string>
+    <string name="widget_p_asr">Asr</string>
+    <string name="widget_p_maghrib">Magrib</string>
+    <string name="widget_p_isha">Isha</string>
+    <string name="widget_sample_done">3/9 hechas</string>
+    <string name="widget_sample_next">Siguiente: Ayat al-Kursi</string>
+    <string name="widget_sample_points">120 pts</string>
+    <string name="widget_countdown_name">Cuenta atrás</string>
+    <string name="widget_countdown_desc">Horas y minutos hasta la próxima oración, como la tarjeta de la app</string>
+    <string name="widget_u_hours">HORAS</string>
+    <string name="widget_u_min">MIN</string>
+</resources>

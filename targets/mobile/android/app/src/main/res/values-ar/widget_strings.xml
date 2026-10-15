@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">الصلاة القادمة</string>
+    <string name="widget_next_desc">الصلاة القادمة ووقتها مع عدّ تنازلي</string>
+    <string name="widget_times_name">مواقيت الصلاة</string>
+    <string name="widget_times_desc">مواقيت صلوات اليوم مع إبراز الصلاة القادمة</string>
+    <string name="widget_tasks_name">أذكار الصلاة</string>
+    <string name="widget_tasks_desc">مهمات أذكار الصلاة الحالية: ما أنجزته ونقاطك والمهمة التالية</string>
+    <string name="widget_open_app">افتح التطبيق لتجهيز هذه الأداة</string>
+    <string name="widget_today">اليوم</string>
+    <string name="widget_p_fajr">الفجر</string>
+    <string name="widget_p_sunrise">الشروق</string>
+    <string name="widget_p_dhuhr">الظهر</string>
+    <string name="widget_p_asr">العصر</string>
+    <string name="widget_p_maghrib">المغرب</string>
+    <string name="widget_p_isha">العشاء</string>
+    <string name="widget_sample_done">أنجزت 3 من 9</string>
+    <string name="widget_sample_next">التالي: آية الكرسي</string>
+    <string name="widget_sample_points">120 نقطة</string>
+    <string name="widget_countdown_name">العدّ التنازلي للصلاة</string>
+    <string name="widget_countdown_desc">الساعات والدقائق المتبقية على الصلاة القادمة، كبطاقة التطبيق</string>
+    <string name="widget_u_hours">ساعات</string>
+    <string name="widget_u_min">دقيقة</string>
+</resources>

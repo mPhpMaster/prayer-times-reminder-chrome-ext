@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">अगली नमाज़</string>
+    <string name="widget_next_desc">अगली नमाज़ और उसका समय, उलटी गिनती के साथ</string>
+    <string name="widget_times_name">नमाज़ के समय</string>
+    <string name="widget_times_desc">आज के नमाज़ के समय, अगली नमाज़ उभरी हुई</string>
+    <string name="widget_tasks_name">नमाज़ के अज़कार</string>
+    <string name="widget_tasks_desc">मौजूदा नमाज़ के अज़कार: प्रगति, अंक और अगला काम</string>
+    <string name="widget_open_app">यह विजेट सेट करने के लिए ऐप खोलें</string>
+    <string name="widget_today">आज</string>
+    <string name="widget_p_fajr">फज्र</string>
+    <string name="widget_p_sunrise">सूर्योदय</string>
+    <string name="widget_p_dhuhr">ज़ुहर</string>
+    <string name="widget_p_asr">अस्र</string>
+    <string name="widget_p_maghrib">मग़रिब</string>
+    <string name="widget_p_isha">इशा</string>
+    <string name="widget_sample_done">9 में से 3 पूरे</string>
+    <string name="widget_sample_next">अगला: आयतुल कुर्सी</string>
+    <string name="widget_sample_points">120 अंक</string>
+    <string name="widget_countdown_name">नमाज़ की उलटी गिनती</string>
+    <string name="widget_countdown_desc">अगली नमाज़ तक बचे घंटे और मिनट, ऐप के कार्ड की तरह</string>
+    <string name="widget_u_hours">घंटे</string>
+    <string name="widget_u_min">मिनट</string>
+</resources>

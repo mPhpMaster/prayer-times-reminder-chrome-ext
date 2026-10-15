@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home-screen widget palette, from core/ui/theme.css. The app itself is
+     dark only; the widgets follow the phone's light/dark mode (values-night)
+     with the app's colours, and the app's theme picks the background
+     (widget_bg = Midnight Emerald, widget_bg_classic = Classic). The
+     widget_next_* / widget_box* colours are the popup's "Next prayer" card
+     (.next-card, .countdown-block). -->
+<resources>
+    <color name="widget_bg">#FAF2FAF7</color>
+    <color name="widget_bg_classic">#FAEDF4F6</color>
+    <color name="widget_fg">#0B2B26</color>
+    <color name="widget_muted">#5E716D</color>
+    <color name="widget_accent">#0B8A6B</color>
+    <color name="widget_pill">#2610A37F</color>
+    <color name="widget_chip_stroke">#990B8A6B</color>
+    <color name="widget_track">#260B8A6B</color>
+    <color name="widget_next_start">#FAE3F6EF</color>
+    <color name="widget_next_end">#FAD3EEE6</color>
+    <color name="widget_next_stroke">#590B8A6B</color>
+    <color name="widget_box">#B3FFFFFF</color>
+    <color name="widget_box_stroke">#1F0B2B26</color>
+    <color name="widget_box_sec_stroke">#990B8A6B</color>
+</resources>
