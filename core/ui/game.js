@@ -5,8 +5,8 @@
 // progress lives in Platform.store[GAME_STORE_KEY].
 //
 // Screens are hash routes so Android back (adapter.js -> window.__ptBack)
-// steps through them: #tasks (home), #board, #me, #read/<taskId>, #gift,
-// #profile/<username>. Each pushed screen records its depth in history.state.
+// steps through them: #tasks (home), #board, #me, #read/<taskId>,
+// #side/<taskId> (morning / evening adhkar), #gift, #profile/<username>. Each pushed screen records its depth in history.state.
 //
 // Speech: the Google voice dialog, one meaningful segment per utterance.
 //
@@ -27,6 +27,8 @@ let state = emptyGameState();
 let current = null; // currentWindow() result
 let lastWindowCheck = 0;
 let tasks = []; // tasksForWindow(current.prayer), with .share (max points)
+let side = null; // sideWindow() result: the morning / evening adhkar, open beside the prayer window
+let sideTasks = []; // tasksForSide(side.kind), with .share (fixed bonus points)
 
 // Settings
 let journeyOn = true;
@@ -42,7 +44,9 @@ let boardPeriod = "month"; // all | year | half | quarter | month
 let profileName = null;
 
 // Reader state
-let reading = null; // { task, isGift, mode: "play" | "practice" | "missed" | "done" }
+// `at` is the window the reading banks into: `current`, or `side` for the
+// morning / evening adhkar (side: true).
+let reading = null; // { task, isGift, side, at, mode: "play" | "practice" | "missed" | "done" }
 let finals = [];
 let listening = false;
 let chunks = [];
@@ -115,7 +119,7 @@ function parseRoute(hash) {
   const arg = rest.join("/");
   if (name === "board" || name === "me" || name === "gift") return { name };
   if (name === "family") return { name };
-  if ((name === "read" || name === "profile" || name === "member") && arg) return { name, arg };
+  if ((name === "read" || name === "side" || name === "profile" || name === "member") && arg) return { name, arg };
   return { name: "tasks" };
 }
 const routeHash = (r) => (r.arg ? `#${r.name}/${encodeURIComponent(r.arg)}` : `#${r.name}`);
@@ -168,19 +172,27 @@ window.__ptBack = () => {
   return true;
 };
 
+// The route of the open reader stays on it; anything else leaves it.
+function isReadingRoute(r) {
+  if (r.name === "read") return !reading.side && !reading.isGift && reading.task.id === r.arg;
+  if (r.name === "side") return reading.side && reading.task.id === r.arg;
+  return r.name === "gift" && reading.isGift;
+}
+
 function render(r) {
-  if (reading && !(r.name === "read" && reading.task.id === r.arg) && !(r.name === "gift" && reading.isGift)) {
+  if (reading && !isReadingRoute(r)) {
     leaveReader(); // partial progress is already saved with every recognized phrase
   }
   // A profile keeps the tab it was opened from (board or account) highlighted.
   const tab = isTab(r) ? r.name : r.name === "profile" ? currentTab() : r.name === "family" || r.name === "member" ? "me" : "tasks";
   for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === tab));
-  const onTasks = r.name === "tasks" || r.name === "read" || r.name === "gift";
-  document.body.classList.toggle("reader-active", r.name === "read" || r.name === "gift");
+  const inReader = r.name === "read" || r.name === "side" || r.name === "gift";
+  const onTasks = r.name === "tasks" || inReader;
+  document.body.classList.toggle("reader-active", inReader);
   document.querySelector(".scores").hidden = !onTasks;
   $("list-view").hidden = r.name !== "tasks";
   $("guest-note").hidden = !!account || !apiUrl;
-  $("reader").hidden = !(r.name === "read" || r.name === "gift");
+  $("reader").hidden = !inReader;
   $("board-view").hidden = r.name !== "board";
   $("me-view").hidden = r.name !== "me";
   $("profile-view").hidden = r.name !== "profile";
@@ -199,7 +211,12 @@ function render(r) {
     const task = r.name === "gift" ? giftForWindow(current.key) : tasks.find((t) => t.id === r.arg);
     const giftReady = r.name !== "gift" || allTasksDone(entry(), tasks.map((t) => t.id));
     if (!task || !giftReady) return replaceRoute({ name: "tasks" });
-    if (!reading || reading.task.id !== task.id) openReader(task, r.name === "gift");
+    if (!reading || reading.side || reading.task.id !== task.id) openReader(task, r.name === "gift");
+  }
+  if (r.name === "side") {
+    const task = side && sideTasks.find((t) => t.id === r.arg);
+    if (!task) return replaceRoute({ name: "tasks" });
+    if (!reading || !reading.side || reading.task.id !== task.id) openReader(task, false, true);
   }
 }
 function currentTab() {
@@ -210,24 +227,35 @@ function currentTab() {
 // ---- window + list --------------------------------------------------------
 // Prayer times are recomputed once a minute (or right at the next prayer),
 // not every second — see needsWindowRefresh().
+// The side window (morning / evening adhkar) changes at Fajr and Maghrib,
+// which are prayer times too, so it is refreshed together with the window.
 function refreshWindow(now = Date.now()) {
-  if (!needsWindowRefresh(current, lastWindowCheck, now)) return;
+  if (!needsWindowRefresh(current, lastWindowCheck, now) && !(side && now >= side.endsAt)) return;
   lastWindowCheck = now;
   const w = currentWindow(PrayerEngine, location_, new Date(now));
-  if (!current || w.key !== current.key) {
-    const hadWindow = !!current;
+  const sw = sideWindow(PrayerEngine, location_, new Date(now));
+  const prayerChanged = !current || w.key !== current.key;
+  const sideChanged = !side || sw.key !== side.key;
+  if (!prayerChanged && !sideChanged) return;
+  // A reading belongs to the window it was opened in: leave it (saving its
+  // partial under that window) before switching to the new one.
+  const leave = !!reading && (reading.side ? sideChanged : prayerChanged);
+  if (leave) leaveReader();
+  if (prayerChanged) {
     current = w;
     tasks = tasksForWindow(w.prayer);
     splitWindowPoints(tasks).forEach((p, i) => (tasks[i].share = p));
-    // A finished window's partial recitations can't be completed any more.
-    clearStalePartials(state, current.key);
-    save();
-    if (hadWindow && reading) {
-      leaveReader();
-      replaceRoute({ name: "tasks" });
-    }
-    renderList();
   }
+  if (sideChanged) {
+    side = sw;
+    sideTasks = tasksForSide(sw.kind);
+    splitWindowPoints(sideTasks, SIDE_POINTS).forEach((p, i) => (sideTasks[i].share = p));
+  }
+  // A finished window's partial recitations can't be completed any more.
+  clearStalePartials(state, [current.key, side.key]);
+  save();
+  if (leave) replaceRoute({ name: "tasks" });
+  renderList();
 }
 
 function entry() {
@@ -248,7 +276,8 @@ const GROUPS = [
   ["quran", "grpQuran"],
 ];
 
-function taskButton(t) {
+// route: "read" for the prayer's tasks, "side" for the morning / evening adhkar.
+function taskButton(t, route = "read") {
   const li = document.createElement("li");
   const b = document.createElement("button");
   b.type = "button";
@@ -270,7 +299,7 @@ function taskButton(t) {
   const pts = document.createElement("span");
   pts.className = "pts";
   b.append(left, pts);
-  b.addEventListener("click", () => go({ name: "read", arg: t.id }));
+  b.addEventListener("click", () => go({ name: route, arg: t.id }));
   li.appendChild(b);
   return li;
 }
@@ -287,11 +316,40 @@ function renderList() {
     h.textContent = G[key];
     const ul = document.createElement("ul");
     ul.className = "tasks";
-    ul.append(...list.map(taskButton));
+    ul.append(...list.map((t) => taskButton(t)));
     box.append(h, ul);
   }
+  renderSide();
   renderJourney();
   tick();
+}
+
+// The side task card: the morning or evening adhkar, a bonus set beside the
+// prayer's tasks (its points are filled in by tickSide).
+function renderSide() {
+  $("side-card").hidden = !side;
+  if (!side) return;
+  $("side-title").textContent = side.kind === "Morning" ? G.sideMorning : G.sideEvening;
+  $("side-tasks").replaceChildren(...sideTasks.map((t) => taskButton(t, "side")));
+}
+
+// Every second, with tick(): the side set is open for its whole window and
+// its points don't fall with time.
+function tickSide(now) {
+  if (!side) return;
+  const e = state.windows[side.key];
+  let done = 0;
+  for (const b of $("side-tasks").querySelectorAll("button[data-id]")) {
+    const t = sideTasks.find((x) => x.id === b.dataset.id);
+    const rec = e && e.tasks[t.id];
+    const isDone = !!(rec && rec.doneAt);
+    if (isDone) done++;
+    b.classList.toggle("done", isDone);
+    b.querySelector(".pts").textContent = isDone ? `✓ +${rec.points}` : G.points(sidePoints(t.share, side.win, now));
+  }
+  $("side-count").textContent = G.doneCount(done, sideTasks.length);
+  $("side-time").textContent = G.sideEnds(fmtLeft(side.win.closesAt - now), fmtClock(side.win.closesAt), SIDE_POINTS);
+  $("side-card").classList.toggle("all-done", done === sideTasks.length);
 }
 
 // The day's five windows and this month's calendar. Encouraging only: a past
@@ -392,15 +450,19 @@ function tick() {
   // period's top player (the board's winners), so the button stays hidden.
   $("gift").hidden = true;
 
+  tickSide(now);
+
+  // The day / month totals include the side adhkar (their keys carry the date too).
   $("pts-window").textContent = windowPoints(e);
   $("pts-day").textContent = pointsWithPrefix(state, current.day);
   $("pts-month").textContent = pointsWithPrefix(state, current.day.slice(0, 7));
 
   if (reading && reading.mode === "play") $("reader-points").textContent = G.points(readerPoints());
-  if (reading && listening && now >= win.closesAt) {
+  if (reading && listening && now >= reading.at.win.closesAt) {
+    const wasSide = reading.side;
     leaveReader();
     replaceRoute({ name: "tasks" });
-    showNotice(G.windowClosed);
+    showNotice(wasSide ? G.sideClosed : G.windowClosed);
   }
 }
 
@@ -487,21 +549,28 @@ function wordSpans(words, firstToken) {
   return out;
 }
 
-function readerMode(isGift, rec, now) {
+function readerMode(isGift, rec, now, win) {
   if (rec && rec.doneAt) return "done";
   if (isGift) return "play";
-  if (now < current.win.opensAt) return "practice";
-  if (now >= current.win.closesAt) return "missed";
+  if (now < win.opensAt) return "practice";
+  if (now >= win.closesAt) return "missed";
   return "play";
 }
 
-function openReader(task, isGift) {
-  const e = entry();
+// The reading's record in its own window (prayer or side).
+function readingRecord() {
+  const e = state.windows[reading.at.key];
+  return reading.isGift ? e && e.gift : e && e.tasks[reading.task.id];
+}
+
+function openReader(task, isGift, isSide = false) {
+  const at = isSide ? side : current;
+  const e = state.windows[at.key];
   const rec = isGift ? e && e.gift : e && e.tasks[task.id];
-  const mode = readerMode(isGift, rec, Date.now());
-  reading = { task, isGift, mode };
+  const mode = readerMode(isGift, rec, Date.now(), at.win);
+  reading = { task, isGift, side: isSide, at, mode };
   const play = mode === "play";
-  finals = play ? partialHeard(state, current.key, task.id, isGift) : [];
+  finals = play ? partialHeard(state, at.key, task.id, isGift) : [];
   chunks = chunkText(task.text);
   shownChunk = -1;
   showNotice("");
@@ -515,11 +584,11 @@ function openReader(task, isGift) {
 
   const modeText =
     mode === "practice"
-      ? G.practice(fmtClock(current.win.opensAt))
+      ? G.practice(fmtClock(at.win.opensAt))
       : mode === "missed"
         ? G.missedMode
         : mode === "done"
-          ? G.doneMode(rec.points)
+          ? (isSide ? G.sideDoneMode : G.doneMode)(rec.points)
           : finals.length
             ? G.resumed
             : "";
@@ -542,17 +611,18 @@ function leaveReader() {
     Platform.speech.stop();
   }
   if (reading && reading.mode === "play" && finals.length) {
-    savePartial(state, current.key, reading.task.id, reading.isGift, finals);
+    savePartial(state, reading.at.key, reading.task.id, reading.isGift, finals);
     save();
   }
   reading = null;
 }
 
 function readerPoints() {
-  const { task, isGift } = reading;
+  const { task, isGift, at } = reading;
   if (isGift) return GIFT_POINTS;
-  const rec = entry() && entry().tasks[task.id];
-  return taskPoints(task.share, current.win, rec && rec.startedAt ? rec.startedAt : Date.now());
+  const rec = readingRecord();
+  const startedAt = rec && rec.startedAt ? rec.startedAt : Date.now();
+  return reading.side ? sidePoints(task.share, at.win, startedAt) : taskPoints(task.share, at.win, startedAt);
 }
 
 function showChunk(pos) {
@@ -621,7 +691,7 @@ function updateReader({ final = false } = {}) {
   const { task, isGift } = reading;
   const r = matchTask(finals.join(" "), task, { final });
   // The task starts at its first recognized word — this fixes its points.
-  if (noteRecognition(state, current.key, task.id, isGift, r, Date.now())) save();
+  if (noteRecognition(state, reading.at.key, task.id, isGift, r, Date.now())) save();
   const tokens = r.matched.length;
   showChunk(r.done ? tokens - 1 : Math.round(r.progress * tokens));
   document.querySelectorAll("#text .w, #chunk .w").forEach((s) => {
@@ -655,7 +725,7 @@ async function startListening() {
       onFinal: (text) => {
         if (!reading) return;
         finals.push(text);
-        savePartial(state, current.key, reading.task.id, reading.isGift, finals);
+        savePartial(state, reading.at.key, reading.task.id, reading.isGift, finals);
         save();
         $("heard").textContent = finals.join(" ");
         updateReader();
@@ -700,25 +770,30 @@ async function finishReading() {
     setMic(false);
     Platform.speech.stop();
   }
-  const { task, isGift } = reading;
+  const { task, isGift, at, side: isSide } = reading;
   const now = Date.now();
   const points = readerPoints();
-  if (now >= current.win.closesAt) {
+  if (now >= at.win.closesAt) {
     reading = null;
     replaceRoute({ name: "tasks" });
-    showNotice(G.windowClosed);
+    showNotice(isSide ? G.sideClosed : G.windowClosed);
     return;
   }
-  const started = isGift ? entry() && entry().gift && entry().gift.startedAt : entry() && entry().tasks[task.id] && entry().tasks[task.id].startedAt;
-  const rec = isGift ? markGiftDone(state, current.key, task.id, points, now) : markTaskDone(state, current.key, task.id, points, now); // once: a done task is never re-banked
+  const before = readingRecord();
+  const started = before && before.startedAt;
+  const rec = isGift ? markGiftDone(state, at.key, task.id, points, now) : markTaskDone(state, at.key, task.id, points, now); // once: a done task is never re-banked
   if (!account) rec.local = true; // a guest's points stay on this device (never sent, even after signing in)
   if (!isGift && started) recordDuration(state, durationKey(task.id, task.repeat), now - started);
   await save();
   syncNow();
-  // A finished window no longer needs its "30 min left" alert.
-  const e = entry();
+  const e = state.windows[at.key];
   let windowComplete = false;
-  if (!isGift && !e.complete && allTasksDone(e, tasks.map((t) => t.id))) {
+  let sideComplete = false;
+  if (isSide) {
+    // The side set has no alerts and no journey step: just say it is complete.
+    sideComplete = allTasksDone(e, sideTasks.map((t) => t.id));
+  } else if (!isGift && !e.complete && allTasksDone(e, tasks.map((t) => t.id))) {
+    // A finished window no longer needs its "30 min left" alert.
     e.complete = true;
     windowComplete = true;
     await save();
@@ -726,7 +801,12 @@ async function finishReading() {
   }
   reading = null;
   goBack({ name: "tasks" });
-  showNotice(isGift ? G.giftDone(points) : G.taskDone(gameTaskTitle(lang, task), points), { autoHide: true });
+  const sideTitle = isSide && (at.kind === "Morning" ? G.sideMorning : G.sideEvening);
+  showNotice(
+    sideComplete ? G.sideDone(sideTitle) : isGift ? G.giftDone(points) : G.taskDone(gameTaskTitle(lang, task), points),
+    { autoHide: true }
+  );
+  if (sideComplete && soundOn) softChime();
   if (windowComplete) celebrate(current.prayer);
 }
 

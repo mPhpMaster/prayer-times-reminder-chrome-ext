@@ -5,14 +5,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="stylesheet" href="theme.css" />
-    <link rel="stylesheet" href="game.css?v=231" />
+    <link rel="stylesheet" href="game.css?v=232" />
     <title data-g="pageTitle">أذكار الصلاة</title>
 </head>
 
 <!-- Game screen (docs/GAME-DESIGN-2026-09-25.md): the current prayer window,
      its tasks read aloud segment by segment, points, the gift, the day's
      journey, and the social tabs. Screens are hash routes (#board, #me,
-     #read/<task>, #gift, #profile/<name>) so Android back steps through them.
+     #read/<task>, #side/<task>, #gift, #profile/<name>) so Android back steps through them.
      UI strings come from game-i18n.js (data-g = key); the recitation texts stay
      Arabic (lang="ar") in every language. The old app lives behind "الأدوات". -->
 <body>
@@ -76,6 +76,18 @@
             <p class="done-count" id="done-count"></p>
             <div id="task-groups"></div>
             <button type="button" class="gift" id="gift" data-g="gift" hidden>🎁 افتح الهدية</button>
+
+            <!-- Side task: the morning adhkar (Fajr until Maghrib) or the evening
+                 adhkar (Maghrib until the next Fajr), bonus points, read by voice
+                 like the prayer's tasks (#side/<task>). -->
+            <section class="side-card" id="side-card" hidden>
+                <div class="side-head">
+                    <h2 id="side-title"></h2>
+                    <span class="muted" id="side-count"></span>
+                </div>
+                <p class="side-time" id="side-time"></p>
+                <ul class="tasks" id="side-tasks"></ul>
+            </section>
         </section>
 
         <!-- Reader. mode: play (points) | practice (not open yet) | missed | done -->

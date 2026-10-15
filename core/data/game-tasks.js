@@ -156,6 +156,126 @@ function tasksForWindow(prayer) {
   });
 }
 
+// ---- Side tasks: the morning and evening adhkar -----------------------------------
+// A daily bonus set beside the prayer windows: the morning adhkar from Fajr
+// until Maghrib, the evening adhkar from Maghrib until the next Fajr
+// (sideWindow in game-windows.js, SIDE_POINTS in game-score.js). Read by voice
+// like any task. Quran is never retyped here: ayat al-Kursi and the
+// mu'awwidhat are the reviewed entries above. The new adhkar below are
+// "pending" until the owner reviews their wording and sources (added
+// 2026-10-15; nothing pending ships in a public release). Only well
+// authenticated morning / evening adhkar; disputed ones (رضيت بالله ربًا،
+// حسبي الله سبعًا) stay in content/game-catalog.json.
+const SIDE_ADHKAR = {
+  "asbahna-wa-asbaha-al-mulk": {
+    kind: "dhikr",
+    title: "أصبحنا وأصبح الملك لله",
+    text:
+      "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، " +
+      "لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، " +
+      "رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ، " +
+      "رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ",
+    repeat: 1,
+    source: "مسلم",
+  },
+  "amsayna-wa-amsa-al-mulk": {
+    kind: "dhikr",
+    title: "أمسينا وأمسى الملك لله",
+    text:
+      "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، " +
+      "لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، " +
+      "رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا، " +
+      "رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ",
+    repeat: 1,
+    source: "مسلم",
+  },
+  "allahumma-bika-asbahna": {
+    kind: "dhikr",
+    title: "اللهم بك أصبحنا",
+    text: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ",
+    repeat: 1,
+    source: "أبو داود والترمذي",
+  },
+  "allahumma-bika-amsayna": {
+    kind: "dhikr",
+    title: "اللهم بك أمسينا",
+    text: "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ",
+    repeat: 1,
+    source: "أبو داود والترمذي",
+  },
+  "bismillah-la-yadurru": {
+    kind: "dhikr",
+    title: "بسم الله الذي لا يضر مع اسمه شيء",
+    text: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيعُ الْعَلِيمُ",
+    repeat: 3,
+    source: "أبو داود والترمذي",
+  },
+  "asaluka-al-afiya": {
+    kind: "dhikr",
+    title: "سؤال العفو والعافية",
+    text:
+      "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، " +
+      "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، " +
+      "اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي، " +
+      "اللَّهُمَّ احْفَظْنِي مِنْ بَيْنِ يَدَيَّ، وَمِنْ خَلْفِي، وَعَنْ يَمِينِي، وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، " +
+      "وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي",
+    repeat: 1,
+    source: "أبو داود وابن ماجه",
+  },
+  "ya-hayyu-ya-qayyum": {
+    kind: "dhikr",
+    title: "يا حي يا قيوم",
+    text: "يَا حَيُّ يَا قَيُّومُ، بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ",
+    repeat: 1,
+    source: "النسائي في الكبرى والحاكم",
+  },
+  "subhanallah-adada-khalqih": {
+    kind: "dhikr",
+    title: "سبحان الله وبحمده عدد خلقه",
+    text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ",
+    repeat: 3,
+    source: "مسلم",
+  },
+  "kalimat-allah-at-tammat": {
+    kind: "dhikr",
+    title: "أعوذ بكلمات الله التامات",
+    text: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+    repeat: 3,
+    source: "مسلم",
+  },
+  "subhanallah-wabihamdih-100": {
+    kind: "dhikr",
+    title: "سبحان الله وبحمده",
+    text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+    repeat: 100,
+    source: "مسلم",
+  },
+};
+for (const [id, t] of Object.entries(SIDE_ADHKAR)) Object.assign(t, { id, review: "pending" });
+
+// The order of the usual morning / evening adhkar books. Ayat al-Kursi,
+// sayyid al-istighfar and the mu'awwidhat (×3) come from the reviewed catalog.
+const SIDE_TASKS = {
+  Morning: [
+    "ayat-al-kursi", ...MUAWWIDHAT, "asbahna-wa-asbaha-al-mulk", "allahumma-bika-asbahna", "sayyid-al-istighfar",
+    "asaluka-al-afiya", "bismillah-la-yadurru", "ya-hayyu-ya-qayyum", "subhanallah-adada-khalqih", "subhanallah-wabihamdih-100",
+  ],
+  Evening: [
+    "ayat-al-kursi", ...MUAWWIDHAT, "amsayna-wa-amsa-al-mulk", "allahumma-bika-amsayna", "sayyid-al-istighfar",
+    "asaluka-al-afiya", "bismillah-la-yadurru", "ya-hayyu-ya-qayyum", "kalimat-allah-at-tammat", "subhanallah-wabihamdih-100",
+  ],
+};
+const SIDE_REPEAT = { "al-ikhlas": 3, "al-falaq": 3, "an-nas": 3 };
+
+// Like tasksForWindow; `kind` is "Morning" or "Evening" (SIDE_KINDS).
+function tasksForSide(kind) {
+  return (SIDE_TASKS[kind] || []).map((id) => {
+    const t = GAME_TASKS[id] || SIDE_ADHKAR[id];
+    const repeat = SIDE_REPEAT[id] || t.repeat;
+    return { ...t, repeat, weight: tokenize(t.text).length * repeat };
+  });
+}
+
 // Gifts: a ma'thur du'a / ayah opened after finishing a window, read aloud for
 // bonus points. The same gift for everyone in the same window (picked from the
 // window key), so friends open the same one.
