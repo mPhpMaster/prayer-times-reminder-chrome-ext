@@ -22,8 +22,12 @@ class GameUser extends Model
 
     protected $hidden = ['password', 'google_sub', 'apple_sub', 'apple_refresh_token', 'email'];
 
-    /** The game options kept with the account (all on/off). newTab: the Chrome extension's new-tab page. */
-    public const SETTINGS = ['alerts', 'journey', 'sound', 'newTab'];
+    /**
+     * The game options kept with the account (all on/off). newTab: the Chrome
+     * extension's new-tab page. disputed: show the optional, unscored adhkar
+     * whose authentication is disputed (off unless the player turns it on).
+     */
+    public const SETTINGS = ['alerts', 'journey', 'sound', 'newTab', 'disputed'];
 
     protected function casts(): array
     {

@@ -36,6 +36,7 @@ Prayer times are calculated offline on your device with [adhan-js](https://githu
 - **Website** — the whole app in your browser: https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/app/
 - **Android** — Google Play: https://play.google.com/store/apps/details?id=com.mphpmaster.prayer
 - **Windows** — Microsoft Store: https://apps.microsoft.com/detail/9PFTWDWLNL7C
+- **iPhone / iPad** — not on the App Store yet; free unsigned builds for sideloading: [targets/mobile/IOS.md](targets/mobile/IOS.md)
 - **Discord** — a Vencord plugin; install steps: [targets/vencord/README.md](targets/vencord/README.md)
 
 ## Install
