@@ -161,9 +161,8 @@ function tasksForWindow(prayer) {
 // until Maghrib, the evening adhkar from Maghrib until the next Fajr
 // (sideWindow in game-windows.js, SIDE_POINTS in game-score.js). Read by voice
 // like any task. Quran is never retyped here: ayat al-Kursi and the
-// mu'awwidhat are the reviewed entries above. The new adhkar below are
-// "pending" until the owner reviews their wording and sources (added
-// 2026-10-15; nothing pending ships in a public release). Only well
+// mu'awwidhat are the reviewed entries above. The adhkar below were added
+// on 2026-10-15 and reviewed by the owner the same day. Only well
 // authenticated morning / evening adhkar; disputed ones (رضيت بالله ربًا،
 // حسبي الله سبعًا) stay in content/game-catalog.json.
 const SIDE_ADHKAR = {
@@ -251,7 +250,7 @@ const SIDE_ADHKAR = {
     source: "مسلم",
   },
 };
-for (const [id, t] of Object.entries(SIDE_ADHKAR)) Object.assign(t, { id, review: "pending" });
+for (const [id, t] of Object.entries(SIDE_ADHKAR)) Object.assign(t, { id, review: "reviewed" });
 
 // The order of the usual morning / evening adhkar books. Ayat al-Kursi,
 // sayyid al-istighfar and the mu'awwidhat (×3) come from the reviewed catalog.

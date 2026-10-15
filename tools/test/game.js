@@ -546,7 +546,7 @@ for (const l of I.SUPPORTED_LANGS) {
     /النُّشُورُ$/.test(SD.SIDE_ADHKAR["allahumma-bika-asbahna"].text) && /الْمَصِيرُ$/.test(SD.SIDE_ADHKAR["allahumma-bika-amsayna"].text) &&
     morning.includes("allahumma-bika-asbahna") && evening.includes("allahumma-bika-amsayna"));
   const fresh = Object.values(SD.SIDE_ADHKAR);
-  eq("new side adhkar await the owner's review", fresh.filter((t) => t.review !== "pending").map((t) => t.id), []);
+  eq("side adhkar are reviewed by the owner", fresh.filter((t) => t.review !== "reviewed").map((t) => t.id), []);
   eq("new side adhkar: title, Arabic text and source", fresh.filter((t) => !(t.id && t.title && t.source && tokenize(t.text).length && /[ً-ْ]/.test(t.text) && !/[A-Za-z]/.test(t.text))).map((t) => t.id), []);
   eq("no Quran retyped for the side tasks (only reviewed entries)", fresh.filter((t) => t.kind !== "dhikr").map((t) => t.id), []);
   eq("new ids don't shadow the live catalog", fresh.filter((t) => C.GAME_TASKS[t.id]).map((t) => t.id), []);
