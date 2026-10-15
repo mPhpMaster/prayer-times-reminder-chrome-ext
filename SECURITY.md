@@ -23,7 +23,8 @@ If you discover a security vulnerability, please report it privately.
 Please send an email to **mphpmaster@gmail.com** with the following details:
 
 - A clear description of the vulnerability.
-- The platform(s) affected (Chrome Extension, Windows Desktop, Android).
+- The platform(s) affected (Chrome Extension, Windows Desktop, Android,
+  iPhone / iPad, the website, or the game server).
 - The version number of the application.
 - Step-by-step instructions to reproduce the issue.
 - Any proof-of-concept, screenshots, or screen recordings that could help
@@ -39,7 +40,9 @@ minimization in mind.
 
 ### General
 
-- **No User Accounts:** The extension does not require user registration.
+- **No Required Accounts:** Prayer times, alerts and every prayer setting work
+  without registration. Only the optional dhikr game's leaderboard and follows
+  use an account (see below).
 - **Local Storage:** All user settings (location, preferences) are stored
   locally on your device using the platform's secure storage mechanism. The
   developer has no access to this data.
@@ -48,6 +51,21 @@ minimization in mind.
 - **Third-Party APIs:** Network requests are made only to the public APIs
   documented in the [Privacy Policy](PRIVACY.md) to fetch prayer times and city
   data. No personal identifiers are sent with these requests.
+
+### Optional Game Account (server)
+
+- **Tokens:** each signed-in device gets a bearer token shown once; the server
+  keeps only its SHA-256. Passwords are stored as bcrypt hashes; reset and
+  email-confirmation codes expire after 15 minutes and are stored hashed.
+- **Google and Apple sign-in:** ID tokens are verified on the server (Google's
+  token check; Apple's RS256 signature against Apple's JWKS, issuer, audience,
+  expiry and nonce). Apple's Return URL only redirects to a fixed allow-list of
+  app addresses chosen by the `state` prefix. Apple's refresh token, if kept, is
+  encrypted with the app key and revoked with Apple on unlink or account
+  deletion. An account can't remove its last sign-in method.
+- **Play Integrity (Android):** each check uses a one-time server nonce, so a
+  captured token can't be replayed. The result only adds a "verified" mark; it
+  never blocks a player.
 
 ### Browser Extension (Chrome)
 

@@ -1,9 +1,9 @@
 # Terms & Conditions — Prayer Times Reminder
 
-_Last updated: 29 September 2026_
+_Last updated: 15 October 2026_
 
 These terms apply to the Prayer Times Reminder Chrome extension, Android app,
-and Windows app. By using the app, you agree to use it lawfully and responsibly.
+Windows app, website, and iPhone / iPad app (not on the App Store yet). By using the app, you agree to use it lawfully and responsibly.
 
 ## Prayer times
 
@@ -17,7 +17,8 @@ authoritative local timetable.
 Prayer times, settings, and reminders do not require an account. The optional
 dhikr game can be played locally. An account is needed only for server features
 such as leaderboards and following. You may register with email/password or
-Google and choose a public username. Your username, display name and monthly
+Google (or Apple, once Sign in with Apple is switched on) and choose a public
+username, and link several sign-in methods to the same account. Your username, display name and monthly
 points are visible to other signed-in players unless you hide your progress.
 
 You are responsible for your account access and for choosing an appropriate
@@ -25,15 +26,18 @@ public username. Do not impersonate others, disrupt the service, automate abuse,
 or submit unlawful content. We may restrict accounts used to abuse the service.
 
 Game points and rankings are participation features and have no monetary value.
-They may change when scoring rules or verified tasks change.
+They may change when scoring rules or verified tasks change. The optional
+adhkar of disputed authenticity earn no points. On Android, the "verified" mark
+only reflects a recent Google Play Integrity check of the app; it is not an
+endorsement of the player.
 
 ## Voice recognition and third-party services
 
 Voice missions use the speech-recognition service provided by the platform (in
 Chrome, Google's speech service through the browser; on Android, the phone's
-speech recognition). Recognition may be inaccurate, so a correct reading is
-occasionally not counted. Location-name lookup, city lists, Google sign-in,
-and fallback prayer-time requests depend on the third-party services identified
+speech recognition; on iPhone / iPad, Apple's speech recognition). Recognition may be inaccurate, so a correct reading is
+occasionally not counted. Location-name lookup, city lists, Google and Apple sign-in,
+Google Play Integrity, and fallback prayer-time requests depend on the third-party services identified
 in [the privacy policy](PRIVACY.md) and are also subject to their terms.
 
 ## Dedication names

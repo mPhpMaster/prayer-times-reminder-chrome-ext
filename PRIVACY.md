@@ -1,6 +1,6 @@
 # Privacy Policy — Prayer Times Reminder
 
-_Last updated: 8 October 2026_
+_Last updated: 15 October 2026_
 
 **Prayer Times Reminder** ("the extension") is designed to respect your privacy.
 This policy explains what data the extension uses and how.
@@ -81,17 +81,35 @@ entirely in the extension, and your progress stays on your device.
   hash of your password (never the password), Google's account ID if you use
   Google (not your Google name or photo), your public username and optional
   display name, the dhikr tasks you finish (task, points, start and finish
-  times), the players you follow, whether you hid your progress, and for each
-  signed-in device a hash of its access token and when it was last used. If you
-  ask for a password reset, a code valid for 15 minutes is emailed to you and
-  only its hash is stored.
+  times — including the morning and evening adhkar sets), your game
+  preferences (for example game alerts, the new tab, and whether the adhkar of
+  disputed authenticity are shown), the players you follow, whether you hid
+  your progress, and for each signed-in device a hash of its access token and
+  when it was last used. If you ask for a password reset, a code valid for 15
+  minutes is emailed to you and only its hash is stored. The optional adhkar of
+  disputed authenticity give no points and are never sent to the server.
+- **Sign in with Apple and linked sign-in methods.** Under **My account ›
+  Sign-in methods** you can link Google (and Apple) to the same account, or
+  unlink one as long as another way to sign in remains. Sign in with Apple is
+  built in but stays switched off until the developer configures it on the
+  server. When it is on, the extension opens Apple's sign-in page in Chrome's
+  own sign-in window (`identity` permission); Apple sends its answer to the
+  game server, which passes it straight back to the extension and then checks
+  Apple's signed token. The server stores your Apple user ID and, only if you
+  share it, the email Apple gives (it may be a private
+  `@privaterelay.appleid.com` relay address if you choose **Hide My Email**) —
+  never your Apple ID password, and not your name. It may also keep the
+  refresh token Apple issues for the app, **encrypted**, solely so it can
+  revoke the app's access with Apple when you unlink Apple or delete your
+  account; it is not used for anything else.
 - **What other players see.** Your username, display name and monthly points
   appear on the leaderboard and your profile for other signed-in players,
   unless you turn on **Hide my progress**. Your email is never shown.
 - Your location, city and prayer times are never sent to the game server. You
   can sign out (which revokes that device's token) or delete the account at any
   time from **My account › Delete my account**; this removes your account,
-  points, follows and sign-in links from the server at once. Without the
+  points, follows and sign-in links (Google and Apple, revoking Apple's token
+  with Apple) from the server at once. Without the
   extension, see [how to request deletion](https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/delete-account.html).
 
 ## Dedication names on the About page
@@ -115,7 +133,8 @@ loading it sends no personal data.
 ## Email confirmation and admins
 
 - To confirm your email, the server emails you a 6-digit code (valid 15
-  minutes; only its hash is stored). Google sign-in confirms it automatically.
+  minutes; only its hash is stored). Google or Apple sign-in confirms it
+  automatically.
 - The app's **admins** (accounts whose confirmed email the owner has made an
   admin) can review name requests, manage the About page list, see account
   usernames, emails and points, and reset or delete accounts (for example
@@ -163,6 +182,28 @@ The injected script:
 Dhikr reminders cannot run on restricted Chrome pages (e.g. `chrome://` or
 `chrome-extension://` URLs).
 
+## Companion apps (Android, iPhone / iPad, Windows, website)
+
+The same app also runs on Android, Windows, the website, and (not yet on the
+App Store) iPhone / iPad. Their full details are in the
+[web version of this policy](https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/privacy.html);
+in short, beyond what is described above:
+
+- **Android — Google Play Integrity.** If you are signed in to the game, the
+  Android app asks Google Play, after sign-in and about once a day, to confirm
+  that it is the genuine app from Google Play on a genuine device. The game
+  server has Google decode that answer and keeps only the result on your
+  account (passed or failed, a short reason, and when it was checked). A pass
+  in the last 30 days shows a ✓ "verified" mark next to your name on the
+  leaderboard; admins can see failed checks. Nobody is blocked, and the
+  extension, website and Windows app never run this check.
+- **iPhone / iPad — voice.** The game uses Apple's speech recognition
+  (`SFSpeechRecognizer`) after asking for microphone and speech-recognition
+  permission. When your iPhone supports it for Arabic, recognition runs on the
+  device; otherwise Apple processes the audio on its servers under
+  [Apple's privacy policy](https://www.apple.com/legal/privacy/). The app keeps
+  only the recognized text, on the device, as in the extension.
+
 ## What the extension does NOT do
 
 - It does **not** collect, sell, or share your personal data.
@@ -182,7 +223,7 @@ Dhikr reminders cannot run on restricted Chrome pages (e.g. `chrome://` or
 | `geolocation` | Optional; only used if you click **Use my location**. |
 | `scripting` | Inject the lock overlay and dhikr card scripts into your open tabs. |
 | `offscreen` | Play the adhan or chime packaged with the extension; Chrome's background worker cannot play audio directly. |
-| `identity` | Optional **Continue with Google** in the dhikr game: opens Chrome's Google sign-in window. Not used for anything else; prayer features never need it. |
+| `identity` | Optional **Continue with Google** (and, once switched on, **Sign in with Apple**) in the dhikr game: opens Chrome's own sign-in window. Not used for anything else; prayer features never need it. |
 | `<all_urls>` (optional) | Inject the tab-lock overlay and the dhikr card on your open website tabs. Requested at runtime when you first enable tab lock or dhikr — **not** granted at install, and you can decline. |
 
 The extension declares **no** host permissions for the AlAdhan, CountriesNow, or

@@ -1,7 +1,8 @@
 # Architecture — one brain, three shells
 
 This project ships **one product on three platforms** (Chrome extension, Tauri
-desktop, Capacitor Android) from a **single shared `core/`** plus a **thin,
+desktop, Capacitor Android — and, from the same Capacitor shell, iPhone / iPad;
+the website and a Discord plugin reuse the core too) from a **single shared `core/`** plus a **thin,
 platform-owned shell per target**. It is split *by layer*, not *by platform*:
 the expensive-to-maintain UI and prayer logic live once; the cheap,
 genuinely-different platform glue lives per target.
@@ -24,7 +25,9 @@ core/  ────────────────────►  the shar
 targets/<t>/ ──────────────►  the thin shell (owns the platform layer)
   extension/  manifest.json · background.js (service worker) · adapter.js
   desktop/    src-tauri/ (Rust) · web/ (adapter.js, scheduler/lock/tasbih html)
-  mobile/     android/ (Java native) · web/ (adapter.js, index/lock html)
+  mobile/     android/ (Java native) · ios/ (Swift, same Capacitor shell; see IOS.md) · web/ (adapter.js, index/lock html)
+  web/        the website + web app (adapter.js, landing page; GitHub Pages)
+  vencord/    Discord userplugin (generated core module)
 
 tools/sync-core.mjs ───────►  the "build": flat-assembles core/ + targets/<t>/
                               into the target's gitignored web-asset dir.

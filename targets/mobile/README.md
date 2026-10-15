@@ -236,3 +236,30 @@ the server verifies the ID token's audience. For it to work, the Google Cloud
 project needs Android OAuth clients for `com.mphpmaster.prayer` with the SHA-1
 of the Play app-signing key and the upload key (and `com.mphpmaster.prayer.debug`
 with the debug key for debug builds).
+
+## Sign in with Apple (Android)
+
+No native code: Apple's web flow runs inside the app's WebView
+(`appleid.apple.com` is in `capacitor.config.json` `allowNavigation`). Apple
+posts its answer to the game server's `/v1/auth/apple/callback`, which forwards
+it to `https://localhost/apple-callback.html`; the game picks it up when it
+reopens (`AppleAuthFlow.pending`, `core/logic/apple-auth.js`). The button only
+shows once the server's `/v1/auth/config` returns `apple` (off until configured
+— see `docs/APPLE-SIGNIN.md`). The same "Sign-in methods" section in
+"My account" links / unlinks Google and Apple. Changing `capacitor.config.json`
+needs `npx cap sync` and a new build.
+
+## Play Integrity (`PlayIntegrity`, Java)
+
+`PlayIntegrityPlugin` (`com.google.android.play:integrity`) proves to the game
+server that it is the Play build on a genuine device. After sign-in and about
+once a day, the game (`core/logic/game-sync.js`) gets a one-time nonce and the
+Cloud project number from `GET /v1/integrity/challenge`, asks Google through
+`Platform.integrity` (`web/adapter.js` → `PlayIntegrity.token({ requestHash, projectNumber })`)
+for a **standard** Integrity token bound to that nonce, and posts it to
+`POST /v1/integrity`. The server has Google decode it and keeps
+the verdict on the player; the app never sees or trusts the result itself. A
+pass in the last 30 days shows the ✓ "verified" mark next to the name on the
+leaderboard; nobody is blocked. Off (the server answers `503 integrity-off`)
+until `PLAY_INTEGRITY_CREDENTIALS` and `PLAY_INTEGRITY_PROJECT_NUMBER` are set
+in the backend `.env`.

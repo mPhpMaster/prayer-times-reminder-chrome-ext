@@ -112,6 +112,8 @@ Free, with no ads or tracking. To help keep the project running: [PayPal](https:
 
 ---
 
+<div dir="rtl">
+
 ## العربية
 
 ### ما الذي يفعله؟
@@ -122,38 +124,41 @@ Free, with no ads or tracking. To help keep the project running: [PayPal](https:
 - عند كل صلاة (الفجر، الظهر/الجمعة، العصر، المغرب، العشاء) يُظهر تنبيهًا، ويُقفل ديسكورد —
   إن فعّلت ذلك — بشاشة القفل نفسها المستخدمة في بقية التطبيقات للمدة التي تحددها.
 - تذكير دوري اختياري بالذكر (من الأذكار المعتمدة في التطبيق فقط).
-- الأمر `/prayertimes` — مواقيت اليوم والصلاة القادمة (يظهر لك وحدك).
-- الأمر `/prayertimes-test` — يُظهر تنبيه الصلاة وقفلًا **لدقيقة واحدة** الآن (مع زر فتح)،
+- الأمر <span dir="ltr">`/prayertimes`</span> — مواقيت اليوم والصلاة القادمة (يظهر لك وحدك).
+- الأمر <span dir="ltr">`/prayertimes-test`</span> — يُظهر تنبيه الصلاة وقفلًا **لدقيقة واحدة** الآن (مع زر فتح)،
   لتجربته دون انتظار وقت الصلاة.
 
 ### التثبيت السهل (موصى به)
 
-سكربت واحد يتولّى كل شيء: يثبّت ما ينقصك (Git و Node.js 22 أو أحدث و pnpm)، ويُنزّل Vencord
+سكربت واحد يتولّى كل شيء: يثبّت ما ينقصك من Git و Node.js (الإصدار 22 أو أحدث) و pnpm، ويُنزّل Vencord
 ويبنيه إن لم يكن عندك، ويضيف الإضافة ويفعّلها ويعيد تشغيل ديسكورد. وشغّله لاحقًا مرة أخرى
 **لتحديث** الإضافة أو **حذفها** (سيسألك).
 
-- **ويندوز**: انقر نقرًا مزدوجًا على `targets/vencord/install.cmd`. وبدون هذا المستودع: افتح
-  PowerShell والصق:
+**على ويندوز**: انقر نقرًا مزدوجًا على `targets/vencord/install.cmd`. وبدون هذا المستودع: افتح
+PowerShell والصق:
 
-  ```powershell
-  iwr -useb https://raw.githubusercontent.com/mPhpMaster/prayer-times-reminder-chrome-ext/main/targets/vencord/install.ps1 -OutFile $env:TEMP\ptb-install.ps1; powershell -ExecutionPolicy Bypass -File $env:TEMP\ptb-install.ps1
-  ```
+```powershell
+iwr -useb https://raw.githubusercontent.com/mPhpMaster/prayer-times-reminder-chrome-ext/main/targets/vencord/install.ps1 -OutFile $env:TEMP\ptb-install.ps1; powershell -ExecutionPolicy Bypass -File $env:TEMP\ptb-install.ps1
+```
 
-- **ماك / لينكس**: شغّل `bash targets/vencord/install.sh`، أو بدون هذا المستودع:
+**على ماك أو لينكس**: شغّل `bash targets/vencord/install.sh`، أو بدون هذا المستودع:
 
-  ```sh
-  curl -fsSL https://raw.githubusercontent.com/mPhpMaster/prayer-times-reminder-chrome-ext/main/targets/vencord/install.sh | bash
-  ```
+```sh
+curl -fsSL https://raw.githubusercontent.com/mPhpMaster/prayer-times-reminder-chrome-ext/main/targets/vencord/install.sh | bash
+```
 
 إذا كان Vencord جديدًا على جهازك فقد يسألك مثبّته أي ديسكورد يعدّل: اختر ديسكورد الخاص بك
-(غالبًا **Stable**). الخيارات: `--update` و `--remove` و `--status` و `--yes` (بلا أسئلة)
-و `--no-restart` (يترك ديسكورد مفتوحًا) و `--vencord-dir <مجلد>`.
+(غالبًا **Stable**).
+
+الخيارات: <span dir="ltr">`--update`</span> و <span dir="ltr">`--remove`</span> و <span dir="ltr">`--status`</span>
+و <span dir="ltr">`--yes`</span> (بلا أسئلة) و <span dir="ltr">`--no-restart`</span> (يترك ديسكورد مفتوحًا)
+و <span dir="ltr">`--vencord-dir <مجلد>`</span>.
 
 ### التثبيت اليدوي
 
 لا يحمّل Vencord الإضافات الشخصية إلا في نسخة **مبنية من شيفرته المصدرية**، لذلك تُضاف الإضافة
 إلى تلك الشيفرة ثم يُبنى Vencord مرة واحدة. تحتاج إلى [Git](https://git-scm.com/) و
-[Node.js](https://nodejs.org/) الإصدار 22 أو أحدث، وأداة pnpm (`npm install -g pnpm`).
+[Node.js](https://nodejs.org/) (الإصدار 22 أو أحدث)، وأداة pnpm (`npm install -g pnpm`).
 
 **١. ابنِ مجلد الإضافة** (داخل هذا المستودع):
 
@@ -161,7 +166,7 @@ Free, with no ads or tracking. To help keep the project running: [PayPal](https:
 npm run sync:vencord        # يُنشئ targets/vencord/build/prayerTimesBreak/
 ```
 
-**٢-أ. إن كان عندك Vencord مبنيًا من الشيفرة** (مجلد فيه `src/userplugins/`):
+**٢-أ. إن كان عندك Vencord مبنيًا من الشيفرة** (مجلد فيه <span dir="ltr">`src/userplugins/`</span>):
 
 ```sh
 cp -r targets/vencord/build/prayerTimesBreak <مجلد-vencord>/src/userplugins/
@@ -183,10 +188,10 @@ pnpm inject                 # يوجّه ديسكورد إلى هذه النسخ
 **٣. أعد تشغيل ديسكورد بالكامل**: انقر بزر الفأرة الأيمن على أيقونته بجانب الساعة، واختر
 **Quit Discord**، ثم افتحه من جديد (إغلاق النافذة وحده لا يكفي).
 
-**٤. فعّل الإضافة**: *إعدادات المستخدم ← Vencord ← Plugins*، وابحث عن **PrayerTimesBreak**
+**٤. فعّل الإضافة**: افتح *إعدادات المستخدم*، ثم *Vencord*، ثم *Plugins*، وابحث عن **PrayerTimesBreak**
 وفعّلها، ثم افتح إعداداتها (أيقونة الترس).
 
-لتحديث الإضافة لاحقًا: كرّر الخطوة ١، وانسخ المجلد من جديد (مكان القديم)، ثم `pnpm build`،
+لتحديث الإضافة لاحقًا: كرّر الخطوة ١، وانسخ المجلد من جديد (مكان القديم)، ثم شغّل `pnpm build`،
 وأعد تشغيل ديسكورد.
 
 ### الإعدادات
@@ -201,10 +206,12 @@ pnpm inject                 # يوجّه ديسكورد إلى هذه النسخ
 
 ### التجربة
 
-١. اختر مدينتك من الإعدادات.
-٢. اكتب `/prayertimes` في أي محادثة: مواقيت اليوم والصلاة القادمة.
-٣. اكتب `/prayertimes-test`: يظهر تنبيه الصلاة وقفل لدقيقة واحدة فورًا.
+1. اختر مدينتك من الإعدادات.
+2. اكتب <span dir="ltr">`/prayertimes`</span> في أي محادثة: مواقيت اليوم والصلاة القادمة.
+3. اكتب <span dir="ltr">`/prayertimes-test`</span>: يظهر تنبيه الصلاة وقفل لدقيقة واحدة فورًا.
 
 ### دعم المشروع
 
 الإضافة مجانية بلا إعلانات ولا تتبّع. لمن أحب أن يدعم استمرار المشروع: [PayPal](https://paypal.me/mfsafadi).
+
+</div>
