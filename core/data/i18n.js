@@ -388,7 +388,7 @@ const I18N = {
         digitsWestern: "إنجليزية (0123)",
         dateFormatLabel: "تنسيق التاريخ",
         settingsLangLabel: "اللغة",
-        themeLabel: "المظهر",
+        themeLabel: "نمط الألوان",
         themeClassic: "كلاسيكي",
         themeMidnightEmerald: "منتصف الليل الزمردي",
         vencordDesc: "مواقيت الصلاة داخل ديسكورد: تنبيه عند كل صلاة، وقفل اختياري لديسكورد أثناء الصلاة، وتذكير دوري بالذكر.",
