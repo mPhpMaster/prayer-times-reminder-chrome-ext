@@ -1017,8 +1017,11 @@ function renderWinners(winners) {
   );
 }
 
+let boardLoad = 0; // the latest renderBoard call; older answers are dropped
+
 async function renderBoard() {
   const box = $("board");
+  const load = ++boardLoad;
   $("board-me").textContent = "";
   $("board-month").textContent = "";
   if (!apiUrl) {
@@ -1036,10 +1039,12 @@ async function renderBoard() {
   try {
     if (account) await syncNow();
     const data = await api().leaderboard(boardPeriod, boardScope, localDay());
+    if (load !== boardLoad) return; // the period or scope changed meanwhile
     // An older server ignores `period` and answers with this month.
     const type = data.period || "month";
     $("board-month").textContent = type === "all" ? G.boardAll : G.boardPeriod(periodName(type, data.periodKey || data.month));
     renderWinners(data.winners);
+    const rows = [];
     for (const r of data.rows) {
       const li = rowButton(
         [["rank", r.rank], ["name", r.displayName], ["p", r.points]],
@@ -1058,11 +1063,13 @@ async function renderBoard() {
         li.classList.add("me");
         li.firstChild.setAttribute("aria-current", "true");
       }
-      box.appendChild(li);
+      rows.push(li);
     }
-    if (!data.rows.length) box.replaceChildren(messageItem(G.boardEmpty));
+    // Replace the loading skeletons (appending left them above the rows).
+    box.replaceChildren(...(rows.length ? rows : [messageItem(G.boardEmpty)]));
     $("board-me").textContent = !data.me ? G.guestBoardNote : data.me.hideProgress ? G.myPointsHidden(data.me.points) : G.myPoints(data.me.points);
   } catch {
+    if (load !== boardLoad) return;
     const li = messageItem(G.offline);
     li.append(retryButton(renderBoard));
     box.replaceChildren(li);
