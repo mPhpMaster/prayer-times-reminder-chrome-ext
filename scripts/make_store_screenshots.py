@@ -192,7 +192,7 @@ KINDS = {
     "popup":   {"src": "popup.html",   "stage": STAGE_POPUP,   "sel": "#main-view", "margin": 52},
     "welcome": {"src": "welcome.html", "stage": STAGE_WELCOME, "sel": ".card",      "margin": 58},
     "game":    {"src": "game.html",    "stage": STAGE_GAME,    "sel": None, "margin": 0, "hash": "#tasks", "common": False,
-                "scroll": ("#task-groups > h3:last-of-type", 28)},
+                "scroll": ("#task-groups > h3:last-of-type", 6)},
     "account": {"src": "game.html",    "stage": STAGE_GAME,    "sel": None, "margin": 0, "hash": "#me", "common": False},
 }
 
