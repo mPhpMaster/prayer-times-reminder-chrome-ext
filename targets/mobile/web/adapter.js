@@ -1190,7 +1190,8 @@
     if (vp && !/viewport-fit/.test(vp.content)) vp.content += ", viewport-fit=cover";
     const css = document.createElement("style");
     css.textContent =
-      '#silent-row, [data-group="dhikr"] { display: none !important; }' +
+      // The dhikr group is the whole Tasbih & reminders settings card, so hide the card.
+      '#silent-row, [data-group="dhikr"], [data-card="tasbih"] { display: none !important; }' +
       'html[data-platform="capacitor"] body {' +
       " padding-top: max(24px, env(safe-area-inset-top)); padding-bottom: max(24px, env(safe-area-inset-bottom));" +
       " padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }";

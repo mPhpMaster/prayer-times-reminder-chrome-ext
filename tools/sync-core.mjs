@@ -284,6 +284,7 @@ export interface LockConfig {
     title: string;
     subtitle: string;
     countdownPrefix: string;
+    focusLine: string;
     unlockLabel: string;
     unlockHint: string;
     dir: "ltr" | "rtl";
