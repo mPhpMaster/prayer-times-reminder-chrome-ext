@@ -21,6 +21,6 @@ public class BootReceiver extends BroadcastReceiver {
         // A parent's family checks.
         FamilyAlertScheduler.armNext(context);
         // Home-screen widgets: fresh countdowns and their next refresh alarm.
-        HomeWidgets.refreshAsync(this, context);
+        HomeWidgets.requestRefresh(context, this);
     }
 }

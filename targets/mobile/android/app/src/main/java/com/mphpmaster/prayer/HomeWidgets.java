@@ -7,10 +7,15 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.appwidget.AppWidgetProviderInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
+import android.util.Log;
+import android.util.SizeF;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -19,10 +24,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Home-screen widgets: "Next prayer", "Prayer times", "Prayer adhkar" and the
@@ -48,7 +55,16 @@ import java.util.concurrent.Executors;
  *    placed that is ~12 + ~24 renders a day; the countdown card adds a
  *    progress-bar step every 15 minutes, only while the phone is awake.
  *  - Nothing is armed when no widget is placed; no service, no
- *    updatePeriodMillis. Receivers render off the main thread (goAsync).
+ *    updatePeriodMillis. All rendering runs on one background thread.
+ *  - Moving / resizing a widget sends a burst of "options changed"
+ *    broadcasts. They must stay cheap: re-rendering every widget for each one
+ *    made the launcher re-inflate them all, report sizes again and loop — the
+ *    owner's "isn't responding" while resizing. Now, on Android 12+ each
+ *    widget carries a layout per size (RemoteViews size map), so the launcher
+ *    picks one itself and a resize needs no work here at all; below 12 only
+ *    the resized widget is re-rendered, debounced, and only when its layout
+ *    actually changes. Full refreshes are coalesced too, and the parsed
+ *    snapshot is cached. No bitmaps are used (text and shape drawables only).
  * Re-rendered on boot and time / timezone / locale changes too. When the
  * snapshot runs out (app not opened for a week) — or the clock jumps outside
  * it — the widgets ask for the app.
@@ -78,7 +94,29 @@ final class HomeWidgets {
         NextPrayerWidget.class, PrayerTimesWidget.class, TasksWidget.class, CountdownWidget.class,
     };
 
-    private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
+    private static final String TAG = "HomeWidgets";
+    // Bursts (resize drags, several publishes) collapse into one pass.
+    private static final long COALESCE_MS = 150;
+    private static final long RESIZE_SETTLE_MS = 400;
+
+    // One background thread does all the work; receivers never block on it.
+    private static final Handler WORKER;
+    static {
+        HandlerThread t = new HandlerThread("HomeWidgets");
+        t.start();
+        WORKER = new Handler(t.getLooper());
+    }
+    private static final Object LOCK = new Object();
+    private static final List<BroadcastReceiver.PendingResult> waiting = new ArrayList<>();
+    private static final Set<Integer> resized = new HashSet<>();
+    private static boolean fullQueued;
+    private static Context appCtx;
+    private static final Runnable DRAIN = HomeWidgets::drain;
+    // Pre-Android-12 resize: the layout last sent per widget id.
+    private static final Map<Integer, Integer> sentLayout = new HashMap<>();
+    // The parsed snapshot, reused until the stored JSON changes.
+    private static String cachedRaw;
+    private static Snapshot cachedSnap;
 
     private HomeWidgets() {}
 
@@ -88,7 +126,7 @@ final class HomeWidgets {
     static void save(Context ctx, String json) {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit().putString(KEY_SNAPSHOT, json).apply();
-        refreshAll(ctx);
+        requestRefresh(ctx, null);
     }
 
     /** How many of the app's widgets are on the home screen(s). */
@@ -150,9 +188,18 @@ final class HomeWidgets {
         }
     }
 
+    /** The stored snapshot, parsed once per change (worker thread only). */
     static Snapshot load(Context ctx) {
         String raw = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_SNAPSHOT, null);
         if (raw == null) return null;
+        if (raw.equals(cachedRaw)) return cachedSnap;
+        Snapshot s = parse(raw);
+        cachedRaw = raw;
+        cachedSnap = s;
+        return s;
+    }
+
+    private static Snapshot parse(String raw) {
         try {
             JSONObject o = new JSONObject(raw);
             Snapshot s = new Snapshot();
@@ -194,20 +241,73 @@ final class HomeWidgets {
 
     // ---- refresh + the next re-render ---------------------------------------
 
-    /** From a BroadcastReceiver / provider: render off the main thread. */
-    static void refreshAsync(BroadcastReceiver receiver, Context ctx) {
-        final BroadcastReceiver.PendingResult pending = receiver.goAsync();
-        final Context app = ctx.getApplicationContext();
-        WORKER.execute(() -> {
-            try {
-                refreshAll(app);
-            } finally {
-                pending.finish();
-            }
-        });
+    /**
+     * A full refresh (placed, system update, boot, clock change, our alarm, a
+     * new snapshot). From a receiver, pass it: the broadcast is kept alive
+     * (goAsync) only until the coalesced pass has run — never longer than
+     * COALESCE_MS plus one render, far below the broadcast timeout.
+     */
+    static void requestRefresh(Context ctx, BroadcastReceiver receiver) {
+        BroadcastReceiver.PendingResult pending = receiver != null ? receiver.goAsync() : null;
+        synchronized (LOCK) {
+            appCtx = ctx.getApplicationContext();
+            if (pending != null) waiting.add(pending);
+            fullQueued = true;
+        }
+        WORKER.removeCallbacks(DRAIN);
+        WORKER.postDelayed(DRAIN, COALESCE_MS);
     }
 
-    static synchronized void refreshAll(Context ctx) {
+    /**
+     * A widget was resized or moved ("options changed"). Android 12+: nothing
+     * to do — its size map already holds every layout. Before that, re-render
+     * only this widget once the drag settles, and only if its layout changes.
+     * Called on the main thread; returns at once (no goAsync needed).
+     */
+    static void onResized(Context ctx, int id) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S || id == AppWidgetManager.INVALID_APPWIDGET_ID) return;
+        synchronized (LOCK) {
+            appCtx = ctx.getApplicationContext();
+            resized.add(id);
+        }
+        WORKER.removeCallbacks(DRAIN);
+        WORKER.postDelayed(DRAIN, RESIZE_SETTLE_MS);
+    }
+
+    private static void drain() {
+        List<BroadcastReceiver.PendingResult> done;
+        boolean full;
+        Set<Integer> ids;
+        Context ctx;
+        synchronized (LOCK) {
+            done = new ArrayList<>(waiting);
+            waiting.clear();
+            full = fullQueued;
+            fullQueued = false;
+            ids = new HashSet<>(resized);
+            resized.clear();
+            ctx = appCtx;
+        }
+        long t0 = SystemClock.elapsedRealtime();
+        try {
+            if (ctx != null) {
+                if (full) refreshAll(ctx);
+                else for (int id : ids) refreshResized(ctx, id);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "refresh failed", t); // never let a bad snapshot keep a broadcast open
+        } finally {
+            for (BroadcastReceiver.PendingResult p : done) {
+                try {
+                    p.finish();
+                } catch (Exception ignored) {}
+            }
+        }
+        Log.d(TAG, (full ? "full" : "resize " + ids) + " in " + (SystemClock.elapsedRealtime() - t0) + " ms");
+    }
+
+    /** Worker thread only. */
+    private static void refreshAll(Context ctx) {
         AppWidgetManager mgr = AppWidgetManager.getInstance(ctx);
         if (mgr == null) return;
         int[] next = ids(ctx, mgr, NextPrayerWidget.class);
@@ -217,11 +317,27 @@ final class HomeWidgets {
         boolean any = next.length + times.length + tasks.length + cards.length > 0;
         Snapshot snap = any ? load(ctx) : null;
         long now = System.currentTimeMillis();
-        for (int id : next) safeUpdate(mgr, id, renderNext(ctx, options(mgr, id), snap, now));
-        for (int id : times) safeUpdate(mgr, id, renderTimes(ctx, options(mgr, id), snap, now));
+        for (int id : next) safeUpdate(mgr, id, renderNext(ctx, mgr, id, snap, now));
+        for (int id : times) safeUpdate(mgr, id, renderTimes(ctx, mgr, id, snap, now));
         for (int id : tasks) safeUpdate(mgr, id, renderTasks(ctx, snap, now));
         for (int id : cards) safeUpdate(mgr, id, renderCountdown(ctx, snap, now));
         armNext(ctx, snap, now, any, cards.length > 0);
+    }
+
+    /** Pre-Android-12 resize of one widget: re-render only on a layout change. */
+    private static void refreshResized(Context ctx, int id) {
+        AppWidgetManager mgr = AppWidgetManager.getInstance(ctx);
+        AppWidgetProviderInfo info = mgr != null ? mgr.getAppWidgetInfo(id) : null;
+        if (info == null || info.provider == null) return;
+        String cls = info.provider.getClassName();
+        boolean isNext = cls.equals(NextPrayerWidget.class.getName());
+        if (!isNext && !cls.equals(PrayerTimesWidget.class.getName())) return; // one layout at every size
+        Bundle opts = options(mgr, id);
+        Integer sent = sentLayout.get(id);
+        if (sent != null && sent == (isNext ? nextLayout(opts) : timesLayout(opts))) return;
+        Snapshot snap = load(ctx);
+        long now = System.currentTimeMillis();
+        safeUpdate(mgr, id, isNext ? renderNext(ctx, mgr, id, snap, now) : renderTimes(ctx, mgr, id, snap, now));
     }
 
     private static void safeUpdate(AppWidgetManager mgr, int id, RemoteViews rv) {
@@ -404,14 +520,59 @@ final class HomeWidgets {
         rv.setChronometerCountDown(id, true);
     }
 
+    // ---- size-dependent layouts ------------------------------------------------
+    // Android 12+: one RemoteViews per size and the launcher picks the largest
+    // that fits — resizing then costs the app nothing. Before 12: the layout
+    // is chosen here from the size the launcher reports (portrait: MIN_WIDTH x
+    // MAX_HEIGHT), and remembered so a resize re-renders only on a change.
+
+    private static int nextLayout(Bundle opts) {
+        int h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
+        // The full card needs ~125 dp (label, name, countdown, time).
+        return h > 0 && h < 125 ? R.layout.widget_next_prayer_compact : R.layout.widget_next_prayer;
+    }
+
+    private static int timesLayout(Bundle opts) {
+        int w = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0);
+        int h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
+        // Heights each layout needs: row ~110 dp, grid ~185 dp, list ~210 dp.
+        if (h > 0 && h < 185) return R.layout.widget_prayer_times;           // short: one row of six
+        if (w > 0 && w < 220) {
+            return h >= 210 ? R.layout.widget_prayer_times_list : R.layout.widget_prayer_times; // narrow
+        }
+        return R.layout.widget_prayer_times_grid;                            // 4x2: two rows of three
+    }
+
+    private static RemoteViews renderNext(Context ctx, AppWidgetManager mgr, int id, Snapshot snap, long now) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Map<SizeF, RemoteViews> sizes = new HashMap<>();
+            sizes.put(new SizeF(100f, 40f), buildNext(ctx, R.layout.widget_next_prayer_compact, snap, now));
+            sizes.put(new SizeF(100f, 125f), buildNext(ctx, R.layout.widget_next_prayer, snap, now));
+            return new RemoteViews(sizes);
+        }
+        int layout = nextLayout(options(mgr, id));
+        sentLayout.put(id, layout);
+        return buildNext(ctx, layout, snap, now);
+    }
+
+    private static RemoteViews renderTimes(Context ctx, AppWidgetManager mgr, int id, Snapshot snap, long now) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Map<SizeF, RemoteViews> sizes = new HashMap<>();
+            sizes.put(new SizeF(180f, 110f), buildTimes(ctx, R.layout.widget_prayer_times, snap, now));
+            sizes.put(new SizeF(150f, 210f), buildTimes(ctx, R.layout.widget_prayer_times_list, snap, now));
+            sizes.put(new SizeF(220f, 185f), buildTimes(ctx, R.layout.widget_prayer_times_grid, snap, now));
+            return new RemoteViews(sizes);
+        }
+        int layout = timesLayout(options(mgr, id));
+        sentLayout.put(id, layout);
+        return buildTimes(ctx, layout, snap, now);
+    }
+
     // ---- "Next prayer" ------------------------------------------------------
 
-    private static RemoteViews renderNext(Context ctx, Bundle opts, Snapshot snap, long now) {
-        // One cell high (2x1): the compact row. Portrait height = MAX_HEIGHT.
-        int h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
-        boolean compact = h > 0 && h < 100;
-        RemoteViews rv = new RemoteViews(ctx.getPackageName(),
-            compact ? R.layout.widget_next_prayer_compact : R.layout.widget_next_prayer);
+    private static RemoteViews buildNext(Context ctx, int layout, Snapshot snap, long now) {
+        boolean compact = layout == R.layout.widget_next_prayer_compact;
+        RemoteViews rv = new RemoteViews(ctx.getPackageName(), layout);
         frame(ctx, rv, snap, null, R.drawable.widget_bg);
         String problem = problem(ctx, snap, now);
         if (problem != null) {
@@ -429,13 +590,7 @@ final class HomeWidgets {
 
     // ---- "Prayer times" -----------------------------------------------------
 
-    private static RemoteViews renderTimes(Context ctx, Bundle opts, Snapshot snap, long now) {
-        int w = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0);
-        int h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
-        int layout;
-        if (h > 0 && h < 150) layout = R.layout.widget_prayer_times;           // short: one row of six
-        else if (w > 0 && w < 250) layout = R.layout.widget_prayer_times_list; // narrow: a list
-        else layout = R.layout.widget_prayer_times_grid;                       // 4x2: two rows of three
+    private static RemoteViews buildTimes(Context ctx, int layout, Snapshot snap, long now) {
         RemoteViews rv = new RemoteViews(ctx.getPackageName(), layout);
         frame(ctx, rv, snap, null, R.drawable.widget_bg);
         String problem = problem(ctx, snap, now);

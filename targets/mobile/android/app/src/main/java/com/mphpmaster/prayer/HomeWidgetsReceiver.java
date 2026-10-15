@@ -12,6 +12,6 @@ public class HomeWidgetsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        HomeWidgets.refreshAsync(this, context);
+        HomeWidgets.requestRefresh(context, this);
     }
 }

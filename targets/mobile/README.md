@@ -197,9 +197,16 @@ minutes boxes + progress since the previous prayer). Screenshots:
   12 renders/day for the next-prayer, times and adhkar widgets and ~24 more
   for the hour boundaries; the countdown card adds up to 96 progress steps,
   delivered only while the phone is awake. No wakeups, no service,
-  `updatePeriodMillis="0"`, nothing armed while no widget is placed; renders
-  run off the main thread (`goAsync`). Re-rendered on boot, time / timezone /
-  locale changes.
+  `updatePeriodMillis="0"`, nothing armed while no widget is placed; all
+  rendering runs on one background thread, bursts are coalesced and the parsed
+  snapshot is cached. Re-rendered on boot, time / timezone / locale changes.
+- **Moving / resizing costs nothing:** launchers send a burst of "options
+  changed" broadcasts while a widget is dragged. On Android 12+ every widget
+  carries one layout per size (a `RemoteViews` size map), so the launcher
+  switches layouts itself and the app ignores those broadcasts; below 12 only
+  the resized widget is re-rendered, after the drag settles, and only if its
+  layout changes. (The first version re-rendered every widget on each of
+  them, which could loop with the launcher and end in "isn't responding".)
 - **Look:** the app's colours (`res/values*/widget_colors.xml`), light/dark
   from the phone (`values-night`), the app's theme picks the background
   (Classic vs Midnight Emerald), RTL from the app language, prayer names in
