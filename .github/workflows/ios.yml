@@ -43,9 +43,9 @@ jobs:
       run:
         working-directory: targets/mobile
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -112,13 +112,13 @@ jobs:
           (cd "$pkg" && zip -qry "$RUNNER_TEMP/out/PrayerTimes-${{ steps.ver.outputs.name }}-${{ steps.ver.outputs.code }}-unsigned.ipa" Payload)
           ls -la "$RUNNER_TEMP/out"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ios-simulator-app
           path: ${{ runner.temp }}/out/*-simulator.zip
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ios-unsigned-ipa
           path: ${{ runner.temp }}/out/*-unsigned.ipa
@@ -151,8 +151,8 @@ jobs:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
