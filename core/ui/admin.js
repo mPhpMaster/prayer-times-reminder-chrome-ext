@@ -568,6 +568,7 @@ function userRow(u) {
       u.displayName ? el("span", { class: "muted", dir: "auto", textContent: u.displayName }) : null,
       u.superAdmin ? badge(A.superBadge, "st-approved") : u.admin ? badge(A.adminBadge, "st-approved") : null,
       u.google ? badge(A.googleBadge) : null,
+      u.apple ? badge(A.appleBadge) : null,
       u.legacy ? badge(A.legacyBadge) : u.email && !u.emailVerified ? badge(A.notVerified, "st-pending") : null,
       u.integrity && u.integrity.status === "fail" ? badge(A.playFailedBadge, "st-rejected") : null,
       u.integrity && u.integrity.verified ? badge(A.playVerifiedBadge, "st-approved") : null

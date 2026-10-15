@@ -446,6 +446,20 @@ async fn google_sign_in(app: tauri::AppHandle, query: String) -> Result<String, 
     result
 }
 
+// "Sign in with Apple" for the game: the same browser + loopback round trip
+// (google_auth::apple_sign_in); Apple returns via the game server.
+#[tauri::command]
+async fn apple_sign_in(app: tauri::AppHandle, query: String) -> Result<String, String> {
+    let result = tauri::async_runtime::spawn_blocking(move || google_auth::apple_sign_in(&query))
+        .await
+        .map_err(|e| e.to_string())?;
+    if let Some(win) = app.get_webview_window("game") {
+        let _ = win.unminimize();
+        let _ = win.set_focus();
+    }
+    result
+}
+
 fn hide_popup(app: &tauri::AppHandle) {
     if let Some(win) = app.get_webview_window("settings") {
         let _ = win.hide();
@@ -674,6 +688,7 @@ fn main() {
             updater::notify_update,
             updater::notify_family,
             google_sign_in,
+            apple_sign_in,
             log_js
         ])
         .setup(|app| {

@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Game;
 
 use App\Http\Controllers\Controller;
 use App\Models\GameUser;
+use App\Support\AppleIdToken;
+use App\Support\AppleSignIn;
 use App\Support\GameAccounts;
 use App\Support\GameRules;
 use App\Support\GoogleIdToken;
 use App\Http\Middleware\GameAuth;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +23,8 @@ use Illuminate\Support\Facades\RateLimiter;
 use Throwable;
 
 /**
- * Sign-in for the game: email + password, or a Google account. Every success
+ * Sign-in for the game: email + password, a Google account or an Apple ID.
+ * Every success
  * returns {user, token} with a fresh per-device token (shown once).
  *
  * Any sign-in may carry `legacyToken` — the token of a name-only account from
@@ -38,12 +42,15 @@ class AuthController extends Controller
 
     private const VERIFY_ATTEMPTS = 5;
 
-    /** GET /v1/auth/config -> {google: {clientId} | null}. Public ids only, never secrets. */
+    /**
+     * GET /v1/auth/config -> {google: {clientId} | null, apple: {servicesId, redirectUri} | null}.
+     * Public ids only, never secrets.
+     */
     public function config(): JsonResponse
     {
         $id = config('services.google.client_id');
 
-        return response()->json(['google' => $id ? ['clientId' => $id] : null]);
+        return response()->json(['google' => $id ? ['clientId' => $id] : null, 'apple' => AppleSignIn::publicConfig()]);
     }
 
     /** POST /v1/auth/register {email, password, username, legacyToken?} */
@@ -146,6 +153,103 @@ class AuthController extends Controller
         $user->save();
 
         return $this->signedIn($user, 201);
+    }
+
+    /**
+     * POST /v1/auth/apple {identityToken, nonce?, authorizationCode?, username?, legacyToken?}
+     * Same flow as Google. The account is found by Apple's `sub`; Apple sends
+     * the email only when the player shares it (always the first time, maybe
+     * a private relay address), so an existing account is matched by email
+     * only when there is one, and a new account may have no email at all.
+     */
+    public function apple(Request $request): JsonResponse
+    {
+        if (! AppleSignIn::enabled()) {
+            GameRules::fail(503, 'apple-unavailable');
+        }
+        $claims = AppleIdToken::verify((string) $request->input('identityToken'), $request->input('nonce') ? (string) $request->input('nonce') : null);
+        if (! $claims) {
+            GameRules::fail(401, 'apple-invalid');
+        }
+        $email = $claims['email'];
+        $code = $request->input('authorizationCode') ? (string) $request->input('authorizationCode') : null;
+
+        $user = GameUser::where('apple_sub', $claims['sub'])->first();
+        if (! $user && $email && ($user = GameUser::where('email', $email)->first())) {
+            if ($user->apple_sub !== null) {
+                GameRules::fail(409, 'account-conflict'); // that email is tied to another Apple ID
+            }
+            $user->apple_sub = $claims['sub']; // same verified email: link Apple to it
+            if ($user->email_verified_at === null) {
+                // As with Google: an unproven password can't stay next to the proven owner.
+                $user->password = null;
+                GameAccounts::revokeAll($user);
+            }
+            $user->save();
+        }
+        if ($user && $email && $user->email === $email && $user->email_verified_at === null) {
+            $user->email_verified_at = now(); // Apple vouches for this address
+            $user->save();
+        }
+        if ($user) {
+            $this->absorbLegacy($request, $user);
+            AppleSignIn::keepRefreshToken($user, $code, $claims['aud']);
+
+            return $this->signedIn($user);
+        }
+
+        $legacy = $this->legacy($request);
+        if ($legacy) {
+            $legacy->apple_sub = $claims['sub'];
+            if ($email) {
+                $legacy->email = $email; // free: an account with it was matched above
+                $legacy->email_verified_at = now();
+            }
+            $legacy->save();
+            GameAccounts::revokeAll($legacy);
+            AppleSignIn::keepRefreshToken($legacy, $code, $claims['aud']);
+
+            return $this->signedIn($legacy, 201);
+        }
+        if (! $request->filled('username')) {
+            GameRules::fail(422, 'username-required'); // new player: the app asks for a public name
+        }
+        $user = $this->create($request->input('username'), ['apple_sub' => $claims['sub']] + ($email ? ['email' => $email] : []));
+        if ($email) {
+            $user->email_verified_at = now();
+            $user->save();
+        }
+        AppleSignIn::keepRefreshToken($user, $code, $claims['aud']);
+
+        return $this->signedIn($user, 201);
+    }
+
+    /**
+     * POST /v1/auth/apple/callback — the Services ID's Return URL. Apple posts
+     * the result here (response_mode=form_post); it is passed on unread, in
+     * the URL fragment, to the app's return address chosen by the `state`
+     * prefix from a fixed allow-list (AppleSignIn::returnUrl). The app checks
+     * state and nonce, then calls POST /v1/auth/apple.
+     */
+    public function appleCallback(Request $request): Response|RedirectResponse
+    {
+        $state = (string) $request->input('state');
+        $to = AppleSignIn::servicesId() ? AppleSignIn::returnUrl($state) : null;
+        if (! $to) {
+            return response('Sign in with Apple: unknown return address.', 400, ['Content-Type' => 'text/plain; charset=utf-8', 'Cache-Control' => 'no-store']);
+        }
+        $answer = ['state' => $state];
+        if ($request->filled('error')) {
+            $answer['error'] = mb_substr((string) $request->input('error'), 0, 64);
+        } else {
+            $answer['id_token'] = mb_substr((string) $request->input('id_token'), 0, 8192);
+            if ($request->filled('code')) {
+                $answer['code'] = mb_substr((string) $request->input('code'), 0, 512);
+            }
+        }
+
+        return redirect()->away($to.'#'.http_build_query($answer, '', '&', PHP_QUERY_RFC3986), 303)
+            ->withHeaders(['Cache-Control' => 'no-store', 'Referrer-Policy' => 'no-referrer']);
     }
 
     /** POST /v1/auth/logout -> 204. Revokes this device's token only. */

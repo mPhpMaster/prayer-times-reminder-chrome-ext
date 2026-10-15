@@ -40,6 +40,7 @@ module.exports = [
       "core/platform/speech-web.js",
       "targets/web/google-auth-web.js",
       "targets/extension/google-auth-chrome.js",
+      "targets/extension/apple-auth-chrome.js",
       "targets/desktop/web/google-auth-desktop.js"
     ],
     languageOptions: { sourceType: "module", globals: { ...sharedGlobals, crypto: "readonly", atob: "readonly" } }

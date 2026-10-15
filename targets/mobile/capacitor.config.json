@@ -2,7 +2,7 @@
   "appId": "com.mphpmaster.prayer",
   "appName": "Prayer Times Reminder",
   "webDir": "www",
-  "server": { "androidScheme": "https" },
+  "server": { "androidScheme": "https", "allowNavigation": ["appleid.apple.com"] },
   "plugins": {
     "LocalNotifications": {
       "smallIcon": "ic_stat_icon",

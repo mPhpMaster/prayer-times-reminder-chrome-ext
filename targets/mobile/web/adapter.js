@@ -759,6 +759,41 @@
   }
   globalThis.__PTPlatform.familyAlerts = { refresh: scheduleFamilyAlerts };
 
+  // --- Sign in with Apple -----------------------------------------------------
+  // iOS: a native Capacitor plugin "AppleAuth" (the iOS shell provides it; see
+  // docs/APPLE-SIGNIN.md): AppleAuth.signIn({ nonce }) puts SHA-256(nonce) in
+  // the Apple request and resolves { identityToken, authorizationCode }; the raw
+  // nonce goes to the server. Android: Apple's web flow inside this WebView
+  // (appleid.apple.com is in capacitor.config.json allowNavigation); the server
+  // forwards Apple's answer to https://localhost/apple-callback.html and the game
+  // picks it up when it reopens (AppleAuthFlow.pending, apple-auth.js).
+  const AppleAuthNative = P.AppleAuth;
+  const appleErr = (e) => {
+    const err = new Error((e && e.message) || "failed");
+    err.code = (e && e.code) || "failed";
+    return err;
+  };
+  if (AppleAuthNative) {
+    globalThis.__PTPlatform.appleAuth = {
+      native: true,
+      signIn: () => {
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        const nonce = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+        return AppleAuthNative.signIn({ nonce })
+          .then((r) => ({ identityToken: r.identityToken, authorizationCode: r.authorizationCode || undefined, nonce }))
+          .catch((e) => { throw appleErr(e); });
+      },
+      signOut: () => Promise.resolve(),
+    };
+  } else if (Cap.getPlatform && Cap.getPlatform() === "android") {
+    globalThis.__PTPlatform.appleAuth = {
+      signIn: (cfg, opts) => AppleAuthFlow.redirect(cfg, "app", opts && opts.intent),
+      pending: () => AppleAuthFlow.pending(),
+      signOut: () => Promise.resolve(),
+    };
+  }
+
   async function scheduleAll() {
     await ensureChannels();
     scheduleNotifications();

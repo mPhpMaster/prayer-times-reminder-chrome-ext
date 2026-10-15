@@ -9,17 +9,18 @@ use Illuminate\Support\Carbon;
 
 /**
  * A player. `username` is the public handle (leaderboard, follows, search);
- * signing in is by `email` + `password` (bcrypt) or by `google_sub` (the
- * Google account id). Legacy rows from the name-only era have neither until
- * the app links them (App\Support\GameAccounts).
+ * signing in is by `email` + `password` (bcrypt), by `google_sub` (the
+ * Google account id) or by `apple_sub` (the Apple user id); one account may
+ * have several (LinkController). Legacy rows from the name-only era have none
+ * until the app links them (App\Support\GameAccounts).
  */
 class GameUser extends Model
 {
     protected $table = 'game_users';
 
-    protected $fillable = ['username', 'username_lower', 'display_name', 'hide_progress', 'email', 'password', 'google_sub'];
+    protected $fillable = ['username', 'username_lower', 'display_name', 'hide_progress', 'email', 'password', 'google_sub', 'apple_sub'];
 
-    protected $hidden = ['password', 'google_sub', 'email'];
+    protected $hidden = ['password', 'google_sub', 'apple_sub', 'apple_refresh_token', 'email'];
 
     /** The game options kept with the account (all on/off). newTab: the Chrome extension's new-tab page. */
     public const SETTINGS = ['alerts', 'journey', 'sound', 'newTab'];
@@ -42,7 +43,7 @@ class GameUser extends Model
 
     public function isLegacy(): bool
     {
-        return $this->email === null && $this->google_sub === null;
+        return $this->email === null && $this->google_sub === null && $this->apple_sub === null;
     }
 
     /** A Play Integrity pass in the last PlayIntegrity::VALID_DAYS days (the "verified" mark). */
@@ -68,7 +69,7 @@ class GameUser extends Model
         ];
     }
 
-    /** What the player sees about their own account (never the hash or the Google id). */
+    /** What the player sees about their own account (never the hash or the Google / Apple ids). */
     public function toPrivate(): array
     {
         return $this->toPublic() + [
@@ -76,6 +77,7 @@ class GameUser extends Model
             'emailVerified' => $this->email_verified_at !== null,
             'hasPassword' => $this->password !== null,
             'google' => $this->google_sub !== null,
+            'apple' => $this->apple_sub !== null,
             'legacy' => $this->isLegacy(),
             'admin' => GameAdmins::isAdmin($this),
             'superAdmin' => GameAdmins::isSuperAdmin($this),
