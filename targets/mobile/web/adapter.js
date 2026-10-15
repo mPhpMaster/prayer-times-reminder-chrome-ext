@@ -11,6 +11,8 @@
 (function () {
   const Cap = globalThis.Capacitor || {};
   const P = Cap.Plugins || {};
+  // iPhone/iPad build of the same shell: see the "iOS" block at the end.
+  const isIOS = typeof Cap.getPlatform === "function" && Cap.getPlatform() === "ios";
 
   // --- store: @capacitor/preferences (key/value, string-encoded) -------------
   const Preferences = P.Preferences;
@@ -272,7 +274,8 @@
   // in PrayerLockPlugin / LockForegroundService — see targets/mobile/README.md.
   const LocalNotifications = P.LocalNotifications;
   const CapApp = P.App;
-  const SCHED_DAYS = 7;
+  // iOS keeps at most 64 pending notifications: 3 days = 15 prayers + 30 game alerts.
+  const SCHED_DAYS = isIOS ? 3 : 7;
   const SCHED_PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
   // High-importance channel so prayer notifications actually surface
@@ -612,7 +615,8 @@
   let permFlowPending = false;
   // force: ignore the "already asked" flags (the Settings button).
   async function runPermissionFlow({ force = false } = {}) {
-    if (!Lock || !CapApp) return;
+    // iOS: no PrayerLock, so permissionState() reports only notifications.
+    if ((!Lock && !isIOS) || !CapApp) return;
     if (permFlowActive) { if (!force) permFlowPending = true; return; }
     permFlowActive = true;
     try {
@@ -819,5 +823,51 @@
       }
       startLockForPrayer(extra && extra.prayer);
     });
+  }
+
+  // --- iOS --------------------------------------------------------------------
+  // Same Capacitor shell, but none of the Android-only native plugins exist
+  // there (PrayerLock, GoogleAuth, PlayIntegrity, widgets, update checker):
+  // P.<name> is undefined and every caller above already checks. Apple doesn't
+  // let an app cover or block other apps, silence the phone, or draw over
+  // them, so (see targets/mobile/IOS.md):
+  //   - the prayer lock runs inside the app: when a prayer notification is
+  //     tapped, or fires while the app is open;
+  //   - "silent during prayer" and periodic dhikr are hidden;
+  //   - the adhan plays from an AAC copy (WKWebView can't decode Ogg);
+  //   - speech is the app-local SpeechPlugin.swift (same contract as Android).
+  if (isIOS) {
+    window.__prayerAdhanUrl = "audio/adhan.m4a"; // added by scripts/ios-extras.mjs
+    let lockDeps = null;
+    enforce.start = async (config) => {
+      try {
+        if (!window.__prayerTabLockActivate) await (lockDeps = lockDeps || loadScript("overlay-lock.js"));
+        window.__prayerTabLockActivate(config);
+        return { ok: true };
+      } catch (e) {
+        lockDeps = null;
+        return { ok: false, reason: String(e) };
+      }
+    };
+    enforce.clear = async () => {
+      if (window.__prayerTabLockClear) window.__prayerTabLockClear();
+      return { ok: true };
+    };
+    if (LocalNotifications && LocalNotifications.addListener) {
+      LocalNotifications.addListener("localNotificationReceived", (n) => {
+        if (n && n.extra && n.extra.prayer) startLockForPrayer(n.extra.prayer);
+      });
+    }
+    // The web view runs edge to edge: let pages read the notch / home-bar
+    // insets (env(safe-area-inset-*) is 0 without viewport-fit=cover).
+    const vp = document.querySelector('meta[name="viewport"]');
+    if (vp && !/viewport-fit/.test(vp.content)) vp.content += ", viewport-fit=cover";
+    const css = document.createElement("style");
+    css.textContent =
+      '#silent-row, [data-group="dhikr"] { display: none !important; }' +
+      'html[data-platform="capacitor"] body {' +
+      " padding-top: max(24px, env(safe-area-inset-top)); padding-bottom: max(24px, env(safe-area-inset-bottom));" +
+      " padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }";
+    document.head.appendChild(css);
   }
 })();
