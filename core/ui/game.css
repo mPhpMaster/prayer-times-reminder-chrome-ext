@@ -443,6 +443,26 @@ input[type="search"], #username, #search, #auth input {
 }
 .group-title { font-size: 13px; color: var(--muted-foreground); margin: 12px 0 6px; font-weight: 600; }
 
+/* ---- side task: the morning / evening adhkar, a bonus set beside the prayer's tasks ---- */
+.side-card {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--gold);
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+.side-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.side-head h2 { font-family: var(--font-arabic); font-size: 18px; margin: 0; }
+html:not([lang="ar"]):not([lang="ur"]) .side-head h2 { font-family: inherit; font-size: 16px; }
+.side-head .muted { font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.side-time { margin: 4px 0 10px; font-size: 12px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.side-card.all-done { border-inline-start-color: var(--primary); }
+/* Optional disputed adhkar: muted edge, and each item's grading note under its source. */
+.disputed-card { border-inline-start-color: var(--muted-foreground); }
+.disputed-card .tasks .pts { color: var(--muted-foreground); font-weight: 600; font-size: 12px; }
+.tasks .grading { display: block; font-size: 11px; color: var(--muted-foreground); margin-top: 3px; line-height: 1.6; }
+
 /* ---- celebration: short and calm; no motion when the system asks for less ---- */
 .celebrate {
   position: fixed;

@@ -125,12 +125,13 @@ function gameApi(baseUrl, token) {
   };
 }
 
-// Finished tasks/gifts the server hasn't acknowledged yet.
+// Finished tasks/gifts the server hasn't acknowledged yet. Never a guest's
+// (`local`) nor an optional disputed dhikr (`unscored`: no points, device only).
 function pendingCompletions(state) {
   const rows = [];
   for (const [windowKey, w] of Object.entries(state.windows)) {
     for (const [itemId, t] of Object.entries(w.tasks || {})) {
-      if (t.doneAt && !t.synced && !t.local) rows.push({ windowKey, itemId, kind: "task", points: t.points, startedAt: t.startedAt, doneAt: t.doneAt });
+      if (t.doneAt && !t.synced && !t.local && !t.unscored) rows.push({ windowKey, itemId, kind: "task", points: t.points, startedAt: t.startedAt, doneAt: t.doneAt });
     }
     const g = w.gift;
     if (g && g.doneAt && !g.synced && !g.local) rows.push({ windowKey, itemId: g.id, kind: "gift", points: g.points, startedAt: g.startedAt, doneAt: g.doneAt });
@@ -170,7 +171,7 @@ function adoptSyncAccount(state, username) {
   const firstAccount = !state.syncAccount;
   for (const w of Object.values(state.windows)) {
     for (const item of [...Object.values(w.tasks || {}), w.gift].filter(Boolean)) {
-      if (!item.doneAt || item.local) continue;
+      if (!item.doneAt || item.local || item.unscored) continue;
       if (firstAccount && !item.synced) item.local = true;
       else delete item.synced;
     }

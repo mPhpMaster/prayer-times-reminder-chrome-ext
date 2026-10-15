@@ -31,7 +31,7 @@ php artisan test                   # SQLite in memory
 |---|---|---|
 | POST | `/v1/register` `{username}` | → `{user, token}`; token shown once, only its SHA-256 stored; throttled 10/min |
 | GET / PATCH | `/v1/me` `{displayName?, hideProgress?}` | own account |
-| POST | `/v1/progress` `{completions:[…]}` | idempotent, first write wins; caps: 300/task, 100/gift, 400/window; no future timestamps. → `{accepted, newAchievements}` (ids earned by THIS call only) |
+| POST | `/v1/progress` `{completions:[…]}` | idempotent, first write wins; caps: 300 per prayer window (`YYYY-MM-DD:Fajr`…`Isha`), 50 per morning / evening adhkar set (`YYYY-MM-DD:Morning` / `:Evening`); gift rows are dropped; no future timestamps. → `{accepted, newAchievements}` (ids earned by THIS call only) |
 | GET | `/v1/progress?month=YYYY-MM` | own completions |
 | GET | `/v1/users?q=` | prefix search (≥ 2 chars) |
 | GET | `/v1/users/{username}?month=&today=YYYY-MM-DD` | profile: `followers`, `followingCount`, `joined`, `points`, `stats`, `achievements` (`null` if the player hides progress; they still see their own), and `wins` `{month, quarter, half, year, total, lastMonth}` (always public) |
