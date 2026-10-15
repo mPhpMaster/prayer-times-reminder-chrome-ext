@@ -7,7 +7,7 @@
 A Manifest V3 Chrome extension that:
 
 - 🔔 **हर नमाज़ के समय** (Fajr, Dhuhr, Asr, Maghrib, Isha) — आपकी चुनी हुई भाषा में नोटिफाई करता है।
-- 🔒 **ऐच्छिक टैब लॉक** — समय आने पर **सभी खुले ब्राउज़र टैब्स** को (1–120 मिनट, डिफ़ॉल्ट 5) तक लॉक करता है, काउंटडाउन ओवरले के साथ; लॉक के दौरान आप जो टैब खोलते या नेविगेट करते हैं वे भी अपने-आप लॉक हो जाते हैं; लॉक स्क्रीन पर टैप करके जल्दी अनलॉक का विकल्प भी उपलब्ध।
+- 🔒 **ऐच्छिक टैब लॉक** — समय आने पर **सभी खुले ब्राउज़र टैब्स** को (1–120 मिनट, डिफ़ॉल्ट 5) तक लॉक करता है, काउंटडाउन ओवरले के साथ; लॉक के दौरान आप जो टैब खोलते या नेविगेट करते हैं वे भी अपने-आप लॉक हो जाते हैं; लॉक स्क्रीन पर टैप करके जल्दी अनलॉक का विकल्प भी उपलब्ध। countdown के नीचे एक शांत पंक्ति: “विनम्रता और एकाग्रता के साथ अपनी नमाज़ की ओर ध्यान लगाएँ”।
 - 🕌 **आपके शहर/देश के लिए पूरा दैनिक नमाज़ शेड्यूल** — अगली नमाज़ तक लाइव काउंटडाउन के साथ।
 - 🌍 **Country & city dropdowns** — देश चुनें, फिर शहर की लिस्ट अपने-आप लोड हो जाएगी।
 - 🌐 **11 भाषाएँ** — popup हेडर से या **Settings → Language** से स्विच करें (नीचे [Supported languages](#supported-languages))।
@@ -15,7 +15,7 @@ A Manifest V3 Chrome extension that:
 - 📅 **Date format** — Hijri और Gregorian दोनों तारीख़ें कैसे दिखेंगी चुनें (जैसे `10-04-2026`, `10 April 2026`, लंबा टेक्स्ट)।
 - 🌙 **Hijri date** — Gregorian तारीख़ के साथ दिखती है।
 - 📿 **Periodic dhikr** — खुले टैब पर एक रैंडम धिक्र (151 वाक्य) फ़्लोट करता है; टैप करके बंद करें या 10 सेकंड बाद अपने-आप छिप जाएगा।
-- 🎙️ **Prayer Adhkar game (ऐच्छिक)** — popup की Settings से अपने अलग टैब में खुलता है: हर नमाज़ के अज़कार ज़ोर से पढ़ें, Chrome की speech recognition साथ-साथ सुनती है, और आपको हर नमाज़, दिन और महीने के अंक मिलते हैं। बिना अकाउंट के खेल सकते हैं; ईमेल या Google साइन-इन सिर्फ़ leaderboard और दोस्तों को follow करने के लिए है। नमाज़ के समय के लिए कभी अकाउंट की ज़रूरत नहीं।
+- 🎙️ **Prayer Adhkar game (ऐच्छिक)** — popup की Settings से अपने अलग टैब में खुलता है: हर नमाज़ के अज़कार ज़ोर से पढ़ें, Chrome की speech recognition साथ-साथ सुनती है, और आपको हर नमाज़, दिन और महीने के अंक मिलते हैं। बिना अकाउंट के खेल सकते हैं; ईमेल या Google साइन-इन सिर्फ़ leaderboard और दोस्तों को follow करने के लिए है। नमाज़ के समय के लिए कभी अकाउंट की ज़रूरत नहीं। लीडरबोर्ड की शुरुआत आयत ﴿وَفِي ذَٰلِكَ فَلْيَتَنَافَسِ الْمُتَنَافِسُونَ﴾ (सूरह अल-मुतफ़्फ़िफ़ीन, 83:26) से होती है, पहले अर्थ का अनुवाद और नीचे अरबी, और हर अवधि के ताज़ा विजेता प्रमुखता से दिखते हैं, पहला स्थान सुनहरे रंग में।
 - 🌅 **सुबह और शाम के अज़कार** — गेम में नमाज़ के tasks के साथ दो रोज़ाना अतिरिक्त सेट: सुबह के अज़कार Fajr से Maghrib तक और शाम के अज़कार Maghrib से अगली Fajr तक (हर सेट में 13 अज़कार, किसी भी task की तरह ज़ोर से पढ़े जाते हैं, हर पूरे सेट पर 50 बोनस अंक)। एक ऐच्छिक हिस्सा, जो डिफ़ॉल्ट रूप से बंद है, ऐसे दो अज़कार जोड़ता है जिनकी प्रामाणिकता पर मतभेद है — हर एक के साथ उसका स्रोत और दर्जा — सिर्फ़ पढ़ने के लिए, बिना अंकों के।
 - 🔗 **एक अकाउंट, कई साइन-इन तरीक़े** — गेम में **My account › Sign-in methods** के तहत आप अपने अकाउंट से Google लिंक कर सकते हैं (और Apple, जब Sign in with Apple चालू हो जाए) और दोनों में से किसी से भी साइन इन कर सकते हैं। Android पर, जिन खिलाड़ियों का ऐप Google Play Integrity पास करता है उन्हें leaderboard पर ✓ verified निशान मिलता है।
 - 🗂️ **New tab (ऐच्छिक)** — Chrome का नया टैब एक घड़ी, अगली नमाज़ घंटे/मिनट/सेकंड में, आज के नमाज़ के समय, वेब सर्च, एक धिक्र और आपकी अज़कार प्रगति दिखाता है, ऐसे आसमान पर जो नमाज़ के समय के साथ बदलता है। इसे किसी भी ऐप में गेम के “My account” से बंद करें।
@@ -53,12 +53,12 @@ Prayer times are calculated offline on your device with [adhan-js](https://githu
 
 ## Settings
 
+popup की Settings में ये विकल्प इस क्रम में चार कार्ड में बँटे हैं: **नमाज़ के समय** (देश, शहर, गणना पद्धति), **अलर्ट और लॉक** (टैब लॉक और उसके विकल्प), **तस्बीह और अनुस्मारक** (periodic dhikr), और **रूप-रंग** (थीम, भाषा, तारीख़ का फ़ॉर्मैट, अंकों की शैली)।
+
 | Setting | Description |
 |---------|-------------|
 | Country / City | Location used for prayer times (or use geolocation). |
 | Calculation method | AlAdhan method (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Gulf, Diyanet, JAKIM, Kemenag, Moonsighting, etc.). |
-| Date format | Hijri और Gregorian दोनों तारीख़ें कैसे दिखती हैं। |
-| Number style | When Arabic or Urdu is active: Arabic-Indic (٠١٢٣) or Western (0123) digits for times and countdowns. |
 | Lock tab during prayer | सभी खुले tabs पर prayer time के समय full-page overlay inject करता है। |
 | Lock duration | Tab कितनी देर locked रहता है (1–120 minutes). |
 | Allow manual unlock | Lock screen पर कहीं भी टैप करके (या Esc दबाकर) उसे जल्दी हटाने देता है। |
@@ -68,6 +68,8 @@ Prayer times are calculated offline on your device with [adhan-js](https://githu
 | Test dhikr | Current tab पर dhikr card preview। |
 | Theme | Midnight Emerald (default) या Classic. |
 | Language | UI language (popup header में भी)। |
+| Date format | Hijri और Gregorian दोनों तारीख़ें कैसे दिखती हैं। |
+| Number style | When Arabic or Urdu is active: Arabic-Indic (٠١٢٣) or Western (0123) digits for times and countdowns. |
 
 ## Supported languages
 

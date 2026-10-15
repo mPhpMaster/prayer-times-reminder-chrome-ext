@@ -86,191 +86,218 @@
             <h2 id="settings-title" class="settings-title">Settings</h2>
         </header>
 
-        <div class="settings-body glass-card" id="settings-body">
-            <div class="field-group" data-group="appearance">
-                <label id="label-theme">Theme</label>
-                <div class="radio-row" role="radiogroup" aria-labelledby="label-theme">
-                    <label class="radio-option">
-                        <input type="radio" name="theme" id="theme-midnight" value="midnight-emerald" checked />
-                        <span id="label-theme-midnight">Midnight Emerald</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="theme" id="theme-classic" value="classic" />
-                        <span id="label-theme-classic">Classic</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="field-group" data-group="language">
-                <label for="settings-lang-select" id="label-settings-lang">Language</label>
-                <select id="settings-lang-select"></select>
-            </div>
-
-            <div class="field-group" data-group="location">
-                <label for="country" id="label-country">Country</label>
-                <select id="country"></select>
-            </div>
-
-            <div class="field-group" data-group="location">
-                <label for="city" id="label-city">City</label>
-                <select id="city" disabled></select>
-            </div>
-
-            <div class="field-group" data-group="location">
-                <label for="method" id="label-method">Calculation method</label>
-                <select id="method"></select>
-            </div>
-
-            <div class="field-group" data-group="appearance">
-                <label for="date-format" id="label-date-format">Date format</label>
-                <select id="date-format"></select>
-            </div>
-
-            <div class="field-group" id="digits-group" data-group="appearance" hidden>
-                <label id="label-digits">Number style</label>
-                <div class="radio-row" role="radiogroup" aria-labelledby="label-digits">
-                    <label class="radio-option">
-                        <input type="radio" name="digits" id="digits-arabic" value="arabic" checked />
-                        <span id="label-digits-arabic">Arabic (٠١٢٣)</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="digits" id="digits-western" value="western" />
-                        <span id="label-digits-western">English (0123)</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Desktop-only: launch at Windows startup. Hidden on other shells;
-                 popup.js unhides it and reflects the OS autostart state. -->
-            <div class="field-group toggle-row" id="startup-group" data-group="startup" hidden>
-                <label class="toggle-label" for="startup-toggle">
-                    <input type="checkbox" id="startup-toggle" />
-                    <span id="label-startup">Launch on Windows startup</span>
-                </label>
-                <p class="field-hint" id="hint-startup">Start automatically when you sign in to Windows.</p>
-            </div>
-
-            <div class="field-group toggle-row" data-group="lock">
-                <label class="toggle-label" for="tab-lock">
-                    <input type="checkbox" id="tab-lock" />
-                    <span id="label-tab-lock">Lock tab during prayer</span>
-                </label>
-                <p class="field-hint" id="hint-tab-lock">Blocks the active browser tab when prayer time arrives.</p>
-
-                <div id="lock-options" class="lock-options" hidden>
-                    <div class="field-group nested">
-                        <label for="lock-minutes" id="label-lock-minutes">Lock duration (minutes)</label>
-                        <input type="number" id="lock-minutes" min="1" max="120" value="5" />
-                    </div>
-                    <div id="silent-row" hidden>
-                        <label class="toggle-label nested" for="silent-prayer">
-                            <input type="checkbox" id="silent-prayer" />
-                            <span id="label-silent">Silent (Do Not Disturb) during prayer</span>
-                        </label>
-                        <p class="field-hint" id="hint-silent">Silences calls and notifications while the lock is active.</p>
-                    </div>
-                    <div class="field-group nested" id="sound-row">
-                        <label for="prayer-sound" id="label-sound">Prayer time sound</label>
-                        <select id="prayer-sound">
-                            <option value="beep" id="opt-sound-beep">Chime</option>
-                            <option value="adhan" id="opt-sound-adhan">Adhan</option>
-                            <option value="none" id="opt-sound-none">None</option>
-                        </select>
-                        <p class="field-hint" id="hint-sound">Play a sound when prayer time arrives.</p>
-                    </div>
-                    <label class="toggle-label nested" for="allow-unlock">
-                        <input type="checkbox" id="allow-unlock" />
-                        <span id="label-allow-unlock">Allow manual unlock</span>
-                    </label>
-                    <p class="field-hint" id="hint-allow-unlock">Shows a close button on the lock screen to dismiss it early.</p>
+        <!-- Settings are grouped into titled cards. The field groups inside keep
+             their IDs and data-group tags (the welcome wizard shows one group at
+             a time; see showWizardGroup in popup.js). -->
+        <div class="settings-body" id="settings-body">
+            <section class="settings-card glass-card" data-card="times" aria-labelledby="label-card-times">
+                <h3 class="settings-card-title">
+                    <span class="settings-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+                    <span id="label-card-times">Prayer times</span>
+                </h3>
+                <div class="field-group" data-group="location">
+                    <label for="country" id="label-country">Country</label>
+                    <select id="country"></select>
                 </div>
 
-                <button type="button" id="test-lock-btn" class="secondary test-lock-btn">Test tab lock</button>
-            </div>
-
-            <!-- Desktop-only companion: the Chrome extension adds in-browser tab
-                 lock. Sits with the lock settings. popup.js unhides it on desktop
-                 and swaps the install button for the "installed" badge. -->
-            <div class="ext-card" id="ext-group" data-group="browser" hidden>
-                <div class="ext-card-head">
-                    <span class="ext-card-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.015 3.015 1 1 0 0 0-.475 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.475 2.5 2.5 0 1 0-3.015 3.015 1 1 0 0 1 .475 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68-.475 2.5 2.5 0 1 1-3.015-3.015 1 1 0 0 0 .475-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.475 2.5 2.5 0 1 0 3.015-3.015 1 1 0 0 1-.475-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>
-                    </span>
-                    <div class="ext-card-text">
-                        <span class="ext-card-title" id="label-ext-section">Browser tab lock (Chrome)</span>
-                        <p class="ext-card-hint" id="hint-ext">Also lock your browser tabs during prayer by adding the companion Chrome extension.</p>
-                    </div>
-                </div>
-                <button type="button" id="ext-install-btn" class="ext-install-btn">Get the Chrome extension</button>
-                <span class="ext-installed-note" id="ext-installed-note" hidden>✓ Chrome extension installed</span>
-            </div>
-
-            <!-- Extension-only: promote the companion WINDOWS app (full-screen prayer
-                 lock). popup.js unhides this only on the browser extension; the CTA
-                 link appears once WINDOWS_APP_URL is set. -->
-            <div class="ext-card" id="win-group" data-group="browser" hidden>
-                <div class="ext-card-head">
-                    <span class="ext-card-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                    </span>
-                    <div class="ext-card-text">
-                        <span class="ext-card-title" id="label-win-section">Prayer Times for Windows</span>
-                        <p class="ext-card-hint" id="hint-win">A desktop app that locks your entire screen at prayer time.</p>
-                    </div>
-                </div>
-                <a class="ext-install-btn" id="win-link" href="#" target="_blank" rel="noopener" hidden>Learn more</a>
-            </div>
-
-            <div class="field-group toggle-row" data-group="dhikr">
-                <label class="toggle-label" for="tasbih-enabled">
-                    <input type="checkbox" id="tasbih-enabled" checked />
-                    <span id="label-tasbih">Periodic dhikr reminder</span>
-                </label>
-                <p class="field-hint" id="hint-tasbih">Shows a random dhikr on your open tabs while you browse. Tap to dismiss.</p>
-
-                <div id="tasbih-options" class="tasbih-options" hidden>
-                    <div class="radio-row tasbih-mode-row" role="radiogroup" aria-labelledby="label-tasbih">
-                        <label class="radio-option">
-                            <input type="radio" name="tasbih-mode" id="tasbih-mode-fixed" value="fixed" />
-                            <span id="label-tasbih-fixed">Every X minutes</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="tasbih-mode" id="tasbih-mode-random" value="random" checked />
-                            <span id="label-tasbih-random">Random interval</span>
-                        </label>
-                    </div>
-
-                    <div id="tasbih-fixed-options" class="field-group nested">
-                        <label for="tasbih-minutes" id="label-tasbih-minutes">Interval (minutes)</label>
-                        <input type="number" id="tasbih-minutes" min="1" max="120" value="15" />
-                    </div>
-
-                    <div id="tasbih-random-options" class="tasbih-random-options" hidden>
-                        <div class="field-group nested">
-                            <label for="tasbih-random-min" id="label-tasbih-random-min">Minimum (minutes)</label>
-                            <input type="number" id="tasbih-random-min" min="1" max="120" value="5" />
-                        </div>
-                        <div class="field-group nested">
-                            <label for="tasbih-random-max" id="label-tasbih-random-max">Maximum (minutes)</label>
-                            <input type="number" id="tasbih-random-max" min="1" max="120" value="15" />
-                        </div>
-                    </div>
-
-                    <div class="field-group nested">
-                        <span class="field-label" id="label-tasbih-position">On-screen position</span>
-                        <div id="tasbih-position" class="position-grid" role="radiogroup" aria-labelledby="label-tasbih-position"></div>
-                    </div>
+                <div class="field-group" data-group="location">
+                    <label for="city" id="label-city">City</label>
+                    <select id="city" disabled></select>
                 </div>
 
-                <button type="button" id="test-tasbih-btn" class="secondary test-tasbih-btn">Test dhikr</button>
-            </div>
+                <div class="field-group" data-group="location">
+                    <label for="method" id="label-method">Calculation method</label>
+                    <select id="method"></select>
+                </div>
 
-            <div class="button-row">
-                <button type="button" id="save-btn" class="primary">Save &amp; Load</button>
-                <button type="button" id="geo-btn" class="secondary" title="Use your current location">📍 Use my location</button>
-            </div>
+                <div class="button-row">
+                    <button type="button" id="save-btn" class="primary">Save &amp; Load</button>
+                    <button type="button" id="geo-btn" class="secondary" title="Use your current location">📍 Use my location</button>
+                </div>
+            </section>
 
             <p class="error" id="error" hidden></p>
+
+            <section class="settings-card glass-card" data-card="alerts" aria-labelledby="label-card-alerts">
+                <h3 class="settings-card-title">
+                    <span class="settings-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+                    <span id="label-card-alerts">Alerts &amp; lock</span>
+                </h3>
+                <div class="field-group toggle-row" data-group="lock">
+                    <label class="toggle-label" for="tab-lock">
+                        <input type="checkbox" id="tab-lock" />
+                        <span id="label-tab-lock">Lock tab during prayer</span>
+                    </label>
+                    <p class="field-hint" id="hint-tab-lock">Blocks the active browser tab when prayer time arrives.</p>
+
+                    <div id="lock-options" class="lock-options" hidden>
+                        <div class="field-group nested">
+                            <label for="lock-minutes" id="label-lock-minutes">Lock duration (minutes)</label>
+                            <input type="number" id="lock-minutes" min="1" max="120" value="5" />
+                        </div>
+                        <div id="silent-row" hidden>
+                            <label class="toggle-label nested" for="silent-prayer">
+                                <input type="checkbox" id="silent-prayer" />
+                                <span id="label-silent">Silent (Do Not Disturb) during prayer</span>
+                            </label>
+                            <p class="field-hint" id="hint-silent">Silences calls and notifications while the lock is active.</p>
+                        </div>
+                        <div class="field-group nested" id="sound-row">
+                            <label for="prayer-sound" id="label-sound">Prayer time sound</label>
+                            <select id="prayer-sound">
+                                <option value="beep" id="opt-sound-beep">Chime</option>
+                                <option value="adhan" id="opt-sound-adhan">Adhan</option>
+                                <option value="none" id="opt-sound-none">None</option>
+                            </select>
+                            <p class="field-hint" id="hint-sound">Play a sound when prayer time arrives.</p>
+                        </div>
+                        <label class="toggle-label nested" for="allow-unlock">
+                            <input type="checkbox" id="allow-unlock" />
+                            <span id="label-allow-unlock">Allow manual unlock</span>
+                        </label>
+                        <p class="field-hint" id="hint-allow-unlock">Shows a close button on the lock screen to dismiss it early.</p>
+                    </div>
+
+                    <button type="button" id="test-lock-btn" class="secondary test-lock-btn">Test tab lock</button>
+                </div>
+
+                <!-- Desktop-only: launch at Windows startup. Hidden on other shells;
+                     popup.js unhides it and reflects the OS autostart state. -->
+                <div class="field-group toggle-row" id="startup-group" data-group="startup" hidden>
+                    <label class="toggle-label" for="startup-toggle">
+                        <input type="checkbox" id="startup-toggle" />
+                        <span id="label-startup">Launch on Windows startup</span>
+                    </label>
+                    <p class="field-hint" id="hint-startup">Start automatically when you sign in to Windows.</p>
+                </div>
+
+                <!-- Desktop-only companion: the Chrome extension adds in-browser tab
+                     lock. Sits with the lock settings. popup.js unhides it on desktop
+                     and swaps the install button for the "installed" badge. -->
+                <div class="ext-card" id="ext-group" data-group="browser" hidden>
+                    <div class="ext-card-head">
+                        <span class="ext-card-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.015 3.015 1 1 0 0 0-.475 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.475 2.5 2.5 0 1 0-3.015 3.015 1 1 0 0 1 .475 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68-.475 2.5 2.5 0 1 1-3.015-3.015 1 1 0 0 0 .475-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.475 2.5 2.5 0 1 0 3.015-3.015 1 1 0 0 1-.475-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>
+                        </span>
+                        <div class="ext-card-text">
+                            <span class="ext-card-title" id="label-ext-section">Browser tab lock (Chrome)</span>
+                            <p class="ext-card-hint" id="hint-ext">Also lock your browser tabs during prayer by adding the companion Chrome extension.</p>
+                        </div>
+                    </div>
+                    <button type="button" id="ext-install-btn" class="ext-install-btn">Get the Chrome extension</button>
+                    <span class="ext-installed-note" id="ext-installed-note" hidden>✓ Chrome extension installed</span>
+                </div>
+
+                <!-- Extension-only: promote the companion WINDOWS app (full-screen prayer
+                     lock). popup.js unhides this only on the browser extension; the CTA
+                     link appears once WINDOWS_APP_URL is set. -->
+                <div class="ext-card" id="win-group" data-group="browser" hidden>
+                    <div class="ext-card-head">
+                        <span class="ext-card-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                        </span>
+                        <div class="ext-card-text">
+                            <span class="ext-card-title" id="label-win-section">Prayer Times for Windows</span>
+                            <p class="ext-card-hint" id="hint-win">A desktop app that locks your entire screen at prayer time.</p>
+                        </div>
+                    </div>
+                    <a class="ext-install-btn" id="win-link" href="#" target="_blank" rel="noopener" hidden>Learn more</a>
+                </div>
+            </section>
+
+            <section class="settings-card glass-card" data-card="tasbih" aria-labelledby="label-card-tasbih">
+                <h3 class="settings-card-title">
+                    <span class="settings-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.5"/><circle cx="17.5" cy="6.5" r="1.5"/><circle cx="19.5" cy="12" r="1.5"/><circle cx="6.5" cy="6.5" r="1.5"/><circle cx="4.5" cy="12" r="1.5"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/><path d="M12 19v3"/></svg></span>
+                    <span id="label-card-tasbih">Tasbih &amp; reminders</span>
+                </h3>
+                <div class="field-group toggle-row" data-group="dhikr">
+                    <label class="toggle-label" for="tasbih-enabled">
+                        <input type="checkbox" id="tasbih-enabled" checked />
+                        <span id="label-tasbih">Periodic dhikr reminder</span>
+                    </label>
+                    <p class="field-hint" id="hint-tasbih">Shows a random dhikr on your open tabs while you browse. Tap to dismiss.</p>
+
+                    <div id="tasbih-options" class="tasbih-options" hidden>
+                        <div class="radio-row tasbih-mode-row" role="radiogroup" aria-labelledby="label-tasbih">
+                            <label class="radio-option">
+                                <input type="radio" name="tasbih-mode" id="tasbih-mode-fixed" value="fixed" />
+                                <span id="label-tasbih-fixed">Every X minutes</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="tasbih-mode" id="tasbih-mode-random" value="random" checked />
+                                <span id="label-tasbih-random">Random interval</span>
+                            </label>
+                        </div>
+
+                        <div id="tasbih-fixed-options" class="field-group nested">
+                            <label for="tasbih-minutes" id="label-tasbih-minutes">Interval (minutes)</label>
+                            <input type="number" id="tasbih-minutes" min="1" max="120" value="15" />
+                        </div>
+
+                        <div id="tasbih-random-options" class="tasbih-random-options" hidden>
+                            <div class="field-group nested">
+                                <label for="tasbih-random-min" id="label-tasbih-random-min">Minimum (minutes)</label>
+                                <input type="number" id="tasbih-random-min" min="1" max="120" value="5" />
+                            </div>
+                            <div class="field-group nested">
+                                <label for="tasbih-random-max" id="label-tasbih-random-max">Maximum (minutes)</label>
+                                <input type="number" id="tasbih-random-max" min="1" max="120" value="15" />
+                            </div>
+                        </div>
+
+                        <div class="field-group nested">
+                            <span class="field-label" id="label-tasbih-position">On-screen position</span>
+                            <div id="tasbih-position" class="position-grid" role="radiogroup" aria-labelledby="label-tasbih-position"></div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="test-tasbih-btn" class="secondary test-tasbih-btn">Test dhikr</button>
+                </div>
+            </section>
+
+            <section class="settings-card glass-card" data-card="appearance" aria-labelledby="label-card-appearance">
+                <h3 class="settings-card-title">
+                    <span class="settings-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 1 10-10c0 2.5-2 3.5-4 3.5h-2a2 2 0 0 0-1.5 3.3A2 2 0 0 1 12 22z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/></svg></span>
+                    <span id="label-card-appearance">Appearance</span>
+                </h3>
+                <div class="field-group" data-group="appearance">
+                    <label id="label-theme">Theme</label>
+                    <div class="radio-row" role="radiogroup" aria-labelledby="label-theme">
+                        <label class="radio-option">
+                            <input type="radio" name="theme" id="theme-midnight" value="midnight-emerald" checked />
+                            <span id="label-theme-midnight">Midnight Emerald</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="theme" id="theme-classic" value="classic" />
+                            <span id="label-theme-classic">Classic</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field-group" data-group="language">
+                    <label for="settings-lang-select" id="label-settings-lang">Language</label>
+                    <select id="settings-lang-select"></select>
+                </div>
+
+                <div class="field-group" data-group="appearance">
+                    <label for="date-format" id="label-date-format">Date format</label>
+                    <select id="date-format"></select>
+                </div>
+
+                <div class="field-group" id="digits-group" data-group="appearance" hidden>
+                    <label id="label-digits">Number style</label>
+                    <div class="radio-row" role="radiogroup" aria-labelledby="label-digits">
+                        <label class="radio-option">
+                            <input type="radio" name="digits" id="digits-arabic" value="arabic" checked />
+                            <span id="label-digits-arabic">Arabic (٠١٢٣)</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="digits" id="digits-western" value="western" />
+                            <span id="label-digits-western">English (0123)</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
 
             <a id="about-link" class="about-link" href="about.html" target="_blank" rel="noopener">About the app</a>
             <!-- The game (phase 1) and the phase 0 voice spike (dev only): shown when Platform.speech exists. -->

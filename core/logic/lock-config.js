@@ -32,6 +32,8 @@ function buildLockConfig(settings, opts) {
     title: L.lockTitle(prayerName),
     subtitle: L.lockSubtitle,
     countdownPrefix: L.lockCountdown,
+    // A calm line shown under the countdown ("Turn to your prayer with humility").
+    focusLine: L.lockFocusLine || "",
     unlockLabel: L.unlockTab,
     unlockHint: L.lockTapHint,
     dir: L.dir,

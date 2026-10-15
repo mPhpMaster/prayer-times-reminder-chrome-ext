@@ -999,19 +999,20 @@ function renderWinners(winners) {
   box.replaceChildren(
     ...groups.map(([type, w]) => {
       const div = document.createElement("div");
+      div.className = "winners-card";
       const h = document.createElement("p");
       h.className = "winners-title";
       h.textContent = G.winnersOf(periodName(type, w.key));
       const ol = document.createElement("ol");
       ol.className = "board";
       for (const u of w.winners) {
-        ol.appendChild(
-          rowButton(
-            [["rank", "🏆"], ["name", u.displayName], ["p", u.points == null ? "—" : u.points]],
-            G.winnerRow(u.displayName, u.points),
-            () => go({ name: "profile", arg: u.username })
-          )
+        const li = rowButton(
+          [["rank", "🏆"], ["name", u.displayName], ["p", u.points == null ? "—" : u.points]],
+          G.winnerRow(u.displayName, u.points),
+          () => go({ name: "profile", arg: u.username })
         );
+        if (!ol.children.length) li.className = "top"; // the first winner stands out
+        ol.appendChild(li);
       }
       div.append(h, ol);
       return div;

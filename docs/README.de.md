@@ -7,7 +7,7 @@
 Eine Chrome-Erweiterung (Manifest V3), die:
 
 - 🔔 **Benachrichtigt Sie zu jeder Gebetszeit** (Fajr, Dhuhr, Asr, Maghrib, Isha) — in der von Ihnen gewählten Sprache.
-- 🔒 **Optionale Tab-Sperre** — wenn die Gebetszeit erreicht ist, blockiert **ALLE geöffneten Browser-Tabs** für eine einstellbare Dauer (1–120 Minuten, Standard 5) mit einem Countdown-Overlay; Tabs, die Sie während der Sperre öffnen oder zu denen Sie navigieren, werden ebenfalls erfasst; optional manuelles Entsperren durch Antippen des Sperrbildschirms.
+- 🔒 **Optionale Tab-Sperre** — wenn die Gebetszeit erreicht ist, blockiert **ALLE geöffneten Browser-Tabs** für eine einstellbare Dauer (1–120 Minuten, Standard 5) mit einem Countdown-Overlay; Tabs, die Sie während der Sperre öffnen oder zu denen Sie navigieren, werden ebenfalls erfasst; optional manuelles Entsperren durch Antippen des Sperrbildschirms. Unter dem Countdown steht ruhig: „Wenden Sie sich Ihrem Gebet in Demut und Andacht zu“.
 - 🕌 **Den vollständigen täglichen Gebetsplan** für Ihre Stadt/Ihr Land anzeigt, mit einem Live-Countdown zum nächsten Gebet.
 - 🌍 **Länder- und Stadt-Dropdowns** — wählen Sie ein Land, die Städteliste wird automatisch geladen.
 - 🌐 **11 Sprachen** — wechseln Sie über den Popup-Header oder **Settings → Language** (siehe [Unterstützte Sprachen](#unterstützte-sprachen)).
@@ -15,7 +15,7 @@ Eine Chrome-Erweiterung (Manifest V3), die:
 - 📅 **Datumsformat** — wählen Sie, wie das Hidschri- und das gregorianische Datum angezeigt werden (z. B. `10-04-2026`, `10 April 2026`, Langtext).
 - 🌙 **Hidschri-Datum** wird neben dem gregorianischen Datum angezeigt.
 - 📿 **Periodischer Dhikr** — optionaler schwebender Hinweis mit 151 einzigartigen Formulierungen auf Ihren geöffneten Tabs; antippen zum Schließen oder automatisches Ausblenden nach 10 Sekunden.
-- 🎙️ **Gebets-Adhkar-Spiel (optional)** — öffnet sich über die Einstellungen des Popups in einem eigenen Tab: Lesen Sie die Adhkar jedes Gebets laut vor, die Spracherkennung von Chrome liest mit, und Sie sammeln Punkte pro Gebet, Tag und Monat. Spielbar ohne Konto; Anmeldung per E-Mail oder Google nur für die Bestenliste und das Folgen von Freunden. Für die Gebetszeiten ist nie ein Konto nötig.
+- 🎙️ **Gebets-Adhkar-Spiel (optional)** — öffnet sich über die Einstellungen des Popups in einem eigenen Tab: Lesen Sie die Adhkar jedes Gebets laut vor, die Spracherkennung von Chrome liest mit, und Sie sammeln Punkte pro Gebet, Tag und Monat. Spielbar ohne Konto; Anmeldung per E-Mail oder Google nur für die Bestenliste und das Folgen von Freunden. Für die Gebetszeiten ist nie ein Konto nötig. Die Bestenliste beginnt mit dem Vers ﴿وَفِي ذَٰلِكَ فَلْيَتَنَافَسِ الْمُتَنَافِسُونَ﴾ (Al-Mutaffifin 83:26), zuerst die Übersetzung der Bedeutung, darunter das Arabische, und hebt die letzten Gewinner jedes Zeitraums hervor, Platz 1 in Gold.
 - 🌅 **Morgen- und Abend-Adhkar** — zwei tägliche Zusatz-Sets im Spiel neben den Gebetsaufgaben: die Morgen-Adhkar von Fajr bis Maghrib und die Abend-Adhkar von Maghrib bis zum nächsten Fajr (je 13 Adhkar, laut vorgelesen wie jede Aufgabe, 50 Bonuspunkte pro vollständigem Set). Ein optionaler, standardmäßig ausgeschalteter Abschnitt fügt zwei Adhkar hinzu, deren Authentizität umstritten ist, jeweils mit Quelle und Bewertung, nur zum Lesen und ohne Punkte.
 - 🔗 **Ein Konto, mehrere Anmeldemethoden** — im Spiel unter **My account › Sign-in methods** können Sie Google mit Ihrem Konto verknüpfen (und Apple, sobald „Sign in with Apple“ eingeschaltet ist) und sich mit beiden anmelden. Unter Android erhalten Spieler, deren App Google Play Integrity besteht, ein ✓-Verifiziert-Zeichen in der Bestenliste.
 - 🗂️ **Neuer Tab (optional)** — der neue Tab von Chrome zeigt eine Uhr, das nächste Gebet in Stunden/Minuten/Sekunden, die heutigen Gebetszeiten, eine Websuche, einen Dhikr und Ihren Adhkar-Fortschritt über einem Himmel, der den Gebetszeiten folgt. Abschalten können Sie ihn über „My account“ im Spiel, in jeder App.
@@ -53,12 +53,12 @@ Das war's — die Erweiterung lädt die heutigen Zeiten, zeigt sie an und plant 
 
 ## Einstellungen
 
+In den Einstellungen des Popups sind diese Optionen in vier Karten gruppiert, in dieser Reihenfolge: **Gebetszeiten** (Land, Stadt, Berechnungsmethode), **Hinweise & Sperre** (die Tab-Sperre und ihre Optionen), **Tasbih & Erinnerungen** (periodischer Dhikr) und **Darstellung** (Theme, Sprache, Datumsformat, Zahlenstil).
+
 | Setting | Description |
 |---------|-------------|
 | Country / City | Standort für Gebetszeiten (oder Geolokalisierung nutzen). |
 | Calculation method | AlAdhan-Methode (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Gulf, Diyanet, JAKIM, Kemenag, Moonsighting, usw.). |
-| Date format | Wie das Hidschri- und das gregorianische Datum erscheinen. |
-| Number style | Wenn Arabisch oder Urdu aktiv: Arabic-Indic (٠١٢٣) oder westliche (0123) Ziffern für Zeiten und Countdowns. |
 | Lock tab during prayer | Legt bei Gebetszeit ein Vollbild-Overlay auf alle geöffneten Tabs. |
 | Lock duration | Wie lange der Tab gesperrt bleibt (1–120 Minuten). |
 | Allow manual unlock | Ermöglicht das vorzeitige Beenden der Sperre durch Antippen an beliebiger Stelle (oder mit Esc). |
@@ -68,6 +68,8 @@ Das war's — die Erweiterung lädt die heutigen Zeiten, zeigt sie an und plant 
 | Test dhikr | Vorschau der Dhikr-Karte auf dem aktuellen Tab. |
 | Theme | **Midnight Emerald** (Standard) oder **Classic** wählen. |
 | Language | UI-Sprache wählen (auch im Popup-Header verfügbar). |
+| Date format | Wie das Hidschri- und das gregorianische Datum erscheinen. |
+| Number style | Wenn Arabisch oder Urdu aktiv: Arabic-Indic (٠١٢٣) oder westliche (0123) Ziffern für Zeiten und Countdowns. |
 
 ## Unterstützte Sprachen
 

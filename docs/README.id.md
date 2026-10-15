@@ -7,7 +7,7 @@
 Ekstensi Chrome (Manifest V3) yang:
 
 - 🔔 **Memberi notifikasi saat setiap waktu shalat tiba** (Fajr, Dhuhr, Asr, Maghrib, Isha) — dalam bahasa yang Anda pilih.
-- 🔒 **Kunci tab opsional** — saat waktu shalat tiba, memblokir **semua tab browser yang terbuka** selama durasi yang dapat diatur (1–120 menit, default 5) dengan overlay hitung mundur; tab yang Anda buka atau kunjungi selama penguncian juga ikut terkunci; opsi buka kunci manual dengan mengetuk layar kunci.
+- 🔒 **Kunci tab opsional** — saat waktu shalat tiba, memblokir **semua tab browser yang terbuka** selama durasi yang dapat diatur (1–120 menit, default 5) dengan overlay hitung mundur; tab yang Anda buka atau kunjungi selama penguncian juga ikut terkunci; opsi buka kunci manual dengan mengetuk layar kunci. Di bawah hitung mundur ada kalimat yang menenangkan: “Hadapkan diri Anda pada salat dengan khusyuk”.
 - 🕌 **Menampilkan jadwal shalat harian lengkap** untuk kota/negara Anda, dengan hitung mundur langsung ke shalat berikutnya.
 - 🌍 **Dropdown negara & kota** — pilih negara, lalu daftar kota dimuat otomatis.
 - 🌐 **11 bahasa** — ganti dari header popup atau **Settings → Language** (lihat [Supported languages](#supported-languages)).
@@ -15,7 +15,7 @@ Ekstensi Chrome (Manifest V3) yang:
 - 📅 **Format tanggal** — pilih cara tanggal Hijriah dan Gregorian ditampilkan (mis. `10-04-2026`, `10 April 2026`, teks panjang).
 - 🌙 **Tanggal Hijriah** ditampilkan bersama tanggal Gregorian.
 - 📿 **Dzikir berkala** — pengingat mengambang opsional dengan 151 frasa unik di tab-tab yang terbuka; ketuk untuk menutup atau hilang otomatis setelah 10 detik.
-- 🎙️ **Permainan Dzikir Shalat (opsional)** — terbuka di tab tersendiri dari Pengaturan popup: bacakan dzikir setiap shalat dengan suara, pengenalan suara Chrome mengikuti bacaan Anda, dan Anda mendapat poin per shalat, hari, dan bulan. Bisa dimainkan tanpa akun; masuk dengan email atau Google hanya untuk papan peringkat dan mengikuti teman. Waktu shalat tidak pernah memerlukan akun.
+- 🎙️ **Permainan Dzikir Shalat (opsional)** — terbuka di tab tersendiri dari Pengaturan popup: bacakan dzikir setiap shalat dengan suara, pengenalan suara Chrome mengikuti bacaan Anda, dan Anda mendapat poin per shalat, hari, dan bulan. Bisa dimainkan tanpa akun; masuk dengan email atau Google hanya untuk papan peringkat dan mengikuti teman. Waktu shalat tidak pernah memerlukan akun. Papan peringkat dibuka dengan ayat ﴿وَفِي ذَٰلِكَ فَلْيَتَنَافَسِ الْمُتَنَافِسُونَ﴾ (QS. Al-Muthaffifin [83]: 26), terjemahan maknanya lebih dulu dan teks Arab di bawahnya, serta menonjolkan pemenang terbaru setiap periode, juara pertama berwarna emas.
 - 🌅 **Dzikir pagi dan petang** — dua set harian tambahan di dalam permainan, di samping tugas shalat: dzikir pagi dari Fajr hingga Maghrib dan dzikir petang dari Maghrib hingga Fajr berikutnya (masing-masing 13 dzikir, dibaca dengan suara seperti tugas lainnya, 50 poin bonus per set lengkap). Bagian opsional, nonaktif secara default, menambahkan dua dzikir yang keshahihannya diperselisihkan, masing-masing dengan sumber dan derajatnya, hanya untuk dibaca dan tanpa poin.
 - 🔗 **Satu akun, beberapa metode masuk** — di **My account › Sign-in methods** dalam permainan, Anda dapat menautkan Google ke akun Anda (dan Apple, setelah Sign in with Apple diaktifkan) lalu masuk dengan salah satunya. Di Android, pemain yang aplikasinya lolos Google Play Integrity mendapat tanda ✓ terverifikasi di papan peringkat.
 - 🗂️ **Tab baru (opsional)** — tab baru Chrome menampilkan jam, shalat berikutnya dalam jam/menit/detik, waktu shalat hari ini, pencarian web, sebuah dzikir, dan kemajuan dzikir Anda, di atas langit yang mengikuti waktu shalat. Matikan dari “My account” di permainan, di aplikasi mana pun.
@@ -53,12 +53,12 @@ Selesai — ekstensi akan mengambil waktu hari ini, menampilkannya, dan menjadwa
 
 ## Pengaturan
 
+Di pengaturan popup, opsi-opsi ini dikelompokkan dalam empat kartu, dengan urutan: **Waktu salat** (negara, kota, metode perhitungan), **Notifikasi & kunci** (kunci tab dan opsinya), **Tasbih & pengingat** (dzikir berkala), dan **Tampilan** (tema, bahasa, format tanggal, gaya angka).
+
 | Setting | Description |
 |---------|-------------|
 | Country / City | Lokasi untuk waktu shalat (atau gunakan geolokasi). |
 | Calculation method | Metode AlAdhan (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Gulf, Diyanet, JAKIM, Kemenag, Moonsighting, dll.). |
-| Date format | Cara tanggal Hijriah dan Gregorian ditampilkan. |
-| Number style | Saat Arab atau Urdu aktif: angka Arabic-Indic (٠١٢٣) atau Barat (0123) untuk waktu dan hitung mundur. |
 | Lock tab during prayer | Menyuntikkan overlay layar penuh di semua tab yang terbuka saat waktu shalat. |
 | Lock duration | Berapa lama tab tetap terkunci (1–120 menit). |
 | Allow manual unlock | Memungkinkan menutup layar kunci lebih awal dengan mengetuk di mana saja (atau menekan Esc). |
@@ -68,6 +68,8 @@ Selesai — ekstensi akan mengambil waktu hari ini, menampilkannya, dan menjadwa
 | Test dhikr | Pratinjau kartu dzikir di tab saat ini. |
 | Theme | Pilih **Midnight Emerald** (default) atau **Classic**. |
 | Language | Pilih bahasa UI (juga tersedia di header popup). |
+| Date format | Cara tanggal Hijriah dan Gregorian ditampilkan. |
+| Number style | Saat Arab atau Urdu aktif: angka Arabic-Indic (٠١٢٣) atau Barat (0123) untuk waktu dan hitung mundur. |
 
 <a id="supported-languages"></a>
 

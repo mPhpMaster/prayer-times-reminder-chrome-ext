@@ -25,7 +25,8 @@ body.embedded .button-row { display: none !important; }
 /* Test buttons don't belong in onboarding — they remain in the popup. */
 body.embedded .test-lock-btn,
 body.embedded .test-tasbih-btn { display: none !important; }
-body.embedded .settings-body { border-radius: var(--radius); }
+/* One card shows per wizard step; its title would repeat the step heading. */
+body.embedded .settings-card-title { display: none; }
 
 .app-shell {
   position: relative;
@@ -289,9 +290,46 @@ body.embedded .settings-body { border-radius: var(--radius); }
 }
 .back-btn:hover { filter: brightness(1.15); }
 
+/* The settings panel is a column of titled cards (Prayer times, Alerts & lock,
+   Tasbih & reminders, Appearance), each a glass card. */
 .settings-body {
-  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+.settings-body > [hidden] { display: none !important; }
+.settings-card { padding: 12px 14px 4px; }
+.settings-card-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 2px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--color-foreground);
+}
+[dir="rtl"] .settings-card-title { font-size: 16px; letter-spacing: 0; }
+.settings-card-icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: var(--teal);
+  background: var(--color-input);
+  background: color-mix(in oklch, var(--teal) 14%, transparent);
+}
+/* The title already draws a divider, so the first toggle under it drops its own. */
+.settings-card-title + .toggle-row { margin-top: 10px; padding-top: 0; border-top: none; }
+.settings-card .button-row { margin-bottom: 12px; }
+.settings-card .ext-card { margin: 12px 0 10px; }
+.settings-body > .error { margin-top: -4px; }
+.settings-body > .about-link { margin-top: 2px; }
+.settings-body > .legal-links { margin-top: 0; }
 
 /* Settings fields */
 .field-group { margin: 10px 0; }

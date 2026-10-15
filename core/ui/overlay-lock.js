@@ -170,6 +170,7 @@
       title,
       subtitle,
       countdownPrefix,
+      focusLine = "",
       unlockAt,
       dir = "ltr",
       lang = "en",
@@ -269,6 +270,27 @@
           font-variant-numeric: tabular-nums;
           color: var(--gold);
         }
+        /* A quiet line under the timer: smaller and softer than the countdown,
+           set off by a short faint rule. Arabic script gets a touch more size
+           (the Arabic face runs small). */
+        .focus-line {
+          margin-top: 18px;
+          font-size: ${dir === "rtl" ? 17 : 14}px;
+          font-weight: 400;
+          line-height: 1.6;
+          letter-spacing: ${dir === "rtl" ? "0" : "0.2px"};
+          color: rgba(238, 247, 245, 0.66);
+          text-wrap: balance;
+        }
+        .focus-line::before {
+          content: "";
+          display: block;
+          width: 36px;
+          height: 1px;
+          margin: 0 auto 14px;
+          background: rgba(238, 188, 74, 0.35);
+        }
+        .focus-line[hidden] { display: none; }
         .unlock-hint {
           margin-top: 20px;
           font-size: 13px;
@@ -290,6 +312,8 @@
         :host([data-theme="classic"]) .countdown-label,
         :host([data-theme="classic"]) .unlock-hint { color: #9fb3b0; }
         :host([data-theme="classic"]) .countdown { color: #f4c95d; }
+        :host([data-theme="classic"]) .focus-line { color: rgba(234, 242, 241, 0.7); }
+        :host([data-theme="classic"]) .focus-line::before { background: rgba(244, 201, 93, 0.35); }
       </style>
       <div class="lock" role="dialog" aria-modal="true" aria-labelledby="pt-lock-title">
         <div class="card">
@@ -299,6 +323,7 @@
           <div class="subtitle" id="pt-lock-subtitle"></div>
           <div class="countdown-label" id="pt-lock-countdown-label"></div>
           <div class="countdown" id="pt-lock-countdown">05:00</div>
+          <div class="focus-line" id="pt-lock-focus-line" hidden></div>
           <div class="unlock-hint" id="pt-lock-unlock-hint" hidden></div>
         </div>
       </div>
@@ -309,6 +334,9 @@
     shadow.getElementById("pt-lock-subtitle").textContent = subtitle;
     shadow.getElementById("pt-lock-countdown-label").textContent = countdownPrefix;
     const countdownEl = shadow.getElementById("pt-lock-countdown");
+    const focusEl = shadow.getElementById("pt-lock-focus-line");
+    focusEl.textContent = focusLine;
+    focusEl.hidden = !focusLine;
 
     function doUnlock() {
       clearLock();
