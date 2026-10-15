@@ -7,7 +7,7 @@
 Una extensión de Chrome (Manifest V3) que:
 
 - 🔔 **Te notifica a la hora de cada oración** (Fajr, Dhuhr, Asr, Maghrib, Isha) — en el idioma que hayas elegido.
-- 🔒 **Bloqueo opcional de pestañas** — cuando llega la hora, bloquea **TODAS las pestañas abiertas del navegador** durante una duración configurable (1–120 minutos, por defecto 5) con una cuenta atrás; las pestañas que abras o a las que navegues durante el bloqueo también quedan cubiertas; opción de desbloqueo manual tocando la pantalla de bloqueo.
+- 🔒 **Bloqueo opcional de pestañas** — cuando llega la hora, bloquea **TODAS las pestañas abiertas del navegador** durante una duración configurable (1–120 minutos, por defecto 5) con una cuenta atrás; las pestañas que abras o a las que navegues durante el bloqueo también quedan cubiertas; opción de desbloqueo manual tocando la pantalla de bloqueo. Bajo la cuenta atrás, una línea serena: «Entrégate a tu oración con humildad y recogimiento».
 - 🕌 **Muestra el horario diario completo** para tu ciudad/país, con una cuenta atrás en tiempo real hacia la siguiente oración.
 - 🌍 **Menús desplegables de país y ciudad** — elige un país y la lista de ciudades se cargará automáticamente.
 - 🌐 **11 idiomas** — cambia desde el encabezado del popup o **Settings → Language** (ver [Supported languages](#supported-languages)).
@@ -15,7 +15,7 @@ Una extensión de Chrome (Manifest V3) que:
 - 📅 **Formato de fecha** — elige cómo se muestran las fechas Hijri y gregoriana (por ejemplo `10-04-2026`, `10 April 2026`, texto largo).
 - 🌙 **Fecha Hijri** mostrada junto con la fecha gregoriana.
 - 📿 **Dhikr periódico** — recordatorio flotante opcional con 151 frases únicas en tus pestañas abiertas; tócalo para cerrar o se ocultará automáticamente después de 10 segundos.
-- 🎙️ **Juego de adhkar de la oración (opcional)** — se abre en su propia pestaña desde la Configuración del popup: lee en voz alta los adhkar de cada oración, el reconocimiento de voz de Chrome te sigue y ganas puntos por oración, día y mes. Se juega sin cuenta; el inicio de sesión con correo o Google solo es necesario para la clasificación y para seguir a amigos. Los horarios de oración nunca requieren una cuenta.
+- 🎙️ **Juego de adhkar de la oración (opcional)** — se abre en su propia pestaña desde la Configuración del popup: lee en voz alta los adhkar de cada oración, el reconocimiento de voz de Chrome te sigue y ganas puntos por oración, día y mes. Se juega sin cuenta; el inicio de sesión con correo o Google solo es necesario para la clasificación y para seguir a amigos. Los horarios de oración nunca requieren una cuenta. La clasificación se abre con el versículo ﴿وَفِي ذَٰلِكَ فَلْيَتَنَافَسِ الْمُتَنَافِسُونَ﴾ (Al-Mutaffifin 83:26), primero la traducción del significado y debajo el árabe, y destaca a los últimos ganadores de cada periodo, con el primer puesto en dorado.
 - 🌅 **Adhkar de la mañana y de la tarde** — dos series diarias adicionales en el juego, junto a las tareas de oración: los adhkar de la mañana desde Fajr hasta Maghrib y los adhkar de la tarde desde Maghrib hasta el siguiente Fajr (13 adhkar cada una, leídos en voz alta como cualquier tarea, 50 puntos extra por serie completa). Una sección opcional, desactivada por defecto, añade dos adhkar cuya autenticidad es discutida, cada uno con su fuente y su calificación, solo para lectura y sin puntos.
 - 🔗 **Una cuenta, varios métodos de inicio de sesión** — en **My account › Sign-in methods** dentro del juego puedes vincular Google a tu cuenta (y Apple, cuando se active Sign in with Apple) e iniciar sesión con cualquiera de ellos. En Android, los jugadores cuya app supera Google Play Integrity reciben una marca ✓ de verificado en la clasificación.
 - 🗂️ **Nueva pestaña (opcional)** — la nueva pestaña de Chrome muestra un reloj, la siguiente oración en horas/minutos/segundos, los horarios de oración de hoy, una búsqueda web, un dhikr y tu progreso de adhkar, sobre un cielo que sigue los horarios de oración. Desactívala desde “My account” en el juego, en cualquier app.
@@ -53,12 +53,12 @@ Listo — la extensión obtendrá los horarios de hoy, los mostrará y programar
 
 ## Configuración
 
+En la configuración del popup estas opciones se agrupan en cuatro tarjetas, en este orden: **Horarios de oración** (país, ciudad, método de cálculo), **Alertas y bloqueo** (el bloqueo de pestañas y sus opciones), **Tasbih y recordatorios** (dhikr periódico) y **Apariencia** (tema, idioma, formato de fecha, estilo de números).
+
 | Setting | Description |
 |---------|-------------|
 | Country / City | Ubicación usada para los horarios de oración (o usa geolocalización). |
 | Calculation method | Método AlAdhan (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Gulf, Diyanet, JAKIM, Kemenag, Moonsighting, etc.). |
-| Date format | Cómo aparecen las fechas Hijri y gregoriana. |
-| Number style | Cuando están activos árabe o urdu: dígitos Arabic-Indic (٠١٢٣) o Western (0123) para horarios y cuenta atrás. |
 | Lock tab during prayer | Inyecta una capa de página completa en todas las pestañas abiertas en la hora de la oración. |
 | Lock duration | Cuánto tiempo permanece bloqueada la pestaña (1–120 minutos). |
 | Allow manual unlock | Permite quitar la pantalla de bloqueo antes tocándola en cualquier lugar (o pulsando Esc). |
@@ -68,6 +68,8 @@ Listo — la extensión obtendrá los horarios de hoy, los mostrará y programar
 | Test dhikr | Vista previa de la tarjeta de dhikr en la pestaña actual. |
 | Theme | Elige **Midnight Emerald** (por defecto) o **Classic**. |
 | Language | Elige el idioma de la interfaz (también disponible en el encabezado del popup). |
+| Date format | Cómo aparecen las fechas Hijri y gregoriana. |
+| Number style | Cuando están activos árabe o urdu: dígitos Arabic-Indic (٠١٢٣) o Western (0123) para horarios y cuenta atrás. |
 
 <a id="supported-languages"></a>
 

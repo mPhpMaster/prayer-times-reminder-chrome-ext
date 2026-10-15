@@ -8,13 +8,13 @@ Prayer Times Reminder shows today's prayer times for your city, alerts you when 
 • Times are calculated on your device and refresh automatically after midnight
 
 🔒 PRAYER TIMES BREAK (OPTIONAL)
-When prayer time begins, the extension can cover your open tabs with a countdown so you can step away and pray. Choose a duration from 1 to 120 minutes, and allow manual unlock if you like. Access to your tabs is requested only when you turn this on.
+When prayer time begins, the extension can cover your open tabs with a countdown so you can step away and pray. Choose a duration from 1 to 120 minutes, and allow manual unlock if you like. A calm line under the countdown reads “Turn to your prayer with humility and focus”. Access to your tabs is requested only when you turn this on.
 
 📿 DHIKR REMINDERS (OPTIONAL)
 A small dhikr card can appear on the page you are viewing at a fixed or random interval, in the screen position you choose. Tap it to dismiss it, or it hides by itself after 10 seconds.
 
 🎙️ PRAYER ADHKAR GAME (OPTIONAL)
-Open "Prayer Adhkar" from the popup's settings to read the adhkar for each prayer aloud in its own tab. Chrome's speech recognition follows your reading, and you earn points for each prayer, day, and month. You can play without an account; sign in with email or Google only if you want the leaderboard and to follow friends. Under "My account › Sign-in methods" you can link Google to your account and sign in with either.
+Open "Prayer Adhkar" from the popup's settings to read the adhkar for each prayer aloud in its own tab. Chrome's speech recognition follows your reading, and you earn points for each prayer, day, and month. You can play without an account; sign in with email or Google only if you want the leaderboard and to follow friends. Under "My account › Sign-in methods" you can link Google to your account and sign in with either. The leaderboard opens with the verse ﴿وَفِي ذَٰلِكَ فَلْيَتَنَافَسِ الْمُتَنَافِسُونَ﴾ (Al-Mutaffifin 83:26) and shows each period's latest winners up front.
 
 🌅 MORNING AND EVENING ADHKAR (IN THE GAME)
 • Morning adhkar from Fajr until Maghrib, evening adhkar from Maghrib until the next Fajr
