@@ -15,12 +15,18 @@
 //
 // The web client in Google Cloud must list every LOOPBACK_PORTS entry as an
 // authorized redirect URI: http://127.0.0.1:<port>/
+//
+// Sign in with Apple reuses the same listener: Apple only returns to https
+// addresses, so it posts to the game server (/v1/auth/apple/callback), which
+// forwards the answer here (http://127.0.0.1:<port>/#...) because the state
+// says desk-<port>. The server allows exactly these LOOPBACK_PORTS.
 
 use std::io::{ErrorKind, Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::time::{Duration, Instant};
 
 const AUTH_ENDPOINT: &str = "https://accounts.google.com/o/oauth2/v2/auth";
+const APPLE_AUTH_ENDPOINT: &str = "https://appleid.apple.com/auth/authorize";
 const LOOPBACK_PORTS: [u16; 3] = [53917, 53918, 53919];
 const TIMEOUT: Duration = Duration::from_secs(300);
 
@@ -35,7 +41,7 @@ var h=location.hash.slice(1),m=document.getElementById('m');\
 history.replaceState(null,'','/');\
 if(h){fetch('/done',{method:'POST',body:h}).then(function(r){return r.text();})\
 .then(function(t){m.innerHTML=t;},function(){m.textContent='تعذّر الاتصال بالتطبيق. Could not reach the app.';});}\
-else{m.textContent='لم يصل ردّ من Google. Google sent no response.';}\
+else{m.textContent='لم يصل أي ردّ. No response arrived.';}\
 </script></body></html>";
 
 const DONE_TEXT: &str = "<p><b>تم. يمكنك إغلاق هذه الصفحة والعودة إلى التطبيق.</b></p>\
@@ -45,10 +51,23 @@ const DONE_TEXT: &str = "<p><b>تم. يمكنك إغلاق هذه الصفحة �
 /// redirect_uri. Returns the response parameters (fragment or query of the
 /// redirect) as a query string, or "timeout" / an I/O error.
 pub fn sign_in(query: &str) -> Result<String, String> {
+    run(|port| {
+        let redirect = format!("http://127.0.0.1:{port}/");
+        format!("{AUTH_ENDPOINT}?{query}&redirect_uri={}", encode(&redirect))
+    })
+}
+
+/// Sign in with Apple. `query` is the full request built by the web layer
+/// (apple-auth.js), whose state holds the placeholder `__PORT__` for the
+/// loopback port picked here.
+pub fn apple_sign_in(query: &str) -> Result<String, String> {
+    run(|port| format!("{APPLE_AUTH_ENDPOINT}?{}", query.replace("__PORT__", &port.to_string())))
+}
+
+// Opens url_for(port) in the browser and waits for the answer on that port.
+fn run(url_for: impl Fn(u16) -> String) -> Result<String, String> {
     let (listener, port) = bind()?;
-    let redirect = format!("http://127.0.0.1:{port}/");
-    let url = format!("{AUTH_ENDPOINT}?{query}&redirect_uri={}", encode(&redirect));
-    open_browser(&url)?;
+    open_browser(&url_for(port))?;
 
     listener.set_nonblocking(true).map_err(|e| e.to_string())?;
     let deadline = Instant::now() + TIMEOUT;

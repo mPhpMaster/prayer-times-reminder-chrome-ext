@@ -87,3 +87,6 @@ store-release/
 *.msix
 # ---- GeoNames downloads for tools/build-city-names.mjs ----
 tools/.cache/
+
+# Test-only keys for the backend tests (not real secrets).
+!backend/tests/fixtures/*.pem

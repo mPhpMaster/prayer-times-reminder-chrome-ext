@@ -113,12 +113,21 @@
       }
     : undefined;
 
+  // Sign in with Apple: Apple's web flow in the same Chrome sign-in window.
+  const appleModule = lazy("apple-auth-chrome.js");
+  const appleAuth = chrome.identity
+    ? {
+        signIn: (cfg) => appleModule().then((m) => m.signIn(cfg)),
+        signOut: () => Promise.resolve(),
+      }
+    : undefined;
+
   // "Tasks open" / "30 min left" notifications are planned by the worker.
   const gameAlerts = {
     refresh: () => chrome.runtime.sendMessage({ type: "REFRESH_GAME_ALERTS" }).catch(() => {}),
   };
 
   globalThis.__PTPlatform = {
-    name: "chrome", store, runtime, enforce, dhikr, geo, permissions, speech, googleAuth, gameAlerts,
+    name: "chrome", store, runtime, enforce, dhikr, geo, permissions, speech, googleAuth, appleAuth, gameAlerts,
   };
 })();

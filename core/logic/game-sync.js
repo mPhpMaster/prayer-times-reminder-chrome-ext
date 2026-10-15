@@ -5,8 +5,8 @@
 // sends finished items not yet acknowledged, and the server dedupes, so a
 // retry after a network failure is harmless.
 //
-//   gameApi(baseUrl, token)            -> { authConfig, signUp, signIn, google, forgot, reset, logout,
-//                                           sendVerify, verifyEmail,
+//   gameApi(baseUrl, token)            -> { authConfig, signUp, signIn, google, apple, forgot, reset, logout,
+//                                           sendVerify, verifyEmail, linkGoogle, linkApple, unlink,
 //                                           me, updateMe, deleteMe, pushProgress, users, profile,
 //                                           follow, unfollow, following, leaderboard,
 //                                           dedications, myDedicationRequests, requestDedication,
@@ -62,11 +62,18 @@ function gameApi(baseUrl, token) {
     signUp: (email, password, username, legacyToken) => call("POST", "/v1/auth/register", { email, password, username, legacyToken }),
     signIn: (email, password, legacyToken) => call("POST", "/v1/auth/login", { email, password, legacyToken }),
     google: (idToken, username, legacyToken) => call("POST", "/v1/auth/google", { idToken, username, legacyToken }),
+    // a = Platform.appleAuth.signIn() result: { identityToken, authorizationCode?, nonce? }
+    apple: (a, username, legacyToken) =>
+      call("POST", "/v1/auth/apple", { identityToken: a.identityToken, authorizationCode: a.authorizationCode, nonce: a.nonce, username, legacyToken }),
     forgot: (email) => call("POST", "/v1/auth/forgot", { email }),
     reset: (email, code, password) => call("POST", "/v1/auth/reset", { email, code, password }),
     logout: () => call("POST", "/v1/auth/logout"),
     sendVerify: () => call("POST", "/v1/auth/verify-email/send"),
     verifyEmail: (code) => call("POST", "/v1/auth/verify-email", { code }),
+    // Sign-in methods of the signed-in account (LinkController): add Google / Apple, or remove one.
+    linkGoogle: (idToken) => call("POST", "/v1/me/link/google", { idToken }),
+    linkApple: (a) => call("POST", "/v1/me/link/apple", { identityToken: a.identityToken, authorizationCode: a.authorizationCode, nonce: a.nonce }),
+    unlink: (provider) => call("DELETE", `/v1/me/link/${u(provider)}`),
     me: () => call("GET", "/v1/me"),
     updateMe: (patch) => call("PATCH", "/v1/me", patch),
     deleteMe: () => call("DELETE", "/v1/me"),

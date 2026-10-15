@@ -23,6 +23,17 @@
 //   Platform.googleAuth?                   optional (Android, Chrome, Windows): Google sign-in for the game
 //     .signIn(webClientId)                 -> Google ID token; rejects with .code "canceled" | "failed" | "no-account"
 //     .signOut()
+//   Platform.appleAuth?                    optional: Sign in with Apple for the game (docs/APPLE-SIGNIN.md)
+//     .signIn(cfg, { intent })             cfg = GET /v1/auth/config .apple ({ servicesId, redirectUri });
+//                                          intent "signin" | "link"
+//                                          -> { identityToken, authorizationCode?, nonce? };
+//                                          rejects with .code "canceled" | "failed".
+//                                          Redirect shells (website, Android) leave the page instead
+//                                          and never resolve; the answer comes back via .pending()
+//     .pending?()                          -> { intent, identityToken, ... } | null   once, on reopening
+//     .native?                             true: the shell signs in natively (iOS, plugin "AppleAuth"),
+//                                          so a config without servicesId is enough
+//     .signOut()
 //   Platform.gameAlerts?                   optional: .refresh() re-plans the game's reminders
 //   Platform.game?                         optional (desktop): the game lives in its own window
 //     .open()                              -> { ok, reason? }   open/focus the game window

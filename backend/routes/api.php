@@ -6,6 +6,7 @@ use App\Http\Controllers\Game\AuthController;
 use App\Http\Controllers\Game\DedicationController;
 use App\Http\Controllers\Game\FamilyController;
 use App\Http\Controllers\Game\IntegrityController;
+use App\Http\Controllers\Game\LinkController;
 use App\Http\Controllers\Game\ProgressController;
 use App\Http\Controllers\Game\SocialController;
 use App\Http\Middleware\GameAdmin;
@@ -17,16 +18,19 @@ use Illuminate\Support\Facades\Route;
 // app talks only to these endpoints — never to the database.
 
 Route::prefix('v1')->group(function () {
-    // Sign-in: email + password or Google. The name-only /v1/register is gone;
+    // Sign-in: email + password, Google or Apple. The name-only /v1/register is gone;
     // old name-only accounts keep working and are linked via legacyToken.
     Route::get('auth/config', [AuthController::class, 'config']);
     Route::middleware('throttle:10,1')->group(function () {
         Route::post('auth/register', [AuthController::class, 'register']);
         Route::post('auth/login', [AuthController::class, 'login']);
         Route::post('auth/google', [AuthController::class, 'google']);
+        Route::post('auth/apple', [AuthController::class, 'apple']);
         Route::post('auth/reset', [AuthController::class, 'reset']);
     });
     Route::post('auth/forgot', [AuthController::class, 'forgot'])->middleware('throttle:3,10');
+    // Sign in with Apple's Return URL (form_post from appleid.apple.com): forwards to the app.
+    Route::post('auth/apple/callback', [AuthController::class, 'appleCallback'])->middleware('throttle:30,1');
 
     // The About page's dedication names (public).
     Route::get('dedications', [DedicationController::class, 'index']);
@@ -40,6 +44,12 @@ Route::prefix('v1')->group(function () {
         Route::get('me', [AccountController::class, 'show']);
         Route::patch('me', [AccountController::class, 'update']);
         Route::delete('me', [AccountController::class, 'destroy']);
+        // Sign-in methods: link Google / Apple to this account, or remove one.
+        Route::middleware('throttle:10,1')->group(function () {
+            Route::post('me/link/google', [LinkController::class, 'google']);
+            Route::post('me/link/apple', [LinkController::class, 'apple']);
+            Route::delete('me/link/{provider}', [LinkController::class, 'unlink'])->whereIn('provider', ['google', 'apple']);
+        });
 
         Route::post('progress', [ProgressController::class, 'store'])->middleware('throttle:60,1');
         Route::get('progress', [ProgressController::class, 'index']);

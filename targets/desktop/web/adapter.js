@@ -195,6 +195,24 @@
     signIn: (clientId) => googleModule().then((m) => m.signIn(clientId, invoke)),
     signOut: () => googleModule().then((m) => m.signOut()).catch(() => {}),
   };
+  // Sign in with Apple: Apple's web flow in the default browser too. Apple posts
+  // to the game server, which forwards the answer to the same loopback
+  // listener; the port goes into the state (desk-<port>), filled in by Rust.
+  const appleAuth = {
+    signIn: async (cfg) => {
+      const req = AppleAuthFlow.request(cfg, "desk-__PORT__");
+      let response;
+      try {
+        response = await invoke("apple_sign_in", { query: req.query });
+      } catch (e) {
+        const err = new Error(String(e));
+        err.code = String(e) === "timeout" ? "canceled" : "failed";
+        throw err;
+      }
+      return AppleAuthFlow.answer(response, req);
+    },
+    signOut: () => Promise.resolve(),
+  };
   const game = {
     open: () => invoke("open_game").then(() => ({ ok: true })).catch((e) => ({ ok: false, reason: String(e) })),
     showPrayerTimes: () => invoke("show_prayer_times").catch(() => {}),
@@ -205,5 +223,5 @@
     document.addEventListener("contextmenu", (e) => e.preventDefault());
   }
 
-  globalThis.__PTPlatform = { name: "tauri", store, enforce, dhikr, runtime, geo, permissions, browserExt, autostart, speech, googleAuth, game };
+  globalThis.__PTPlatform = { name: "tauri", store, enforce, dhikr, runtime, geo, permissions, browserExt, autostart, speech, googleAuth, appleAuth, game };
 })();

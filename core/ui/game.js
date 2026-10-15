@@ -10,8 +10,10 @@
 //
 // Speech: the Google voice dialog, one meaningful segment per utterance.
 //
-// Accounts: email + password or Google (game-sync.js, GoogleAuthPlugin). A
-// name-only account from before is "legacy" and is linked on sign-in.
+// Accounts: email + password, Google (game-sync.js, GoogleAuthPlugin) or Apple
+// (Platform.appleAuth, apple-auth.js); one account can link Google and Apple
+// ("Sign-in methods"). A name-only account from before is "legacy" and is
+// linked on sign-in.
 
 const $ = (id) => document.getElementById(id);
 const NOTICE_HIDE_MS = 4000; // a toast: success fades after 4 s,
@@ -1083,6 +1085,8 @@ function personItem(u) {
 // ---- tabs: account (settings + sign-in) --------------------------------------
 let authMode = "in"; // "in" | "up"
 let pendingGoogleToken = null; // ID token waiting for a new player's public name
+let pendingApple = null; // the same for Apple: { identityToken, authorizationCode?, nonce? }
+let myMethods = null; // { google, apple, hasPassword } from /v1/me
 
 function authErrorText(e) {
   const map = {
@@ -1096,6 +1100,9 @@ function authErrorText(e) {
     "account-conflict": G.accountConflict,
     "google-invalid": G.googleFailed,
     "google-unavailable": G.googleFailed,
+    "apple-invalid": G.appleFailed,
+    "apple-unavailable": G.appleFailed,
+    "apple-unreachable": G.appleFailed,
     "bad-code": G.badCode,
     "code-expired": G.codeExpired,
     "too-many-attempts": G.tooMany,
@@ -1158,6 +1165,7 @@ async function renderMe() {
         emailVerified: user.emailVerified,
         admin: user.admin,
       };
+      myMethods = { google: !!user.google, apple: !!user.apple, hasPassword: !!user.hasPassword };
       await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
       $("hide-progress").checked = user.hideProgress;
       await adoptAccountSettings(user.settings);
@@ -1177,7 +1185,13 @@ async function renderMe() {
   // Google sign-in is offered wherever the shell can do it (Android plugin,
   // Chrome identity); its client id is fetched when the button is pressed.
   $("google-btn").hidden = !Platform.googleAuth;
-  loadAuthConfig();
+  // Apple only when the server has it on (and the shell can do it).
+  $("apple-btn").hidden = !appleReady(authCfg);
+  loadAuthConfig().then((cfg) => {
+    $("apple-btn").hidden = !appleReady(cfg);
+    renderMethods(signedIn, cfg);
+  });
+  renderMethods(signedIn, authCfg);
 
   // Admin link and email confirmation follow the server's answer above.
   $("admin-link").hidden = !(signedIn && account.admin);
@@ -1228,6 +1242,7 @@ async function signedIn({ user, token }, message) {
   await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
   if (adoptSyncAccount(state, user.username)) await save();
   pendingGoogleToken = null;
+  pendingApple = null;
   $("password").value = "";
   $("reset-password").value = "";
   showAuthPane("main");
@@ -1282,9 +1297,177 @@ function signInWithGoogle() {
 
 function submitGoogleName(ev) {
   ev.preventDefault();
+  const name = $("google-username").value.trim();
   withBusy(ev.submitter || $("google-name").querySelector("button[type=submit]"), async () => {
-    await signedIn(await gameApi(apiUrl).google(pendingGoogleToken, $("google-username").value.trim(), legacyToken()));
+    // The same name step serves a new Apple player.
+    if (pendingApple) await signedIn(await gameApi(apiUrl).apple(pendingApple, name, legacyToken()));
+    else await signedIn(await gameApi(apiUrl).google(pendingGoogleToken, name, legacyToken()));
   });
+}
+
+// ---- Sign in with Apple -------------------------------------------------------
+// Off unless the server has Apple configured (GET /v1/auth/config .apple). Web
+// shells need its Services ID; the native iOS sign-in needs only the switch.
+function appleReady(cfg) {
+  const a = Platform.appleAuth;
+  return !!(a && cfg && cfg.apple && (cfg.apple.servicesId || a.native));
+}
+
+function appleErrorText(e) {
+  if (e && e.code === "canceled") return G.appleCanceled;
+  if (e && e.code === "failed") return G.appleFailed;
+  if (e && e.code === "account-conflict") return G.appleConflict;
+  return authErrorText(e);
+}
+
+function signInWithApple() {
+  const btn = $("apple-btn");
+  btn.disabled = true;
+  (async () => {
+    const cfg = await loadAuthConfig();
+    if (!cfg) throw { code: "offline" };
+    if (!appleReady(cfg)) throw { code: "apple-unavailable" };
+    // Website / Android leave the page here; resumeApple() finishes on return.
+    await finishAppleSignIn(await Platform.appleAuth.signIn(cfg.apple, { intent: "signin" }));
+  })()
+    .catch((e) => showNotice(appleErrorText(e)))
+    .finally(() => (btn.disabled = false));
+}
+
+async function finishAppleSignIn(a) {
+  try {
+    await signedIn(await gameApi(apiUrl).apple(a, undefined, legacyToken()));
+  } catch (e) {
+    if (e.code !== "username-required") throw e;
+    pendingApple = a; // new player: ask for a public name first
+    pendingGoogleToken = null;
+    showAuthPane("google-name");
+    $("google-username").focus();
+  }
+}
+
+// Website / Android: Apple's answer arrives when this page opens again.
+async function resumeApple() {
+  if (!Platform.appleAuth || !Platform.appleAuth.pending) return;
+  let a = null;
+  try {
+    a = await Platform.appleAuth.pending();
+  } catch (e) {
+    showNotice(appleErrorText(e));
+    return;
+  }
+  if (!a) return;
+  try {
+    if (a.intent === "link") {
+      if (!account || !account.token) return;
+      const { user } = await api().linkApple(a);
+      await afterLinkChange(user, G.linked("Apple"));
+    } else {
+      await finishAppleSignIn(a);
+    }
+  } catch (e) {
+    showNotice(a.intent === "link" ? linkErrorText(e, "apple") : appleErrorText(e));
+  }
+}
+
+// ---- sign-in methods (My account): link / unlink Google and Apple ---------------
+const PROVIDER_NAMES = { google: "Google", apple: "Apple" };
+
+function linkErrorText(e, kind) {
+  const name = PROVIDER_NAMES[kind];
+  const map = {
+    "account-conflict": G.linkConflict(name),
+    "already-linked": G.alreadyLinked(name),
+    "last-method": G.lastMethod,
+  };
+  if (e && map[e.code]) return map[e.code];
+  return kind === "apple" ? appleErrorText(e) : authErrorText(e);
+}
+
+function renderMethods(signedIn, cfg) {
+  const box = $("methods");
+  box.hidden = !(signedIn && myMethods);
+  if (box.hidden) return;
+  const can = {
+    google: !!(Platform.googleAuth && cfg && cfg.google),
+    apple: appleReady(cfg),
+  };
+  const rows = [];
+  for (const kind of ["google", "apple"]) {
+    const on = myMethods[kind];
+    if (!on && !can[kind]) continue; // nothing to show or do here
+    const li = document.createElement("li");
+    li.className = "method" + (on ? " on" : "");
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = PROVIDER_NAMES[kind];
+    const st = document.createElement("span");
+    st.className = "state";
+    st.textContent = on ? G.methodOn : G.methodOff;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "ghost";
+    b.textContent = on ? G.unlinkBtn : G.linkBtn;
+    b.addEventListener("click", () => (on ? unlinkProvider(kind, b) : linkProvider(kind, b)));
+    li.append(name, st, b);
+    rows.push(li);
+  }
+  const pw = document.createElement("li");
+  pw.className = "method" + (myMethods.hasPassword ? " on" : "");
+  const pwName = document.createElement("span");
+  pwName.className = "name";
+  pwName.textContent = G.methodEmail;
+  const pwState = document.createElement("span");
+  pwState.className = "state";
+  pwState.textContent = myMethods.hasPassword ? G.passwordSet : G.passwordNotSet;
+  pw.append(pwName, pwState);
+  rows.push(pw);
+  $("methods-list").replaceChildren(...rows);
+}
+
+// A link or unlink changed the account: keep the stored copy and the screen in step.
+async function afterLinkChange(user, message) {
+  myMethods = { google: !!user.google, apple: !!user.apple, hasPassword: !!user.hasPassword };
+  account = { ...account, email: user.email, emailVerified: user.emailVerified, admin: user.admin };
+  await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
+  await renderMe();
+  showNotice(message, { autoHide: true });
+}
+
+async function linkProvider(kind, button) {
+  button.disabled = true;
+  try {
+    const cfg = await loadAuthConfig();
+    if (!cfg) throw { code: "offline" };
+    let res;
+    if (kind === "google") {
+      if (!cfg.google || !Platform.googleAuth) throw { code: "google-unavailable" };
+      res = await api().linkGoogle(await Platform.googleAuth.signIn(cfg.google.clientId));
+    } else {
+      if (!appleReady(cfg)) throw { code: "apple-unavailable" };
+      // Website / Android leave the page here; resumeApple() finishes the link.
+      res = await api().linkApple(await Platform.appleAuth.signIn(cfg.apple, { intent: "link" }));
+    }
+    await afterLinkChange(res.user, G.linked(PROVIDER_NAMES[kind]));
+  } catch (e) {
+    showNotice(linkErrorText(e, kind));
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function unlinkProvider(kind, button) {
+  if (!confirm(G.unlinkConfirm(PROVIDER_NAMES[kind]))) return;
+  button.disabled = true;
+  try {
+    const { user } = await api().unlink(kind);
+    if (kind === "google" && Platform.googleAuth) await Platform.googleAuth.signOut();
+    await afterLinkChange(user, G.unlinked(PROVIDER_NAMES[kind]));
+  } catch (e) {
+    showNotice(linkErrorText(e, kind));
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function logout() {
@@ -1545,8 +1728,10 @@ $("mode-up").addEventListener("click", () => setAuthMode("up"));
 $("auth-form").addEventListener("submit", submitAuth);
 $("google-btn").addEventListener("click", signInWithGoogle);
 $("google-name").addEventListener("submit", submitGoogleName);
+$("apple-btn").addEventListener("click", signInWithApple);
 $("google-name-cancel").addEventListener("click", () => {
   pendingGoogleToken = null;
+  pendingApple = null;
   showAuthPane("main");
 });
 $("forgot").addEventListener("click", () => {
@@ -1618,4 +1803,5 @@ $("tools").addEventListener("click", () => {
   setInterval(tick, 1000);
   syncNow();
   checkIntegrity(false);
+  resumeApple();
 })();

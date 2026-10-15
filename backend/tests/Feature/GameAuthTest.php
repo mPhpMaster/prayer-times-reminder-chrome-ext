@@ -171,9 +171,9 @@ class GameAuthTest extends TestCase
 
     public function test_config_exposes_only_the_public_client_id(): void
     {
-        $this->getJson('/v1/auth/config')->assertExactJson(['google' => ['clientId' => self::CLIENT]]);
+        $this->getJson('/v1/auth/config')->assertExactJson(['google' => ['clientId' => self::CLIENT], 'apple' => null]);
         config(['services.google.client_id' => null]);
-        $this->getJson('/v1/auth/config')->assertExactJson(['google' => null]);
+        $this->getJson('/v1/auth/config')->assertExactJson(['google' => null, 'apple' => null]);
         $this->postJson('/v1/auth/google', ['idToken' => 'x'])->assertStatus(503)->assertJson(['error' => 'google-unavailable']);
     }
 

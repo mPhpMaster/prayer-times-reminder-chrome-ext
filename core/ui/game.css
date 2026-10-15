@@ -322,6 +322,28 @@ input[type="search"], #username, #search, #auth input {
   padding: 11px 16px;
   font-weight: 700;
 }
+/* Sign in with Apple: Apple's "white" style for dark backgrounds — white button,
+   black logo and title in the system font, same size as the Google button. */
+.apple-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+  border-radius: var(--radius);
+  padding: 11px 16px;
+  font: 600 15px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+.apple-btn[hidden] { display: none; }
+.apple-logo { width: 17px; height: 17px; flex: none; }
+/* Sign-in methods (My account): one row per method, its state and the action. */
+.methods .method { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; }
+.methods .method .name { flex: 1; }
+.methods .method .state { color: var(--muted-foreground); font-size: 13px; }
+.methods .method.on .state { color: var(--primary); }
+.methods .method button { font-size: 13px; padding: 5px 10px; }
 .or { text-align: center; font-size: 12px; color: var(--muted-foreground); margin: 6px 0 2px; }
 .link {
   background: none;
