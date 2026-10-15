@@ -14,10 +14,15 @@ When prayer time begins, the extension can cover your open tabs with a countdown
 A small dhikr card can appear on the page you are viewing at a fixed or random interval, in the screen position you choose. Tap it to dismiss it, or it hides by itself after 10 seconds.
 
 🎙️ PRAYER ADHKAR GAME (OPTIONAL)
-Open "Prayer Adhkar" from the popup's settings to read the adhkar for each prayer aloud in its own tab. Chrome's speech recognition follows your reading, and you earn points for each prayer, day, and month. You can play without an account; sign in with email or Google only if you want the leaderboard and to follow friends.
+Open "Prayer Adhkar" from the popup's settings to read the adhkar for each prayer aloud in its own tab. Chrome's speech recognition follows your reading, and you earn points for each prayer, day, and month. You can play without an account; sign in with email or Google only if you want the leaderboard and to follow friends. Under "My account › Sign-in methods" you can link Google to your account and sign in with either.
+
+🌅 MORNING AND EVENING ADHKAR (IN THE GAME)
+• Morning adhkar from Fajr until Maghrib, evening adhkar from Maghrib until the next Fajr
+• 13 adhkar in each set, read aloud like any task, with 50 bonus points for each completed set
+• An optional section, off by default, for adhkar whose authenticity is disputed, each with its source and grading, without points
 
 🌐 LANGUAGES AND THEMES
-English, Arabic, Urdu, German, French, Spanish, Hindi, and Indonesian, with right-to-left layout and optional Arabic-Indic numerals. Two themes: Midnight Emerald and Classic.
+11 languages: English, Arabic, Urdu, German, French, Spanish, Hindi, Indonesian, Russian, Kazakh, and Uzbek, with right-to-left layout and optional Arabic-Indic numerals. Two themes: Midnight Emerald and Classic.
 
 🔐 PRIVACY
 • No ads, no tracking, no analytics

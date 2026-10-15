@@ -4,33 +4,37 @@
 
 ---
 
+<div dir="rtl">
+
 ## العربية
 
 ### الوضع الحالي
 
 - الكود جاهز في الخادم وفي كل المنصات، لكن **Apple مطفأ تمامًا** حتى تُضبط متغيرات البيئة أدناه. ما دام مطفأً:
-  `GET /v1/auth/config` يعيد `"apple": null`، وزر «تسجيل الدخول باستخدام Apple» مخفي، و`/v1/auth/apple` يعيد `503 apple-unavailable`.
+  يعيد الطلب `GET /v1/auth/config` القيمة <span dir="ltr">`"apple": null`</span>، ويكون زر «تسجيل الدخول باستخدام Apple» مخفيًا، ويعيد المسار <span dir="ltr">`/v1/auth/apple`</span> الرد <span dir="ltr">`503 apple-unavailable`</span>.
 - **ربط Google بحساب موجود يعمل من الآن** (قسم «طرق تسجيل الدخول» في «حسابي»).
-- يحتاج تفعيل Apple إلى عضوية Apple Developer Program (رسوم سنوية 99$)، لا بديل مجاني لها.
+- يحتاج تفعيل Apple إلى عضوية Apple Developer Program برسوم سنوية قدرها 99 دولارًا، ولا بديل مجاني لها.
 
 ### ما تنشئه في حساب Apple Developer (مرة واحدة)
 
-1. **App ID** — Certificates, Identifiers & Profiles ← Identifiers ← App IDs:
-   المعرّف `com.mphpmaster.prayer` (نفس معرّف تطبيق iOS)، وفعّل **Sign in with Apple** (Enable as a primary App ID).
-2. **Services ID** (للويب وChrome وWindows وAndroid) — Identifiers ← ➕ ← Services IDs:
-   - Identifier مقترح: `com.mphpmaster.prayer.signin` (هذا هو `APPLE_SERVICES_ID`).
-   - فعّل **Sign in with Apple** ثم **Configure**:
-     - Primary App ID: `com.mphpmaster.prayer`
-     - Domains and Subdomains: `prayer-times.sarhsoft.com`
-     - Return URLs: `https://prayer-times.sarhsoft.com/v1/auth/apple/callback`
-   - إن طلبت الصفحة **التحقق من النطاق** (Download / Verify): ضع الملف الذي تنزّله في
-     `backend/public/.well-known/apple-developer-domain-association.txt` على الخادم ثم اضغط Verify.
-3. **مفتاح Sign in with Apple** (اختياري لكنه مطلوب عمليًا لمراجعة App Store) — Keys ← ➕:
-   فعّل Sign in with Apple ← Configure ← اختر `com.mphpmaster.prayer` ← Continue ← Register ← **Download** ملف `AuthKey_XXXXXXXXXX.p8` (يُنزَّل مرة واحدة فقط).
-   - ارفعه إلى الخادم **خارج مجلد public**، مثل `~/keys/AuthKey_XXXXXXXXXX.p8`، وصلاحياته `600`.
-   - سجّل **Key ID** (10 أحرف) و**Team ID** (أعلى يمين صفحة الحساب).
-   - به يحفظ الخادم رمز Apple ويُلغيه عند فك الربط أو حذف الحساب (إرشاد App Store رقم 5.1.1(v)).
-4. **البريد المخفي (Hide My Email)** — من يخفي بريده يصلنا عنوان مثل `xyz@privaterelay.appleid.com`. لكي تصل إليه رسائل الخادم (رمز استعادة كلمة المرور، تأكيد البريد): Services ← **Sign in with Apple for Email Communication** ← Configure ← أضف نطاق/عنوان الإرسال الذي يستخدمه الخادم (`MAIL_FROM_ADDRESS`) مع سجل SPF صحيح. بدونه ترتد هذه الرسائل فقط؛ الدخول نفسه يعمل.
+1. **معرّف التطبيق (App ID)**: افتح Certificates, Identifiers & Profiles، ثم Identifiers، ثم App IDs.
+   المعرّف `com.mphpmaster.prayer` (نفس معرّف تطبيق iOS)، وفعّل فيه **Sign in with Apple** بالخيار Enable as a primary App ID.
+2. **معرّف الخدمات (Services ID)**، وهو للويب و Chrome و Windows و Android: افتح Identifiers، ثم اضغط ➕ واختر Services IDs.
+   - المعرّف المقترح `com.mphpmaster.prayer.signin`، وهو قيمة `APPLE_SERVICES_ID`.
+   - فعّل **Sign in with Apple** ثم اضغط **Configure**:
+     - في خانة Primary App ID: `com.mphpmaster.prayer`
+     - في خانة Domains and Subdomains: `prayer-times.sarhsoft.com`
+     - في خانة Return URLs: `https://prayer-times.sarhsoft.com/v1/auth/apple/callback`
+   - إن طلبت الصفحة **التحقق من النطاق** (بزرَّي Download و Verify): ضع الملف الذي تنزّله على الخادم في المسار
+     `backend/public/.well-known/apple-developer-domain-association.txt` ثم اضغط Verify.
+3. **مفتاح Sign in with Apple** (اختياري، لكنه مطلوب عمليًا لمراجعة App Store): افتح Keys واضغط ➕.
+   فعّل Sign in with Apple، ثم اضغط Configure واختر `com.mphpmaster.prayer`، ثم Continue، ثم Register، ثم **Download** لتنزيل الملف `AuthKey_XXXXXXXXXX.p8` (يُنزَّل مرة واحدة فقط).
+   - ارفعه إلى الخادم **خارج مجلد public**، مثل <span dir="ltr">`~/keys/AuthKey_XXXXXXXXXX.p8`</span>، بصلاحيات `600`.
+   - سجّل **معرّف المفتاح (Key ID)** المكوّن من 10 أحرف، و**معرّف الفريق (Team ID)** الظاهر أعلى يمين صفحة الحساب.
+   - به يحفظ الخادم رمز Apple ويُلغيه عند فك الربط أو حذف الحساب (إرشاد App Store رقم <span dir="ltr">`5.1.1(v)`</span>).
+4. **البريد المخفي (Hide My Email)**: من يخفي بريده يصلنا منه عنوان مثل `xyz@privaterelay.appleid.com`.
+   لكي تصل إليه رسائل الخادم (رمز استعادة كلمة المرور، وتأكيد البريد): افتح Services، ثم **Sign in with Apple for Email Communication**، ثم Configure، وأضف نطاق أو عنوان الإرسال الذي يستخدمه الخادم (`MAIL_FROM_ADDRESS`) مع سجل SPF صحيح.
+   بدونه ترتد هذه الرسائل فقط، أما الدخول نفسه فيعمل.
 
 ### التفعيل على الخادم (prayer-times.sarhsoft.com)
 
@@ -48,41 +52,48 @@ APPLE_PRIVATE_KEY_PATH=/home/<user>/keys/AuthKey_XXXXXXXXXX.p8
 # APPLE_EXTENSION_IDS=knahkbkmbjghaiillhngjbhoinmeegoc,<dev-extension-id>
 ```
 
-ثم: `php artisan migrate --force` (يضيف العمودين `apple_sub` و`apple_refresh_token`؛ آمن على SQLite 3.7 ويمكن تشغيله مرتين)، ثم `php artisan config:clear` (أو `config:cache` إن كنت تستخدمه).
-تحقق: `https://prayer-times.sarhsoft.com/v1/auth/config` يجب أن يعرض `"apple":{"servicesId":"com.mphpmaster.prayer.signin",...}`.
+ثم شغّل `php artisan migrate --force` (يضيف العمودين `apple_sub` و `apple_refresh_token`، وهو آمن على SQLite 3.7 ويمكن تشغيله مرتين)، ثم `php artisan config:clear` (أو `config:cache` إن كنت تستخدمه).
 
-`APP_KEY` يجب أن يكون مضبوطًا (يُستعمل لتشفير رمز Apple المحفوظ).
+للتحقق افتح `https://prayer-times.sarhsoft.com/v1/auth/config`، ويجب أن يعرض <span dir="ltr">`"apple":{"servicesId":"com.mphpmaster.prayer.signin",...}`</span>.
+
+يجب أن يكون `APP_KEY` مضبوطًا، فهو يُستعمل لتشفير رمز Apple المحفوظ.
 
 ### كيف يعمل في كل منصة
 
 | المنصة | الطريقة |
 |---|---|
-| Chrome | نافذة `chrome.identity` نفسها المستخدمة لـGoogle؛ يعود إلى `https://<id>.chromiumapp.org/apple` |
-| الموقع (GitHub Pages) | الصفحة تنتقل إلى Apple ثم تعود عبر `apple-callback.html` |
-| Windows | المتصفح الافتراضي + المنفذ المحلي 127.0.0.1:53917–53919 (نفس آلية Google) |
-| Android | صفحة Apple داخل WebView التطبيق (`allowNavigation: appleid.apple.com`) ثم العودة إلى `https://localhost/apple-callback.html` |
-| iOS | أصلي عبر إضافة Capacitor اسمها `AppleAuth` (يبنيها مشروع iOS — انظر الأسفل) |
+| إضافة Chrome | نافذة `chrome.identity` نفسها المستخدمة مع Google، ثم العودة إلى `https://<id>.chromiumapp.org/apple` |
+| الموقع على GitHub Pages | الصفحة تنتقل إلى Apple، ثم تعود عبر `apple-callback.html` |
+| تطبيق Windows | المتصفح الافتراضي مع المنفذ المحلي على `127.0.0.1` (من `53917` إلى `53919`)، بنفس آلية Google |
+| تطبيق Android | صفحة Apple داخل نافذة WebView في التطبيق (بالإعداد `allowNavigation: appleid.apple.com`)، ثم العودة إلى `https://localhost/apple-callback.html` |
+| تطبيق iOS | دعم أصلي عبر إضافة Capacitor اسمها `AppleAuth`، يبنيها مشروع iOS (انظر الأسفل) |
 
-Apple لا يعيد إلا إلى عناوين https على نطاق موثّق، لذلك يرسل Apple الرد (`form_post`) إلى الخادم على
-`/v1/auth/apple/callback`، والخادم يحوّله فورًا (303) إلى عنوان التطبيق المحدد في `state` من قائمة مسموحة ثابتة فقط، والرمز في جزء `#` من العنوان. التطبيق يتحقق من `state` و`nonce`، والخادم يتحقق من توقيع الرمز بمفاتيح Apple العامة (JWKS).
+لا يعيد Apple إلا إلى عناوين https على نطاق موثّق، لذلك يرسل Apple الرد (`form_post`) إلى الخادم على المسار <span dir="ltr">`/v1/auth/apple/callback`</span>.
+ثم يحوّله الخادم فورًا (بالرمز 303) إلى عنوان التطبيق المحدد في `state`، ومن قائمة مسموحة ثابتة فقط، ويكون الرمز في جزء `#` من العنوان.
+يتحقق التطبيق من `state` و `nonce`، ويتحقق الخادم من توقيع الرمز بمفاتيح Apple العامة (JWKS).
 
-**تحديثات تحتاج إصدارًا جديدًا:** Android (تغيّر `capacitor.config.json`، شغّل `npx cap sync`)، وWindows (أمر Rust جديد `apple_sign_in`)، وإضافة Chrome (ملف `apple-auth-chrome.js`). الموقع يتحدث مع النشر التلقائي.
+**تحديثات تحتاج إصدارًا جديدًا:** تطبيق Android (تغيّر `capacitor.config.json`، فشغّل `npx cap sync`)، وتطبيق Windows (أمر Rust جديد اسمه `apple_sign_in`)، وإضافة Chrome (الملف `apple-auth-chrome.js`). أما الموقع فيتحدث مع النشر التلقائي.
 
-### iOS (لاحقًا، في مشروع `targets/mobile/ios`)
+### تطبيق iOS (لاحقًا، في مشروع `targets/mobile/ios`)
 
-- في Xcode: Signing & Capabilities ← ➕ **Sign in with Apple**.
-- إضافة Capacitor اسمها **`AppleAuth`** بدالة `signIn({ nonce })`:
-  تستخدم `ASAuthorizationAppleIDProvider` بنطاق `.email`، وتضع في الطلب **SHA-256 (hex) للـnonce**، وتعيد `{ identityToken, authorizationCode }` (نصوص UTF-8)، وعند الإلغاء ترفض بـ`code: "canceled"`، وغيره `"failed"`.
-- `targets/mobile/web/adapter.js` يلتقطها تلقائيًا (`Platform.appleAuth.native = true`) ويرسل الـnonce الخام للخادم.
-- **إرشاد App Store رقم 4.8:** بما أن تطبيق iOS يعرض «المتابعة بحساب Google» فيجب أن يعرض أيضًا «تسجيل الدخول باستخدام Apple» بالقدر نفسه من الظهور. والزر يظهر تلقائيًا متى كانت الإضافة موجودة و`APPLE_CLIENT_IDS` مضبوطًا.
+- في Xcode: افتح Signing & Capabilities، ثم اضغط ➕ وأضف **Sign in with Apple**.
+- إضافة Capacitor اسمها **`AppleAuth`** فيها الدالة <span dir="ltr">`signIn({ nonce })`</span>، وهذه الدالة:
+  - تستخدم `ASAuthorizationAppleIDProvider` بالنطاق <span dir="ltr">`.email`</span>.
+  - تضع في الطلب **تجزئة SHA-256 لقيمة nonce بصيغة hex**.
+  - تعيد <span dir="ltr">`{ identityToken, authorizationCode }`</span> (نصوص UTF-8).
+  - عند الإلغاء ترفض بالقيمة <span dir="ltr">`code: "canceled"`</span>، وفي غير ذلك بالقيمة <span dir="ltr">`"failed"`</span>.
+- يلتقطها الملف `targets/mobile/web/adapter.js` تلقائيًا (`Platform.appleAuth.native = true`)، ويرسل قيمة nonce الخام إلى الخادم.
+- **إرشاد App Store رقم 4.8:** بما أن تطبيق iOS يعرض «المتابعة بحساب Google» فيجب أن يعرض أيضًا «تسجيل الدخول باستخدام Apple» بالقدر نفسه من الظهور. والزر يظهر تلقائيًا متى كانت الإضافة موجودة و `APPLE_CLIENT_IDS` مضبوطًا.
 
 ### ربط الحسابات (يعمل بالاتجاهين)
 
-من «حسابي» ← «طرق تسجيل الدخول»: ربط/إلغاء ربط Google وApple، وحالة البريد وكلمة المرور.
+من «حسابي» ← «طرق تسجيل الدخول»: ربط وإلغاء ربط Google و Apple، وحالة البريد وكلمة المرور.
 - بعد الربط، الدخول بأيّ منهما يفتح الحساب نفسه.
-- إن كان حساب Google/Apple مرتبطًا بلاعب آخر: `409 account-conflict`.
-- إن كان حسابك مرتبطًا بحساب آخر من النوع نفسه: `409 already-linked` (ألغِ الربط أولًا).
-- لا يمكن إلغاء آخر طريقة دخول (لا كلمة مرور ولا مزوّد آخر): `409 last-method`.
+- إن كان حساب Google أو Apple مرتبطًا بلاعب آخر: <span dir="ltr">`409 account-conflict`</span>.
+- إن كان حسابك مرتبطًا بحساب آخر من النوع نفسه: <span dir="ltr">`409 already-linked`</span> (ألغِ الربط أولًا).
+- لا يمكن إلغاء آخر طريقة دخول (لا كلمة مرور ولا مزوّد آخر): <span dir="ltr">`409 last-method`</span>.
+
+</div>
 
 ---
 

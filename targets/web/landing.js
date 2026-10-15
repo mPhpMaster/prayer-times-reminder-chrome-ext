@@ -13,6 +13,7 @@
     windowsStore: "https://apps.microsoft.com/detail/9PFTWDWLNL7C",
     windowsDirect: REPO + "/releases", // replaced by the newest desktop-v release's installer below
     discord: REPO + "/tree/main/targets/vencord",
+    ios: REPO + "/blob/main/targets/mobile/IOS.md", // not on the App Store yet: the build-from-source guide
   };
   const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
   const ICONS = { Fajr: "🌄", Dhuhr: "☀️", Asr: "🌤️", Maghrib: "🌇", Isha: "🌙" };
@@ -133,12 +134,16 @@
       feature("⏸️", L.webFeatLockT, L.webFeatLock),
       feature("📿", L.webFeatDhikrT, L.webFeatDhikr),
       feature("🏆", L.webFeatGameT, L.webFeatGame),
+      feature("🌅", L.webFeatSideT, L.webFeatSide),
+      feature("🔐", L.webFeatAccountT, L.webFeatAccount),
       feature("👪", L.webFeatFamilyT, L.webFeatFamily),
+      feature("📲", L.webFeatWidgetsT, L.webFeatWidgets),
       feature("🌍", L.webFeatLangsT, L.webFeatLangs)
     );
     $("downloads-title").textContent = L.webDownloads;
     setLink("dl-chrome", LINKS.chrome, L.webChrome);
     setLink("dl-android", LINKS.android, L.webAndroid, L.webAndroidNote);
+    setLink("dl-ios", LINKS.ios, L.webIos, L.webIosNote);
     setLink("dl-winstore", LINKS.windowsStore, L.webWindowsStore);
     setLink("dl-windirect", LINKS.windowsDirect, L.webWindowsDirect);
     setLink("dl-discord", LINKS.discord, L.webDiscord);

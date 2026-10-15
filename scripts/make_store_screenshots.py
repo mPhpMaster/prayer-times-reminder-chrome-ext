@@ -12,11 +12,14 @@ For each language this script:
      to 1280x800 with Lanczos for crisp text.
 
 It also renders the optional dhikr game page (game.html) as the extension shows
-it — in its own tab — on the tasks tab and on the account tab (sign-in options),
-and writes the Chrome Web Store set for the listing's two languages (en, ar).
+it — in its own tab — on the tasks tab (scrolled to the prayer's Quran tasks and
+the morning / evening adhkar card) and on the account tab (sign-in options, as
+a guest), and writes the Chrome Web Store set for the listing's two languages
+(en, ar).
 
 Run:  python scripts/make_store_screenshots.py
 Output: screenshots/<lang>.png (popup) and screenshots/welcome-<lang>.png
+        screenshots/game-{en,ar}.png (game tasks tab; same image as the store's 2-game-tasks)
         store-release/assets/chrome/screenshots/<lang>-{1-prayer-times,2-game-tasks,3-game-account,4-welcome}.png
 """
 
@@ -165,10 +168,31 @@ STAGE_GAME = """
   body{ margin:0; box-sizing:border-box; width:100%; height:800px; overflow:hidden; }
 """
 
+# The tasks tab is taller than one 800px tab: the morning / evening adhkar card
+# sits below the prayer's tasks. Scroll the (real, unmodified) page so the
+# prayer's last task group (Quran) starts at TOP px and the side card follows it
+# in the same frame. Harness-only: nothing in the UI is changed or faked.
+SCROLL_TO = """
+<script>
+(function(){
+  var SEL="__SEL__", TOP=__TOP__;
+  function go(){
+    var el=document.querySelector(SEL); if(!el||el.hidden) return;
+    var s=document.scrollingElement, b=document.body;
+    var y=el.getBoundingClientRect().top + b.scrollTop + s.scrollTop - TOP;
+    b.scrollTop=y; s.scrollTop=y;
+  }
+  if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(function(){ setTimeout(go,200); }); }
+  setTimeout(go,800); setTimeout(go,1800); setTimeout(go,3000);
+})();
+</script>
+"""
+
 KINDS = {
     "popup":   {"src": "popup.html",   "stage": STAGE_POPUP,   "sel": "#main-view", "margin": 52},
     "welcome": {"src": "welcome.html", "stage": STAGE_WELCOME, "sel": ".card",      "margin": 58},
-    "game":    {"src": "game.html",    "stage": STAGE_GAME,    "sel": None, "margin": 0, "hash": "#tasks", "common": False},
+    "game":    {"src": "game.html",    "stage": STAGE_GAME,    "sel": None, "margin": 0, "hash": "#tasks", "common": False,
+                "scroll": ("#task-groups > h3:last-of-type", 28)},
     "account": {"src": "game.html",    "stage": STAGE_GAME,    "sel": None, "margin": 0, "hash": "#me", "common": False},
 }
 
@@ -181,6 +205,9 @@ def build_harness(kind: str, lang: str) -> None:
         "__ARABIC__", "true" if lang in ARABIC_DIGIT_LANGS else "false"
     )
     fit = FIT.replace("__SEL__", cfg["sel"]).replace("__MARGIN__", str(cfg["margin"])) if cfg["sel"] else ""
+    if cfg.get("scroll"):
+        sel, top = cfg["scroll"]
+        fit += SCROLL_TO.replace("__SEL__", sel).replace("__TOP__", str(top))
     common = STAGE_COMMON if cfg.get("common", True) else ""
     style = f"<style>{common}{cfg['stage']}</style>"
 
@@ -232,7 +259,10 @@ def main() -> None:
             print(f"welcome-{lang}.png")
             if lang in STORE_LANGS:
                 STORE_OUT.mkdir(parents=True, exist_ok=True)
-                shots = [("1-prayer-times", popup), ("2-game-tasks", capture(chrome, profile, "game", lang)),
+                game = capture(chrome, profile, "game", lang)
+                game.save(OUT / f"game-{lang}.png", "PNG", optimize=True)  # tracked, for the READMEs
+                print(f"game-{lang}.png")
+                shots = [("1-prayer-times", popup), ("2-game-tasks", game),
                          ("3-game-account", capture(chrome, profile, "account", lang)), ("4-welcome", welcome)]
                 for name, img in shots:
                     img.save(STORE_OUT / f"{lang}-{name}.png", "PNG", optimize=True)
