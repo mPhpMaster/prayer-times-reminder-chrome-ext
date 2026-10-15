@@ -20,6 +20,29 @@ return [
         'client_id' => env('GOOGLE_WEB_CLIENT_ID'),
     ],
 
+    // Sign in with Apple (App\Support\AppleSignIn, docs/APPLE-SIGNIN.md).
+    // Everything stays off while client_ids and services_id are both empty.
+    // - client_ids: identity-token audiences accepted from native apps (the
+    //   iOS bundle id, e.g. com.mphpmaster.prayer), comma separated.
+    // - services_id: the web Services ID used by Chrome, the website, Windows
+    //   and Android (Apple's web flow); also accepted as an audience.
+    // - redirect_uri: the Return URL registered for the Services ID (default
+    //   APP_URL/v1/auth/apple/callback).
+    // - team_id / key_id / private_key_path: the "Sign in with Apple" key
+    //   (.p8, outside the web root). Optional: with it the server keeps a
+    //   refresh token so it can revoke Apple access on unlink / account delete.
+    // - extension_ids / web_return: where the callback may send players back.
+    'apple' => [
+        'client_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env('APPLE_CLIENT_IDS', ''))))),
+        'services_id' => env('APPLE_SERVICES_ID'),
+        'redirect_uri' => env('APPLE_REDIRECT_URI'),
+        'team_id' => env('APPLE_TEAM_ID'),
+        'key_id' => env('APPLE_KEY_ID'),
+        'private_key_path' => env('APPLE_PRIVATE_KEY_PATH'),
+        'extension_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env('APPLE_EXTENSION_IDS', 'knahkbkmbjghaiillhngjbhoinmeegoc'))))),
+        'web_return' => env('APPLE_WEB_RETURN', 'https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/app/apple-callback.html'),
+    ],
+
     // Google Play Integrity (Android app only). credentials = path to the
     // service-account JSON key (kept outside the web root) allowed to call
     // decodeIntegrityToken; project_number = the Google Cloud project linked

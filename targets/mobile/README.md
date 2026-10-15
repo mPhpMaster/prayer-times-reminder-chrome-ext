@@ -1,5 +1,8 @@
 # Mobile target (Android / Capacitor)
 
+> **iPhone / iPad:** the same shell also builds for iOS (`ios/`, free unsigned
+> builds on GitHub Actions) — see [IOS.md](IOS.md).
+
 Shares `core/` via `tools/sync-core.mjs mobile`, which assembles the web layer
 into `www/`. `web/index.html` redirects to the shared `popup.html`; the web ⇄
 native bridge is `web/adapter.js` (`Platform` over Capacitor plugins +

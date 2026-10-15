@@ -123,6 +123,7 @@ class AdminController extends Controller
             'email' => $u->email,
             'emailVerified' => $u->email_verified_at !== null,
             'google' => $u->google_sub !== null,
+            'apple' => $u->apple_sub !== null,
             'legacy' => $u->isLegacy(),
             'admin' => GameAdmins::isAdmin($u),
             'superAdmin' => GameAdmins::isSuperAdmin($u),

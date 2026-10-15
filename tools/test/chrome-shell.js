@@ -48,7 +48,7 @@ function manifestChecks() {
   ok("new tab is the extension's page", m.chrome_url_overrides && m.chrome_url_overrides.newtab === "newtab.html");
   ok("newtab.js can step aside when the option is off", /chrome:\/\/new-tab-page/.test(read("newtab.js")) && /newTabPage === false/.test(read("newtab.js")));
 
-  for (const page of ["popup.html", "game.html", "welcome.html", "about.html", "admin.html", "offscreen.html", "newtab.html"]) {
+  for (const page of ["popup.html", "game.html", "welcome.html", "about.html", "admin.html", "offscreen.html", "newtab.html", "apple-callback.html"]) {
     if (!fs.existsSync(path.join(BUILD, page))) continue;
     const html = read(page);
     ok(`${page}: no inline <script>`, !/<script(?![^>]*\bsrc=)[^>]*>\s*\S/i.test(html));
@@ -59,11 +59,11 @@ function manifestChecks() {
       ok(`${page}: ships ${src}`, fs.existsSync(path.join(BUILD, src.split("?")[0])));
     }
   }
-  for (const f of ["speech-web.js", "google-auth-chrome.js", "game-alerts.js", "notify-plan.js"]) {
+  for (const f of ["speech-web.js", "google-auth-chrome.js", "apple-auth-chrome.js", "apple-auth.js", "apple-callback.js", "game-alerts.js", "notify-plan.js"]) {
     ok(`build ships ${f}`, fs.existsSync(path.join(BUILD, f)));
   }
   const all = fs.readdirSync(BUILD).filter((f) => f.endsWith(".js"));
-  const modules = ["speech-web.js", "google-auth-chrome.js"];
+  const modules = ["speech-web.js", "google-auth-chrome.js", "apple-auth-chrome.js"];
   for (const f of all.filter((x) => !modules.includes(x))) {
     let parsed = true;
     try {
@@ -193,6 +193,85 @@ async function googleChecks() {
   delete globalThis.chrome;
 }
 
+// ---- apple-auth.js (shared web flow) + apple-auth-chrome.js ---------------------
+async function appleChecks() {
+  vm.runInThisContext(read("apple-auth.js") + "\nglobalThis.AppleAuthFlow = AppleAuthFlow;", { filename: "apple-auth.js" });
+  const F = globalThis.AppleAuthFlow;
+  const cfg = { servicesId: "com.example.signin", redirectUri: "https://api.example/v1/auth/apple/callback" };
+  const token = (nonce) => `h.${b64url({ nonce, aud: cfg.servicesId })}.s`;
+  const codeOf = async (fn) => {
+    try {
+      await fn();
+      return "no-error";
+    } catch (e) {
+      return e.code;
+    }
+  };
+
+  const req = F.request(cfg, "web");
+  const q = new URL(req.url).searchParams;
+  ok("apple: authorize endpoint", req.url.startsWith("https://appleid.apple.com/auth/authorize?"));
+  ok("apple: Services ID + server Return URL", q.get("client_id") === cfg.servicesId && q.get("redirect_uri") === cfg.redirectUri);
+  ok("apple: form_post with code + id_token", q.get("response_mode") === "form_post" && q.get("response_type") === "code id_token");
+  ok("apple: email scope only", q.get("scope") === "email");
+  ok("apple: state = target.random", q.get("state") === `web.${req.key}` && req.key.length === 32 && q.get("nonce") === req.nonce);
+  ok("apple: no Services ID -> failed", (await codeOf(() => F.request({ servicesId: null }, "web"))) === "failed");
+
+  // Desktop: Rust fills the port into the state after the request is built.
+  const desk = F.request(cfg, "desk-__PORT__");
+  const back = new URLSearchParams({ state: `desk-53918.${desk.key}`, id_token: token(desk.nonce), code: "c1" });
+  const got = F.answer(back.toString(), desk);
+  ok("apple: answer -> token, code, nonce", got.identityToken === token(desk.nonce) && got.authorizationCode === "c1" && got.nonce === desk.nonce);
+  ok("apple: user canceled", (await codeOf(() => F.answer(`state=desk-1.${desk.key}&error=user_cancelled_authorize`, desk))) === "canceled");
+  ok("apple: other error -> failed", (await codeOf(() => F.answer(`state=desk-1.${desk.key}&error=invalid_request`, desk))) === "failed");
+  ok("apple: state mismatch", (await codeOf(() => F.answer(`state=desk-1.other&id_token=${token(desk.nonce)}`, desk))) === "failed");
+  ok("apple: nonce mismatch", (await codeOf(() => F.answer(`state=desk-1.${desk.key}&id_token=${token("x")}`, desk))) === "failed");
+
+  // Website / Android: leave the page, come back through apple-callback.html.
+  const session = new Map();
+  globalThis.sessionStorage = { getItem: (k) => (session.has(k) ? session.get(k) : null), setItem: (k, v) => session.set(k, String(v)), removeItem: (k) => session.delete(k) };
+  let assigned = null;
+  globalThis.location = { assign: (u) => (assigned = u) };
+  F.redirect(cfg, "app", "link");
+  const sent = new URL(assigned).searchParams;
+  ok("apple: redirect leaves for Apple", assigned.startsWith("https://appleid.apple.com/") && sent.get("state").startsWith("app."));
+  ok("apple: nothing pending before the return", F.pending() === null);
+  session.set("appleAuthReturn", new URLSearchParams({ state: sent.get("state"), id_token: token(sent.get("nonce")) }).toString());
+  const p = F.pending();
+  ok("apple: pending answer keeps the intent", p && p.intent === "link" && p.nonce === sent.get("nonce"));
+  ok("apple: pending is read once", F.pending() === null && session.size === 0);
+  delete globalThis.sessionStorage;
+  delete globalThis.location;
+
+  // Chrome: the same flow in chrome.identity's window, back at <id>.chromiumapp.org/apple.
+  let launched = null;
+  let answer = null;
+  globalThis.chrome = {
+    runtime: { id: "knahkbkmbjghaiillhngjbhoinmeegoc", lastError: null },
+    identity: {
+      launchWebAuthFlow: (opts, cb) => {
+        launched = opts;
+        const a = answer(new URL(opts.url).searchParams);
+        chrome.runtime.lastError = a.error ? { message: a.error } : null;
+        cb(a.url);
+        chrome.runtime.lastError = null;
+      },
+    },
+  };
+  const am = await importModule("apple-auth-chrome.js");
+  const home = "https://knahkbkmbjghaiillhngjbhoinmeegoc.chromiumapp.org/apple#";
+  answer = (sp) => ({ url: home + new URLSearchParams({ state: sp.get("state"), id_token: token(sp.get("nonce")), code: "c2" }) });
+  const r = await am.signIn(cfg);
+  ok("apple chrome: interactive window", launched.interactive === true);
+  ok("apple chrome: state names this extension", new URL(launched.url).searchParams.get("state").startsWith("ext-knahkbkmbjghaiillhngjbhoinmeegoc."));
+  ok("apple chrome: returns token + code", r.identityToken.split(".").length === 3 && r.authorizationCode === "c2");
+  answer = () => ({ error: "The user did not approve access." });
+  ok("apple chrome: closed window -> canceled", (await codeOf(() => am.signIn(cfg))) === "canceled");
+  answer = (sp) => ({ url: home + new URLSearchParams({ state: sp.get("state"), error: "user_cancelled_authorize" }) });
+  ok("apple chrome: Apple cancel -> canceled", (await codeOf(() => am.signIn(cfg))) === "canceled");
+  delete globalThis.chrome;
+}
+
 // ---- game-alerts.js (worker) -------------------------------------------------
 async function alertChecks() {
   const alarms = new Map();
@@ -250,6 +329,7 @@ async function alertChecks() {
   manifestChecks();
   await speechChecks();
   await googleChecks();
+  await appleChecks();
   await alertChecks();
   if (failures.length) {
     console.error(`chrome-shell: ${failures.length} failed, ${passed} passed`);

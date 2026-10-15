@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
  * Dates are the window's own date ("2026-09-25" in "2026-09-25:Dhuhr"), i.e.
  * the player's local day, so streaks follow their clock, not the server's.
  *
+ * The morning / evening adhkar ("…:Morning", "…:Evening", GameRules::SIDE_*)
+ * add their points, tasks and active days, but are not prayer windows: they
+ * never count as a completed window or toward a full day.
+ *
  * Achievements are awarded idempotently: award() inserts with insertOrIgnore
  * on the (user, achievement) primary key, and each one's earned_at is the
  * finish time of the completion that earned it. Re-running it over the same

@@ -5,8 +5,8 @@
 // sends finished items not yet acknowledged, and the server dedupes, so a
 // retry after a network failure is harmless.
 //
-//   gameApi(baseUrl, token)            -> { authConfig, signUp, signIn, google, forgot, reset, logout,
-//                                           sendVerify, verifyEmail,
+//   gameApi(baseUrl, token)            -> { authConfig, signUp, signIn, google, apple, forgot, reset, logout,
+//                                           sendVerify, verifyEmail, linkGoogle, linkApple, unlink,
 //                                           me, updateMe, deleteMe, pushProgress, users, profile,
 //                                           follow, unfollow, following, leaderboard,
 //                                           dedications, myDedicationRequests, requestDedication,
@@ -62,11 +62,18 @@ function gameApi(baseUrl, token) {
     signUp: (email, password, username, legacyToken) => call("POST", "/v1/auth/register", { email, password, username, legacyToken }),
     signIn: (email, password, legacyToken) => call("POST", "/v1/auth/login", { email, password, legacyToken }),
     google: (idToken, username, legacyToken) => call("POST", "/v1/auth/google", { idToken, username, legacyToken }),
+    // a = Platform.appleAuth.signIn() result: { identityToken, authorizationCode?, nonce? }
+    apple: (a, username, legacyToken) =>
+      call("POST", "/v1/auth/apple", { identityToken: a.identityToken, authorizationCode: a.authorizationCode, nonce: a.nonce, username, legacyToken }),
     forgot: (email) => call("POST", "/v1/auth/forgot", { email }),
     reset: (email, code, password) => call("POST", "/v1/auth/reset", { email, code, password }),
     logout: () => call("POST", "/v1/auth/logout"),
     sendVerify: () => call("POST", "/v1/auth/verify-email/send"),
     verifyEmail: (code) => call("POST", "/v1/auth/verify-email", { code }),
+    // Sign-in methods of the signed-in account (LinkController): add Google / Apple, or remove one.
+    linkGoogle: (idToken) => call("POST", "/v1/me/link/google", { idToken }),
+    linkApple: (a) => call("POST", "/v1/me/link/apple", { identityToken: a.identityToken, authorizationCode: a.authorizationCode, nonce: a.nonce }),
+    unlink: (provider) => call("DELETE", `/v1/me/link/${u(provider)}`),
     me: () => call("GET", "/v1/me"),
     updateMe: (patch) => call("PATCH", "/v1/me", patch),
     deleteMe: () => call("DELETE", "/v1/me"),
@@ -125,12 +132,13 @@ function gameApi(baseUrl, token) {
   };
 }
 
-// Finished tasks/gifts the server hasn't acknowledged yet.
+// Finished tasks/gifts the server hasn't acknowledged yet. Never a guest's
+// (`local`) nor an optional disputed dhikr (`unscored`: no points, device only).
 function pendingCompletions(state) {
   const rows = [];
   for (const [windowKey, w] of Object.entries(state.windows)) {
     for (const [itemId, t] of Object.entries(w.tasks || {})) {
-      if (t.doneAt && !t.synced && !t.local) rows.push({ windowKey, itemId, kind: "task", points: t.points, startedAt: t.startedAt, doneAt: t.doneAt });
+      if (t.doneAt && !t.synced && !t.local && !t.unscored) rows.push({ windowKey, itemId, kind: "task", points: t.points, startedAt: t.startedAt, doneAt: t.doneAt });
     }
     const g = w.gift;
     if (g && g.doneAt && !g.synced && !g.local) rows.push({ windowKey, itemId: g.id, kind: "gift", points: g.points, startedAt: g.startedAt, doneAt: g.doneAt });
@@ -170,7 +178,7 @@ function adoptSyncAccount(state, username) {
   const firstAccount = !state.syncAccount;
   for (const w of Object.values(state.windows)) {
     for (const item of [...Object.values(w.tasks || {}), w.gift].filter(Boolean)) {
-      if (!item.doneAt || item.local) continue;
+      if (!item.doneAt || item.local || item.unscored) continue;
       if (firstAccount && !item.synced) item.local = true;
       else delete item.synced;
     }

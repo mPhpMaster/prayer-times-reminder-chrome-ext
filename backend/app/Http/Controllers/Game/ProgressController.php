@@ -42,15 +42,16 @@ class ProgressController extends Controller
             if (isset($have[$r['windowKey'].'|'.$r['itemId']])) {
                 continue;
             }
+            // A prayer window holds at most 300 points, a morning / evening
+            // adhkar set its fixed bonus (GameRules::windowCap).
             $t = ($totals[$r['windowKey']] ?? 0) + $r['points'];
-            if ($t > GameRules::MAX_WINDOW_TOTAL) {
+            if ($t > GameRules::windowCap($r['windowKey'])) {
                 continue;
             }
             // No more rows than the window has tasks (+ a few spare for older
             // catalogs), so junk item ids can't flood the table.
-            $prayer = substr($r['windowKey'], 11);
             $n = ($counts[$r['windowKey']] ?? 0) + 1;
-            if ($n > (GameStats::WINDOW_TASK_COUNT[$prayer] ?? 0) + 3) {
+            if ($n > GameRules::windowRows($r['windowKey'])) {
                 continue;
             }
             $counts[$r['windowKey']] = $n;

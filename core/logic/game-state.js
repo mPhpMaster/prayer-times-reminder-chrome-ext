@@ -1,7 +1,7 @@
 // game-state.js — the player's local progress, as plain data. Pure: callers
 // load/save it through Platform.store (key GAME_STORE_KEY).
 //
-// state = { v: 1, windows: { "2026-09-25:Dhuhr": {
+// state = { v: 1, windows: { "2026-09-25:Dhuhr": {   (or "2026-09-25:Morning" / ":Evening", the side adhkar)
 //             tasks: { [taskId]: { startedAt, doneAt, points, heard } },
 //             gift:  { id, startedAt, doneAt, points, heard } | undefined } } }
 //
@@ -99,9 +99,12 @@ function partialHeard(state, key, itemId, isGift) {
   return rec && !rec.doneAt && Array.isArray(rec.heard) ? rec.heard.slice() : [];
 }
 
-function clearStalePartials(state, currentKey) {
+// `currentKeys`: the open window's key, or a list of them (the prayer window
+// and the morning / evening side window are open at the same time).
+function clearStalePartials(state, currentKeys) {
+  const keep = [].concat(currentKeys);
   for (const [key, w] of Object.entries(state.windows)) {
-    if (key === currentKey) continue;
+    if (keep.includes(key)) continue;
     for (const t of Object.values(w.tasks || {})) {
       delete t.heard;
       delete t.heardAt;

@@ -101,6 +101,7 @@ final class GameAccounts
     /** Delete an account and everything tied to it (explicitly: SQLite may not cascade). */
     public static function deleteUser(GameUser $user): void
     {
+        AppleSignIn::revoke($user); // Apple wants its token revoked when the account goes (best effort)
         DB::transaction(function () use ($user) {
             DB::table('game_completions')->where('user_id', $user->id)->delete();
             DB::table('game_achievements')->where('user_id', $user->id)->delete();
