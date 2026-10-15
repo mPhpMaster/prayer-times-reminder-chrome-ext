@@ -6,7 +6,8 @@ import android.content.Intent;
 
 /** Alarms don't survive a reboot — re-arm the dhikr schedule, the
  *  prayer-lock schedule and the upcoming prayer notifications (without
- *  replaying the ones missed while the phone was off). */
+ *  replaying the ones missed while the phone was off), and re-render the
+ *  home-screen widgets. */
 public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -19,5 +20,7 @@ public class BootReceiver extends BroadcastReceiver {
         UpdateChecker.schedule(context);
         // A parent's family checks.
         FamilyAlertScheduler.armNext(context);
+        // Home-screen widgets: fresh countdowns and their next refresh alarm.
+        HomeWidgets.refreshAsync(this, context);
     }
 }

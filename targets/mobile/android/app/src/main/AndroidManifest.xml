@@ -71,6 +71,60 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+        <!-- Home-screen widgets (HomeWidgets.java): drawn from the snapshot the
+             web layer publishes via HomeWidgetsPlugin. -->
+        <receiver
+            android:name=".NextPrayerWidget"
+            android:exported="true"
+            android:label="@string/widget_next_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_next_prayer_info" />
+        </receiver>
+        <receiver
+            android:name=".PrayerTimesWidget"
+            android:exported="true"
+            android:label="@string/widget_times_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_prayer_times_info" />
+        </receiver>
+        <receiver
+            android:name=".TasksWidget"
+            android:exported="true"
+            android:label="@string/widget_tasks_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_tasks_info" />
+        </receiver>
+        <receiver
+            android:name=".CountdownWidget"
+            android:exported="true"
+            android:label="@string/widget_countdown_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_countdown_info" />
+        </receiver>
+        <!-- The widgets' next-boundary alarm, and clock/timezone/language changes. -->
+        <receiver android:name=".HomeWidgetsReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+        </receiver>
         <!-- The local-notifications plugin's own boot receiver re-delivers EVERY
              notification missed while the phone was off, 15 s after boot — a
              burst of stale "prayer time" alerts. BootReceiver restores only

@@ -759,6 +759,294 @@
   }
   globalThis.__PTPlatform.familyAlerts = { refresh: scheduleFamilyAlerts };
 
+  // --- home-screen widgets (HomeWidgetsPlugin.java) ----------------------------
+  // The launcher's widgets can't run the prayer engine, so this side publishes
+  // a compact snapshot for them whenever something they show changes (launch,
+  // resume, location/language/theme/digits, game progress): ready-formatted
+  // prayer times for yesterday + the next WIDGET_DAYS days (like the
+  // notification and lock window), the game's task summary per window, and
+  // the labels in the app's language. The native side picks the next prayer
+  // and the current window from it on its own, re-renders at each prayer time
+  // (AlarmManager) and after a reboot, and asks to open the app once the data
+  // runs out. Pages without the game scripts load them on demand.
+  const HomeWidgets = P.HomeWidgets;
+  const WIDGET_DAYS = 7;
+  const WIDGET_PRAYERS = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
+  const WIDGET_KEYS = ["location", "lang", "theme", "arabicDigits", "gameState"];
+  // Only what i18n.js / game-i18n.js don't already have. {d} {n} {t} {p}: filled
+  // in natively; {c}: the countdown (hours:minutes, ticked by the launcher).
+  const WIDGET_TEXT = {
+    en: {
+      today: "Today", tomorrow: "Tomorrow", in: "in {c}", doneOf: "{d}/{n} done", next: "Next: {t}",
+      allDone: "All done. May Allah accept", giftReady: "All done. Your gift is ready 🎁",
+      opensAt: "Tasks open at {t}", openUntil: "Open until {p} · {t}",
+      stale: "Open the app to update the prayer times", noLocation: "Open the app and choose your city",
+    },
+    ar: {
+      today: "اليوم", tomorrow: "غدًا", in: "بعد {c}", doneOf: "أنجزت {d} من {n}", next: "التالي: {t}",
+      allDone: "أتممت المهمات، تقبّل الله منك", giftReady: "أتممت المهمات، هديتك بانتظارك 🎁",
+      opensAt: "تُفتح المهمات الساعة {t}", openUntil: "مفتوحة حتى {p} · {t}",
+      stale: "افتح التطبيق لتحديث المواقيت", noLocation: "افتح التطبيق واختر مدينتك",
+    },
+    ur: {
+      today: "آج", tomorrow: "کل", in: "{c} بعد", doneOf: "{n} میں سے {d} مکمل", next: "اگلا: {t}",
+      allDone: "سب مکمل، اللہ قبول فرمائے", giftReady: "سب مکمل، آپ کا تحفہ تیار ہے 🎁",
+      opensAt: "کام {t} پر کھلیں گے", openUntil: "{p} تک کھلے ہیں · {t}",
+      stale: "اوقات اپ ڈیٹ کرنے کے لیے ایپ کھولیں", noLocation: "ایپ کھولیں اور اپنا شہر منتخب کریں",
+    },
+    fr: {
+      today: "Aujourd’hui", tomorrow: "Demain", in: "dans {c}", doneOf: "{d}/{n} faites", next: "Suivante : {t}",
+      allDone: "Tout est fait. Qu’Allah l’accepte", giftReady: "Tout est fait. Votre cadeau est prêt 🎁",
+      opensAt: "Les tâches ouvrent à {t}", openUntil: "Ouvertes jusqu’à {p} · {t}",
+      stale: "Ouvrez l’appli pour mettre à jour les horaires", noLocation: "Ouvrez l’appli et choisissez votre ville",
+    },
+    es: {
+      today: "Hoy", tomorrow: "Mañana", in: "en {c}", doneOf: "{d}/{n} hechas", next: "Siguiente: {t}",
+      allDone: "Todo hecho. Que Allah lo acepte", giftReady: "Todo hecho. Tu regalo está listo 🎁",
+      opensAt: "Las tareas abren a las {t}", openUntil: "Abiertas hasta {p} · {t}",
+      stale: "Abre la app para actualizar los horarios", noLocation: "Abre la app y elige tu ciudad",
+    },
+    hi: {
+      today: "आज", tomorrow: "कल", in: "{c} में", doneOf: "{n} में से {d} पूरे", next: "अगला: {t}",
+      allDone: "सब पूरा हुआ। अल्लाह क़बूल करे", giftReady: "सब पूरा हुआ। आपका तोहफ़ा तैयार है 🎁",
+      opensAt: "काम {t} बजे खुलेंगे", openUntil: "{p} तक खुले · {t}",
+      stale: "समय अपडेट करने के लिए ऐप खोलें", noLocation: "ऐप खोलें और अपना शहर चुनें",
+    },
+    id: {
+      today: "Hari ini", tomorrow: "Besok", in: "{c} lagi", doneOf: "{d}/{n} selesai", next: "Berikutnya: {t}",
+      allDone: "Semua selesai. Semoga Allah menerima", giftReady: "Semua selesai. Hadiahmu sudah siap 🎁",
+      opensAt: "Tugas dibuka pukul {t}", openUntil: "Terbuka sampai {p} · {t}",
+      stale: "Buka aplikasi untuk memperbarui jadwal", noLocation: "Buka aplikasi dan pilih kotamu",
+    },
+    de: {
+      today: "Heute", tomorrow: "Morgen", in: "in {c}", doneOf: "{d}/{n} erledigt", next: "Als Nächstes: {t}",
+      allDone: "Alles erledigt. Möge Allah es annehmen", giftReady: "Alles erledigt. Dein Geschenk ist bereit 🎁",
+      opensAt: "Aufgaben öffnen um {t}", openUntil: "Offen bis {p} · {t}",
+      stale: "Öffne die App, um die Zeiten zu aktualisieren", noLocation: "Öffne die App und wähle deine Stadt",
+    },
+    ru: {
+      today: "Сегодня", tomorrow: "Завтра", in: "через {c}", doneOf: "Выполнено {d} из {n}", next: "Далее: {t}",
+      allDone: "Всё выполнено. Да примет Аллах", giftReady: "Всё выполнено. Ваш подарок готов 🎁",
+      opensAt: "Задания откроются в {t}", openUntil: "Открыты до {p} · {t}",
+      stale: "Откройте приложение, чтобы обновить время", noLocation: "Откройте приложение и выберите город",
+    },
+    kk: {
+      today: "Бүгін", tomorrow: "Ертең", in: "{c} кейін", doneOf: "{n} ішінен {d} орындалды", next: "Келесі: {t}",
+      allDone: "Бәрі орындалды. Алла қабыл етсін", giftReady: "Бәрі орындалды. Сыйлығыңыз дайын 🎁",
+      opensAt: "Тапсырмалар {t} ашылады", openUntil: "{p} дейін ашық · {t}",
+      stale: "Уақыттарды жаңарту үшін қолданбаны ашыңыз", noLocation: "Қолданбаны ашып, қалаңызды таңдаңыз",
+    },
+    uz: {
+      today: "Bugun", tomorrow: "Ertaga", in: "{c} dan keyin", doneOf: "{n} tadan {d} tasi bajarildi", next: "Keyingisi: {t}",
+      allDone: "Hammasi bajarildi. Alloh qabul qilsin", giftReady: "Hammasi bajarildi. Sovg‘angiz tayyor 🎁",
+      opensAt: "Vazifalar soat {t} da ochiladi", openUntil: "{p} gacha ochiq · {t}",
+      stale: "Vaqtlarni yangilash uchun ilovani oching", noLocation: "Ilovani oching va shahringizni tanlang",
+    },
+  };
+
+  // The game's scripts, for pages that don't ship them (popup.html). In
+  // dependency order; each is skipped when its globals are already there.
+  const WIDGET_GAME_DEPS = [
+    ["recitation-match.js", () => typeof tokenize === "function"],
+    ["game-score.js", () => typeof taskWindow === "function"],
+    ["game-state.js", () => typeof windowPoints === "function"],
+    ["game-tasks.js", () => typeof tasksForWindow === "function"],
+    ["game-i18n.js", () => typeof gameTaskTitle === "function"],
+  ];
+  let widgetGameDeps = null;
+  function ensureWidgetGameDeps() {
+    if (!widgetGameDeps) {
+      widgetGameDeps = (async () => {
+        for (const [src, ready] of WIDGET_GAME_DEPS) if (!ready()) await loadScript(src);
+        return WIDGET_GAME_DEPS.every(([, ready]) => ready());
+      })().catch(() => { widgetGameDeps = null; return false; });
+    }
+    return widgetGameDeps;
+  }
+
+  // Same digit style as the app's own screens (popup.js localizeNum).
+  function widgetDigits(lang, arabicDigits) {
+    if (lang === "hi") return "deva";
+    return usesArabicDigits(lang, arabicDigits) ? "arab" : "latn";
+  }
+  function widgetNum(str, digits) {
+    if (digits === "deva") return toDevanagariDigits(str);
+    return digits === "arab" ? toArabicDigits(str) : String(str);
+  }
+  // "HH:MM" (location time) the way popup.js fmtTime shows it. A no-break
+  // space keeps the time and its AM/PM (ص/م) together, and in Arabic/Urdu a
+  // leading RLM makes every widget lay "٢:٥٨ م" out the same right-to-left way.
+  function widgetTime(hhmm, lang, digits) {
+    const m = String(hhmm).match(/(\d{1,2}):(\d{2})/);
+    if (!m) return widgetNum(hhmm, digits);
+    const hh = Number(m[1]);
+    const h12 = hh % 12 || 12;
+    if (lang === "ar" || lang === "ur") return `‏${widgetNum(`${h12}:${m[2]}`, digits)} ${hh < 12 ? "ص" : "م"}`;
+    if (uses24hClock(lang)) return `${String(hh).padStart(2, "0")}:${m[2]}`;
+    return widgetNum(`${h12}:${m[2]} ${hh < 12 ? "AM" : "PM"}`, digits);
+  }
+  // An instant as "HH:MM" in the location's timezone.
+  function widgetHM(ms, tz) {
+    try {
+      return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false }).format(ms);
+    } catch {
+      const d = new Date(ms);
+      return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+  }
+  function widgetDayKey(d) {
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+  function widgetDayTitle(date, lang, digits) {
+    const info = SUPPORTED_LANGS.find((l) => l.code === lang);
+    try {
+      return new Intl.DateTimeFormat(`${(info && info.locale) || "en"}-u-nu-${digits}`, {
+        weekday: "long", day: "numeric", month: "long",
+      }).format(date);
+    } catch {
+      return widgetDayKey(date);
+    }
+  }
+  // The chosen city as the app shows it (popup.js cityLabel): in Arabic, the
+  // bundled GeoNames name, else one cached by popup.js, else the English name.
+  async function widgetPlace(loc, lang) {
+    if (!loc.city) return "";
+    if (lang !== "ar" || !loc.country) return loc.city;
+    const key = `cityLabels:${loc.country}`;
+    let name = null;
+    try {
+      const index = await (await fetch("city-ar/index.json")).json();
+      const cc = index[loc.country];
+      if (cc) name = (await (await fetch(`city-ar/${cc}.json`)).json())[loc.city];
+    } catch {}
+    const stored = (await store.get(key))[key];
+    const preset = typeof DEFAULT_CITY_LABELS !== "undefined" && DEFAULT_CITY_LABELS[key];
+    return name || (stored && stored[loc.city]) || (preset && preset[loc.city]) || loc.city;
+  }
+
+  // Per prayer: how many tasks and the first one; per window with progress
+  // (keys as in game-windows.js): done, points, the task to continue, gift.
+  async function widgetGameSummary(stateRaw, lang, minDay) {
+    if (!(await ensureWidgetGameDeps())) return null;
+    const state = normalizeGameState(stateRaw);
+    const perPrayer = {};
+    for (const p of SCHED_PRAYERS) {
+      const list = tasksForWindow(p);
+      perPrayer[p] = { total: list.length, first: list.length ? gameTaskTitle(lang, list[0]) : "" };
+    }
+    const progress = {};
+    for (const [key, raw] of Object.entries(state.windows)) {
+      const prayer = key.split(":")[1];
+      if (key.slice(0, 10) < minDay || !perPrayer[prayer]) continue;
+      const entry = { ...raw, tasks: (raw && raw.tasks) || {} };
+      const list = tasksForWindow(prayer);
+      const ids = list.map((t) => t.id);
+      const target = resumeTarget(entry, ids);
+      const nextTask = target && list.find((t) => t.id === target.id);
+      progress[key] = {
+        done: ids.filter((id) => entry.tasks[id] && entry.tasks[id].doneAt).length,
+        points: windowPoints(entry),
+        next: nextTask ? gameTaskTitle(lang, nextTask) : "",
+        gift: !!(entry.gift && entry.gift.doneAt),
+      };
+    }
+    const G = gameT(lang);
+    return {
+      title: G.pageTitle,
+      points: G.points("{n}"),
+      delayMin: TASK_DELAY_MIN,
+      perPrayer,
+      progress,
+    };
+  }
+
+  async function publishWidgets() {
+    if (!HomeWidgets || !HomeWidgets.update) return;
+    if (typeof PrayerEngine === "undefined" || typeof prayerTimestamp !== "function") return;
+    try {
+      // Nothing to do (and no game scripts to load) while no widget is placed;
+      // placing one later shows "open the app", and the next launch publishes.
+      if (HomeWidgets.placed && !(await HomeWidgets.placed()).count) return;
+      const s = await store.get(WIDGET_KEYS);
+      const lang = s.lang || DEFAULT_SETTINGS.lang;
+      const L = tr(lang);
+      const digits = widgetDigits(lang, s.arabicDigits === true);
+      const snap = {
+        v: 1,
+        at: Date.now(),
+        lang,
+        rtl: L.dir === "rtl",
+        theme: normalizeTheme(s.theme),
+        digits,
+        labels: {
+          ...(WIDGET_TEXT[lang] || WIDGET_TEXT.en),
+          nextPrayer: L.nextPrayer,
+          hours: L.countdownHours,
+          min: L.countdownMin,
+          sec: L.countdownSec,
+        },
+        hasLocation: false,
+      };
+      const loc = s.location;
+      if (loc && loc.latitude != null) {
+        snap.hasLocation = true;
+        snap.place = await widgetPlace(loc, lang);
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        snap.game = await widgetGameSummary(s.gameState, lang, widgetDayKey(yesterday)).catch(() => null);
+        const delayMs = ((snap.game && snap.game.delayMin) || 30) * 60000;
+        snap.days = [];
+        for (let d = -1; d <= WIDGET_DAYS; d++) {
+          const date = new Date();
+          date.setDate(date.getDate() + d);
+          const data = PrayerEngine.timings(loc, date);
+          const tz = data.meta && data.meta.timezone;
+          snap.days.push({
+            key: widgetDayKey(date),
+            title: widgetDayTitle(date, lang, digits),
+            prayers: WIDGET_PRAYERS.map((k) => {
+              const t = prayerTimestamp(data.timings[k], date, tz);
+              const p = { k, n: prayerLabel(L, k, date), t, s: widgetTime(data.timings[k], lang, digits) };
+              // When this window's game tasks open (adhkar widget).
+              if (k !== "Sunrise" && t != null) p.o = widgetTime(widgetHM(t + delayMs, tz), lang, digits);
+              return p;
+            }),
+          });
+        }
+      }
+      await HomeWidgets.update({ json: JSON.stringify(snap) });
+    } catch {
+      /* best effort — re-published on the next launch / resume / change */
+    }
+  }
+  let widgetTimer = null;
+  function publishWidgetsSoon(ms = 1000) {
+    if (!HomeWidgets) return;
+    clearTimeout(widgetTimer);
+    widgetTimer = setTimeout(publishWidgets, ms);
+  }
+  globalThis.__PTPlatform.widgets = { refresh: publishWidgets };
+
+  // Tapping a widget opens the app; the tasks widget asks for the game screen.
+  // Cold start: the route waits natively until the page takes it; app already
+  // running: it arrives as a "launch" event.
+  function openWidgetRoute(route) {
+    if (route === "game" && !/\/game\.html$/.test(location.pathname)) location.href = "game.html";
+  }
+  async function takeWidgetLaunch() {
+    if (!HomeWidgets || !HomeWidgets.takeLaunch) return;
+    try {
+      const r = await HomeWidgets.takeLaunch();
+      openWidgetRoute(r && r.route);
+    } catch {}
+  }
+  if (HomeWidgets && HomeWidgets.addListener) {
+    try {
+      Promise.resolve(HomeWidgets.addListener("launch", (e) => openWidgetRoute(e && e.route))).catch(() => {});
+    } catch {}
+  }
+
   async function scheduleAll() {
     await ensureChannels();
     scheduleNotifications();
@@ -766,11 +1054,13 @@
     syncDhikrSchedule();
     scheduleGameAlerts();
     scheduleFamilyAlerts();
+    publishWidgetsSoon();
     runPermissionFlow();
   }
 
   window.addEventListener("load", scheduleAll);
   window.addEventListener("load", addPermissionsButton);
+  window.addEventListener("load", takeWidgetLaunch);
   if (CapApp && CapApp.addListener) CapApp.addListener("resume", scheduleAll);
   // Android back (button or gesture) walks back through the app, never out of
   // it while there is a previous screen:
@@ -808,6 +1098,7 @@
     if (keys.some((k) => LOCK_KEYS.includes(k))) schedulePrayerLockAlarms();
     // A feature just switched on (or a city was picked) may need a grant.
     if (keys.some((k) => PERM_TRIGGER_KEYS.includes(k))) runPermissionFlow();
+    if (keys.some((k) => WIDGET_KEYS.includes(k) || k.startsWith("cityLabels:"))) publishWidgetsSoon();
   });
   if (LocalNotifications && LocalNotifications.addListener) {
     LocalNotifications.addListener("localNotificationActionPerformed", (e) => {

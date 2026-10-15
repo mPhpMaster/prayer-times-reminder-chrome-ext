@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">اگلی نماز</string>
+    <string name="widget_next_desc">اگلی نماز اور اس کا وقت، الٹی گنتی کے ساتھ</string>
+    <string name="widget_times_name">نماز کے اوقات</string>
+    <string name="widget_times_desc">آج کے نماز کے اوقات، اگلی نماز نمایاں</string>
+    <string name="widget_tasks_name">نماز کے اذکار</string>
+    <string name="widget_tasks_desc">موجودہ نماز کے اذکار: پیش رفت، پوائنٹس اور اگلا کام</string>
+    <string name="widget_open_app">یہ ویجیٹ ترتیب دینے کے لیے ایپ کھولیں</string>
+    <string name="widget_today">آج</string>
+    <string name="widget_p_fajr">فجر</string>
+    <string name="widget_p_sunrise">طلوعِ آفتاب</string>
+    <string name="widget_p_dhuhr">ظہر</string>
+    <string name="widget_p_asr">عصر</string>
+    <string name="widget_p_maghrib">مغرب</string>
+    <string name="widget_p_isha">عشاء</string>
+    <string name="widget_sample_done">9 میں سے 3 مکمل</string>
+    <string name="widget_sample_next">اگلا: آیت الکرسی</string>
+    <string name="widget_sample_points">120 پوائنٹس</string>
+    <string name="widget_countdown_name">نماز کی الٹی گنتی</string>
+    <string name="widget_countdown_desc">اگلی نماز تک باقی گھنٹے اور منٹ، ایپ کے کارڈ کی طرح</string>
+    <string name="widget_u_hours">گھنٹے</string>
+    <string name="widget_u_min">منٹ</string>
+</resources>

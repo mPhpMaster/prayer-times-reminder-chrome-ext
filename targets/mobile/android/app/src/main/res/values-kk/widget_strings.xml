@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">Келесі намаз</string>
+    <string name="widget_next_desc">Келесі намаз және оның уақыты, кері санақпен</string>
+    <string name="widget_times_name">Намаз уақыттары</string>
+    <string name="widget_times_desc">Бүгінгі намаз уақыттары, келесісі ерекшеленген</string>
+    <string name="widget_tasks_name">Намаз зікірлері</string>
+    <string name="widget_tasks_desc">Қазіргі намаз зікірлері: үлгерім, ұпай және келесі тапсырма</string>
+    <string name="widget_open_app">Виджетті баптау үшін қолданбаны ашыңыз</string>
+    <string name="widget_today">Бүгін</string>
+    <string name="widget_p_fajr">Таң</string>
+    <string name="widget_p_sunrise">Күн шығуы</string>
+    <string name="widget_p_dhuhr">Бесін</string>
+    <string name="widget_p_asr">Екінті</string>
+    <string name="widget_p_maghrib">Ақшам</string>
+    <string name="widget_p_isha">Құптан</string>
+    <string name="widget_sample_done">9 ішінен 3 орындалды</string>
+    <string name="widget_sample_next">Келесі: Аятул-Күрси</string>
+    <string name="widget_sample_points">120 ұпай</string>
+    <string name="widget_countdown_name">Намазға дейін</string>
+    <string name="widget_countdown_desc">Келесі намазға дейінгі сағат пен минут, қолданбадағы карточка сияқты</string>
+    <string name="widget_u_hours">САҒАТ</string>
+    <string name="widget_u_min">МИН</string>
+</resources>

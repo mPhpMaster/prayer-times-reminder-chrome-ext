@@ -169,6 +169,45 @@ which follows the phone's language: "مواقيت الصلاة" on an Arabic pho
   ("Unable to establish loopback connection") — build from PowerShell.
 - **TODO (native):** optional Device Admin camera-off.
 
+## Home-screen widgets (`HomeWidgets`, Java)
+
+Four widgets in the launcher's picker: **Next prayer** (2x2, compact at 2x1),
+**Prayer times** (4x2 grid; one row when short, a list when narrow),
+**Prayer adhkar** (the game's tasks for the current prayer window; tap opens
+the game) and **Prayer countdown** (the popup's "Next prayer" card: hours and
+minutes boxes + progress since the previous prayer). Screenshots:
+`docs/android-widgets/`.
+
+- **Data:** the prayer engine is JS, so `adapter.js` (`publishWidgets`)
+  publishes a snapshot through `Capacitor.Plugins.HomeWidgets.update` on
+  launch, resume and any change of location / language / theme / digits /
+  game progress — only while a widget is placed (`HomeWidgets.placed`).
+  It holds ready-formatted times for yesterday + 7 days (the same horizon as
+  the notification and lock schedules), the task summary per window (game
+  scripts are loaded on demand on pages without them) and the labels in the
+  app's language. Native (`HomeWidgets.java`) picks the next prayer and the
+  current window by the clock; past the snapshot (app not opened for a week,
+  or the clock moved outside it) the widgets say "open the app".
+- **No seconds, no app work per minute:** countdowns are `Chronometer`s the
+  launcher ticks; a format precision cuts their "H:MM:SS" to "H:MM" (`%.4s`)
+  or to the minutes box's "MM" (`%.2s`). The hour part is fixed per render, so
+  one **non-wakeup** (`RTC`) alarm re-renders at the next boundary: a prayer
+  time, a window's tasks opening, midnight, the countdowns' hour boundaries,
+  and every 15 min for the countdown card's progress bar. That is roughly
+  12 renders/day for the next-prayer, times and adhkar widgets and ~24 more
+  for the hour boundaries; the countdown card adds up to 96 progress steps,
+  delivered only while the phone is awake. No wakeups, no service,
+  `updatePeriodMillis="0"`, nothing armed while no widget is placed; renders
+  run off the main thread (`goAsync`). Re-rendered on boot, time / timezone /
+  locale changes.
+- **Look:** the app's colours (`res/values*/widget_colors.xml`), light/dark
+  from the phone (`values-night`), the app's theme picks the background
+  (Classic vs Midnight Emerald), RTL from the app language, prayer names in
+  Amiri (`res/font/amiri_bold.ttf`, OFL, from `core/assets/fonts`) for ar/ur.
+  Picker names/descriptions in all 11 languages (`res/values-*/widget_strings.xml`).
+- **Known limit:** the countdown digits come from the phone's locale
+  (Chronometer); the static times follow the app's digit setting.
+
 ## Android back
 
 `web/adapter.js` owns the hardware back / back gesture: first the page's own

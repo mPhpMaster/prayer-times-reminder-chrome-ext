@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Next prayer countdown" widget (4x2): the popup's "Next prayer" card —
+     label, the name in the accent colour, HOURS and MINUTES boxes and the
+     progress since the previous prayer (HomeWidgets.renderCountdown). The
+     HOURS box is plain text, re-rendered when the hour changes; MINUTES is a
+     Chronometer the launcher ticks itself. Preview text only. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_card_next"
+    android:clipToOutline="true"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/widget_pad">
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text="@string/widget_next_name"
+        android:textAllCaps="true"
+        android:textColor="@color/widget_muted"
+        android:textSize="11sp" />
+
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/widget_p_asr"
+            android:textColor="@color/widget_accent"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/name_ar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/amiri_bold"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/widget_accent"
+            android:textSize="28sp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="84dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/widget_box"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp">
+
+                <TextView
+                    android:id="@+id/hours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFeatureSettings="tnum"
+                    android:maxLines="1"
+                    android:text="02"
+                    android:textColor="@color/widget_fg"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/unit_h"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:maxLines="1"
+                    android:text="@string/widget_u_hours"
+                    android:textAllCaps="true"
+                    android:textColor="@color/widget_muted"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="84dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/widget_box_sec"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp">
+
+                <Chronometer
+                    android:id="@+id/minutes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFeatureSettings="tnum"
+                    android:format="%.2s"
+                    android:maxLines="1"
+                    android:text="55"
+                    android:textColor="@color/widget_fg"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/unit_m"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:maxLines="1"
+                    android:text="@string/widget_u_min"
+                    android:textAllCaps="true"
+                    android:textColor="@color/widget_muted"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:max="1000"
+            android:progress="600"
+            android:progressDrawable="@drawable/widget_progress" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="3"
+        android:textColor="@color/widget_fg"
+        android:textSize="14sp"
+        android:visibility="gone" />
+</LinearLayout>
