@@ -1,0 +1,8 @@
+/* App name under the icon */
+"CFBundleDisplayName" = "Prayer Times Reminder";
+"CFBundleName" = "Prayer Times Reminder";
+
+/* Permission prompts */
+"NSLocationWhenInUseUsageDescription" = "Your location is used only on this device to calculate prayer times for where you are. It is never sent to the developer.";
+"NSMicrophoneUsageDescription" = "The dhikr game listens while you recite so it can follow your reading. Nothing is recorded or kept.";
+"NSSpeechRecognitionUsageDescription" = "Apple speech recognition turns your recitation into text so the dhikr game can check it. The text stays on this device.";

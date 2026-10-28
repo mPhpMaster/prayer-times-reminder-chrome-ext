@@ -142,6 +142,10 @@ ok("lock-config title is non-empty string", typeof lc.title === "string" && lc.t
 ok("lock-config allowUnlock false", lc.allowUnlock === false);
 ok("lock-config has dir + lang + countdownPrefix",
   !!lc.dir && lc.lang === "en" && typeof lc.countdownPrefix === "string");
+ok("lock-config carries the focus line under the timer",
+  typeof lc.focusLine === "string" && lc.focusLine.length > 0);
+eq("lock-config ar focus line wording",
+  ctx.buildLockConfig({ lang: "ar" }, { prayerName: "X" }).focusLine, "أقبِل على صلاتك بخشوع");
 const lct = ctx.buildLockConfig({ lang: "en", allowUnlock: true }, { test: true });
 eq("lock-config test -> 5s", lct.durationSecs, 5);
 ok("lock-config test prayerName non-empty", typeof lct.prayerName === "string" && lct.prayerName.length > 0);

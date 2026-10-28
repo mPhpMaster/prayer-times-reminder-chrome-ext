@@ -15,6 +15,8 @@
 //   taskWindow(prayerAt, nextPrayerAt)   -> { opensAt, fullUntil, floorAt, closesAt }
 //   pointsFactor(win, startedAt)         -> 0..1   (0 = not open yet / lost)
 //   taskPoints(maxPoints, win, startedAt)-> integer
+//   sideTaskWindow(startsAt, endsAt)     -> { opensAt, closesAt }   (morning / evening adhkar)
+//   sidePoints(share, win, startedAt)    -> share while open, else 0
 
 const MIN = 60 * 1000;
 const TASK_DELAY_MIN = 30;
@@ -62,4 +64,21 @@ function splitWindowPoints(tasks, total = WINDOW_POINTS) {
   const order = exact.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]);
   for (let k = 0; left > 0; k = (k + 1) % order.length, left--) parts[order[k][1]]++;
   return parts;
+}
+
+// ---- side tasks: the morning and evening adhkar ------------------------------
+// A daily bonus beside the prayer windows (game-windows.js sideWindow): the
+// morning adhkar from Fajr until Maghrib, the evening adhkar from Maghrib until
+// the next Fajr. Each set is worth SIDE_POINTS in all, split across its adhkar
+// by weight like a window (splitWindowPoints(tasks, SIDE_POINTS)). The points
+// are fixed: no delay before they open and no decay while they are open.
+// The server caps a side window at the same total (backend GameRules::SIDE_POINTS).
+const SIDE_POINTS = 50;
+
+function sideTaskWindow(startsAt, endsAt) {
+  return { opensAt: startsAt, closesAt: endsAt };
+}
+
+function sidePoints(share, win, startedAt) {
+  return startedAt >= win.opensAt && startedAt < win.closesAt ? share : 0;
 }

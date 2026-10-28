@@ -18,6 +18,17 @@ final class GameRules
     public const MAX_WINDOW_TOTAL = self::WINDOW_POINTS;
 
     /**
+     * Side tasks: the morning adhkar (Fajr until Maghrib) and the evening
+     * adhkar (Maghrib until the next Fajr), keyed "YYYY-MM-DD:Morning" /
+     * "YYYY-MM-DD:Evening". Each set is a fixed bonus of SIDE_POINTS in all,
+     * split across its adhkar (core/logic/game-score.js SIDE_POINTS), with at
+     * most SIDE_TASK_COUNT rows (+ a few spare, like a prayer window). Mirrors
+     * SIDE_TASKS in core/data/game-tasks.js (tools/test/game.js checks both).
+     */
+    public const SIDE_POINTS = 50;
+    public const SIDE_TASK_COUNT = ['Morning' => 13, 'Evening' => 13];
+
+    /**
      * The first day a completion may be dated. The game went live in
      * September 2026; anything older is forged (and would make period
      * prizes reach back centuries — see GameWinners).
@@ -26,6 +37,7 @@ final class GameRules
 
     private const USERNAME = '/\A[\p{L}\p{N}_. -]{3,20}\z/u'; // letters, digits, underscore, space, period, hyphen
     private const WINDOW_KEY = '/^\d{4}-\d{2}-\d{2}:(Fajr|Dhuhr|Asr|Maghrib|Isha)$/';
+    private const SIDE_KEY = '/^\d{4}-\d{2}-\d{2}:(Morning|Evening)$/';
     private const ITEM_ID = '/^[a-z0-9-]{1,64}$/';
     private const MONTH = '/^\d{4}-\d{2}$/';
     private const DAY = '/^\d{4}-\d{2}-\d{2}$/';
@@ -72,6 +84,26 @@ final class GameRules
     public static function isWindowKey(mixed $key): bool
     {
         return is_string($key) && preg_match(self::WINDOW_KEY, $key) === 1;
+    }
+
+    /** "YYYY-MM-DD:Morning" / "YYYY-MM-DD:Evening": the side adhkar (not a prayer window). */
+    public static function isSideKey(mixed $key): bool
+    {
+        return is_string($key) && preg_match(self::SIDE_KEY, $key) === 1;
+    }
+
+    /** The most points a window (prayer or side) can hold in all. */
+    public static function windowCap(string $key): int
+    {
+        return self::isSideKey($key) ? self::SIDE_POINTS : self::MAX_WINDOW_TOTAL;
+    }
+
+    /** The most rows a window keeps: its task count + 3 spare for older catalogs. */
+    public static function windowRows(string $key): int
+    {
+        $name = substr($key, 11);
+
+        return (GameStats::WINDOW_TASK_COUNT[$name] ?? self::SIDE_TASK_COUNT[$name] ?? 0) + 3;
     }
 
     /**
@@ -129,14 +161,15 @@ final class GameRules
             }
             $key = (string) ($r['windowKey'] ?? '');
             $item = (string) ($r['itemId'] ?? '');
-            if (! preg_match(self::WINDOW_KEY, $key) || ! preg_match(self::ITEM_ID, $item) || ! self::playableDay(substr($key, 0, 10), $nowMs)) {
+            $known = self::isWindowKey($key) || self::isSideKey($key);
+            if (! $known || ! preg_match(self::ITEM_ID, $item) || ! self::playableDay(substr($key, 0, 10), $nowMs)) {
                 continue;
             }
             if (($r['kind'] ?? '') === 'gift') {
                 continue; // gifts no longer earn points (see the class comment)
             }
             $kind = 'task';
-            $cap = self::WINDOW_POINTS;
+            $cap = self::windowCap($key); // per row and per window
             if (! is_numeric($r['points'] ?? null) || ! is_numeric($r['doneAt'] ?? null)) {
                 continue;
             }
@@ -147,7 +180,7 @@ final class GameRules
                 continue;
             }
             $sum = ($perWindow[$key] ?? 0) + $points;
-            if ($sum > self::MAX_WINDOW_TOTAL) {
+            if ($sum > $cap) {
                 continue;
             }
             $perWindow[$key] = $sum;

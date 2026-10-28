@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">Keyingi namoz</string>
+    <string name="widget_next_desc">Keyingi namoz va uning vaqti, teskari sanoq bilan</string>
+    <string name="widget_times_name">Namoz vaqtlari</string>
+    <string name="widget_times_desc">Bugungi namoz vaqtlari, keyingisi ajratib ko‘rsatilgan</string>
+    <string name="widget_tasks_name">Namoz zikrlari</string>
+    <string name="widget_tasks_desc">Joriy namoz zikrlari: natija, ballar va keyingi vazifa</string>
+    <string name="widget_open_app">Vidjetni sozlash uchun ilovani oching</string>
+    <string name="widget_today">Bugun</string>
+    <string name="widget_p_fajr">Bomdod</string>
+    <string name="widget_p_sunrise">Quyosh chiqishi</string>
+    <string name="widget_p_dhuhr">Peshin</string>
+    <string name="widget_p_asr">Asr</string>
+    <string name="widget_p_maghrib">Shom</string>
+    <string name="widget_p_isha">Xufton</string>
+    <string name="widget_sample_done">9 tadan 3 tasi bajarildi</string>
+    <string name="widget_sample_next">Keyingisi: Oyatal Kursi</string>
+    <string name="widget_sample_points">120 ball</string>
+    <string name="widget_countdown_name">Namozgacha</string>
+    <string name="widget_countdown_desc">Keyingi namozgacha qolgan soat va daqiqalar, ilovadagi karta kabi</string>
+    <string name="widget_u_hours">SOAT</string>
+    <string name="widget_u_min">DAQIQA</string>
+</resources>

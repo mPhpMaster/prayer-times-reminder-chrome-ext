@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">Следующий намаз</string>
+    <string name="widget_next_desc">Следующий намаз и его время с обратным отсчётом</string>
+    <string name="widget_times_name">Время намаза</string>
+    <string name="widget_times_desc">Время намазов на сегодня, следующий выделен</string>
+    <string name="widget_tasks_name">Зикры после намаза</string>
+    <string name="widget_tasks_desc">Зикры текущего намаза: прогресс, очки и следующее задание</string>
+    <string name="widget_open_app">Откройте приложение, чтобы настроить виджет</string>
+    <string name="widget_today">Сегодня</string>
+    <string name="widget_p_fajr">Фаджр</string>
+    <string name="widget_p_sunrise">Восход</string>
+    <string name="widget_p_dhuhr">Зухр</string>
+    <string name="widget_p_asr">Аср</string>
+    <string name="widget_p_maghrib">Магриб</string>
+    <string name="widget_p_isha">Иша</string>
+    <string name="widget_sample_done">Выполнено 3 из 9</string>
+    <string name="widget_sample_next">Далее: Аят аль-Курси</string>
+    <string name="widget_sample_points">120 очк.</string>
+    <string name="widget_countdown_name">Отсчёт до намаза</string>
+    <string name="widget_countdown_desc">Часы и минуты до следующего намаза, как карточка в приложении</string>
+    <string name="widget_u_hours">ЧАС</string>
+    <string name="widget_u_min">МИН</string>
+</resources>

@@ -183,7 +183,15 @@
     signOut: () => Promise.resolve(),
   };
 
-  globalThis.__PTPlatform = { name: "web", store, enforce, dhikr, geo, runtime, permissions, speech, googleAuth };
+  // Apple's page doesn't hand its answer back to a popup's opener reliably, so the
+  // whole tab goes and the game picks the answer up when it reopens (pending).
+  const appleAuth = {
+    signIn: (cfg, opts) => AppleAuthFlow.redirect(cfg, "web", opts && opts.intent),
+    pending: () => AppleAuthFlow.pending(),
+    signOut: () => Promise.resolve(),
+  };
+
+  globalThis.__PTPlatform = { name: "web", store, enforce, dhikr, geo, runtime, permissions, speech, googleAuth, appleAuth };
 
   // The website build is a full page, not a 360px popup.
   const css = document.createElement("link");

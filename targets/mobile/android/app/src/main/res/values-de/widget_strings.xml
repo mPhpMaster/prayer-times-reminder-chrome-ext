@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">Nächstes Gebet</string>
+    <string name="widget_next_desc">Das nächste Gebet und seine Zeit, mit Countdown</string>
+    <string name="widget_times_name">Gebetszeiten</string>
+    <string name="widget_times_desc">Die heutigen Gebetszeiten, das nächste hervorgehoben</string>
+    <string name="widget_tasks_name">Gebets-Adhkar</string>
+    <string name="widget_tasks_desc">Deine Adhkar zum aktuellen Gebet: Fortschritt, Punkte und was als Nächstes kommt</string>
+    <string name="widget_open_app">Öffne die App, um dieses Widget einzurichten</string>
+    <string name="widget_today">Heute</string>
+    <string name="widget_p_fajr">Fajr</string>
+    <string name="widget_p_sunrise">Sonnenaufgang</string>
+    <string name="widget_p_dhuhr">Dhuhr</string>
+    <string name="widget_p_asr">Asr</string>
+    <string name="widget_p_maghrib">Maghrib</string>
+    <string name="widget_p_isha">Isha</string>
+    <string name="widget_sample_done">3/9 erledigt</string>
+    <string name="widget_sample_next">Als Nächstes: Ayat al-Kursi</string>
+    <string name="widget_sample_points">120 Pkt.</string>
+    <string name="widget_countdown_name">Gebets-Countdown</string>
+    <string name="widget_countdown_desc">Stunden und Minuten bis zum nächsten Gebet, wie die Karte in der App</string>
+    <string name="widget_u_hours">STD</string>
+    <string name="widget_u_min">MIN</string>
+</resources>

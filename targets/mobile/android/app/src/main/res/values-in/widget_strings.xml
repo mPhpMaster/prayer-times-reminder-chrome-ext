@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">Shalat berikutnya</string>
+    <string name="widget_next_desc">Shalat berikutnya dan waktunya, dengan hitung mundur</string>
+    <string name="widget_times_name">Jadwal salat</string>
+    <string name="widget_times_desc">Jadwal salat hari ini, shalat berikutnya disorot</string>
+    <string name="widget_tasks_name">Zikir Salat</string>
+    <string name="widget_tasks_desc">Zikir salat saat ini: kemajuan, poin, dan tugas berikutnya</string>
+    <string name="widget_open_app">Buka aplikasi untuk menyiapkan widget ini</string>
+    <string name="widget_today">Hari ini</string>
+    <string name="widget_p_fajr">Subuh</string>
+    <string name="widget_p_sunrise">Terbit</string>
+    <string name="widget_p_dhuhr">Dzuhur</string>
+    <string name="widget_p_asr">Ashar</string>
+    <string name="widget_p_maghrib">Maghrib</string>
+    <string name="widget_p_isha">Isya</string>
+    <string name="widget_sample_done">3/9 selesai</string>
+    <string name="widget_sample_next">Berikutnya: Ayat Kursi</string>
+    <string name="widget_sample_points">120 poin</string>
+    <string name="widget_countdown_name">Hitung mundur salat</string>
+    <string name="widget_countdown_desc">Jam dan menit menuju shalat berikutnya, seperti kartu di aplikasi</string>
+    <string name="widget_u_hours">JAM</string>
+    <string name="widget_u_min">MENIT</string>
+</resources>

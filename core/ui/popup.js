@@ -125,7 +125,11 @@ const el = {
   startupToggle: document.getElementById("startup-toggle"),
   labelStartup: document.getElementById("label-startup"),
   hintStartup: document.getElementById("hint-startup"),
-  aboutLink: document.getElementById("about-link")
+  aboutLink: document.getElementById("about-link"),
+  labelCardTimes: document.getElementById("label-card-times"),
+  labelCardAlerts: document.getElementById("label-card-alerts"),
+  labelCardTasbih: document.getElementById("label-card-tasbih"),
+  labelCardAppearance: document.getElementById("label-card-appearance")
 };
 
 let lang = "ar";
@@ -196,6 +200,11 @@ function showError(msg) {
   if (!msg) { el.error.hidden = true; el.error.textContent = ""; return; }
   el.error.hidden = false;
   el.error.textContent = msg;
+  // The settings are split into cards and the error line sits under the first
+  // one, so bring it into view when it was raised from a card further down.
+  if (!el.settingsView.hidden && !document.body.classList.contains("embedded")) {
+    try { el.error.scrollIntoView({ block: "nearest" }); } catch {}
+  }
 }
 
 function parseTimeToDate(timeStr, refDate = new Date()) {
@@ -845,6 +854,10 @@ function applyLanguage() {
   fillLegalLinks(t);
   el.openSettingsBtn.textContent = t.openSettings;
   el.settingsTitle.textContent = t.settingsTitle;
+  el.labelCardTimes.textContent = t.settingsCardTimes;
+  el.labelCardAlerts.textContent = t.settingsCardAlerts;
+  el.labelCardTasbih.textContent = t.settingsCardTasbih;
+  el.labelCardAppearance.textContent = t.settingsCardAppearance;
   el.backBtn.textContent = t.back;
   el.labelCountry.textContent = t.country;
   el.labelCity.textContent = t.city;
@@ -1440,12 +1453,27 @@ let currentWizardGroup = null;
 
 // Show only the field group for the current wizard step; hide the rest plus the
 // save/location button row (the wizard drives those). The error line stays.
+// The field groups sit inside the settings cards: a card stays visible only
+// while it holds the active group (its title is hidden in the embed by CSS).
 function showWizardGroup(group) {
   currentWizardGroup = group;
+  const showOnly = (node) => {
+    const g = node.getAttribute("data-group");
+    node.hidden = g ? g !== group : true;
+    return !node.hidden;
+  };
   for (const child of el.settingsBody.children) {
     if (child === el.error) continue;
-    const g = child.getAttribute("data-group");
-    child.hidden = g ? g !== group : true;
+    if (child.classList.contains("settings-card")) {
+      let any = false;
+      for (const inner of child.children) {
+        if (inner.classList.contains("settings-card-title")) continue;
+        if (showOnly(inner)) any = true;
+      }
+      child.hidden = !any;
+      continue;
+    }
+    showOnly(child);
   }
   // Respect nested visibility rules within the group we just revealed.
   if (group === "appearance") updateDigitsVisibility();

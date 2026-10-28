@@ -1,5 +1,8 @@
 # Mobile target (Android / Capacitor)
 
+> **iPhone / iPad:** the same shell also builds for iOS (`ios/`, free unsigned
+> builds on GitHub Actions) — see [IOS.md](IOS.md).
+
 Shares `core/` via `tools/sync-core.mjs mobile`, which assembles the web layer
 into `www/`. `web/index.html` redirects to the shared `popup.html`; the web ⇄
 native bridge is `web/adapter.js` (`Platform` over Capacitor plugins +
@@ -169,6 +172,52 @@ which follows the phone's language: "مواقيت الصلاة" on an Arabic pho
   ("Unable to establish loopback connection") — build from PowerShell.
 - **TODO (native):** optional Device Admin camera-off.
 
+## Home-screen widgets (`HomeWidgets`, Java)
+
+Four widgets in the launcher's picker: **Next prayer** (2x2, compact at 2x1),
+**Prayer times** (4x2 grid; one row when short, a list when narrow),
+**Prayer adhkar** (the game's tasks for the current prayer window; tap opens
+the game) and **Prayer countdown** (the popup's "Next prayer" card: hours and
+minutes boxes + progress since the previous prayer). Screenshots:
+`docs/android-widgets/`.
+
+- **Data:** the prayer engine is JS, so `adapter.js` (`publishWidgets`)
+  publishes a snapshot through `Capacitor.Plugins.HomeWidgets.update` on
+  launch, resume and any change of location / language / theme / digits /
+  game progress — only while a widget is placed (`HomeWidgets.placed`).
+  It holds ready-formatted times for yesterday + 7 days (the same horizon as
+  the notification and lock schedules), the task summary per window (game
+  scripts are loaded on demand on pages without them) and the labels in the
+  app's language. Native (`HomeWidgets.java`) picks the next prayer and the
+  current window by the clock; past the snapshot (app not opened for a week,
+  or the clock moved outside it) the widgets say "open the app".
+- **No seconds, no app work per minute:** countdowns are `Chronometer`s the
+  launcher ticks; a format precision cuts their "H:MM:SS" to "H:MM" (`%.4s`)
+  or to the minutes box's "MM" (`%.2s`). The hour part is fixed per render, so
+  one **non-wakeup** (`RTC`) alarm re-renders at the next boundary: a prayer
+  time, a window's tasks opening, midnight, the countdowns' hour boundaries,
+  and every 15 min for the countdown card's progress bar. That is roughly
+  12 renders/day for the next-prayer, times and adhkar widgets and ~24 more
+  for the hour boundaries; the countdown card adds up to 96 progress steps,
+  delivered only while the phone is awake. No wakeups, no service,
+  `updatePeriodMillis="0"`, nothing armed while no widget is placed; all
+  rendering runs on one background thread, bursts are coalesced and the parsed
+  snapshot is cached. Re-rendered on boot, time / timezone / locale changes.
+- **Moving / resizing costs nothing:** launchers send a burst of "options
+  changed" broadcasts while a widget is dragged. On Android 12+ every widget
+  carries one layout per size (a `RemoteViews` size map), so the launcher
+  switches layouts itself and the app ignores those broadcasts; below 12 only
+  the resized widget is re-rendered, after the drag settles, and only if its
+  layout changes. (The first version re-rendered every widget on each of
+  them, which could loop with the launcher and end in "isn't responding".)
+- **Look:** the app's colours (`res/values*/widget_colors.xml`), light/dark
+  from the phone (`values-night`), the app's theme picks the background
+  (Classic vs Midnight Emerald), RTL from the app language, prayer names in
+  Amiri (`res/font/amiri_bold.ttf`, OFL, from `core/assets/fonts`) for ar/ur.
+  Picker names/descriptions in all 11 languages (`res/values-*/widget_strings.xml`).
+- **Known limit:** the countdown digits come from the phone's locale
+  (Chronometer); the static times follow the app's digit setting.
+
 ## Android back
 
 `web/adapter.js` owns the hardware back / back gesture: first the page's own
@@ -187,3 +236,30 @@ the server verifies the ID token's audience. For it to work, the Google Cloud
 project needs Android OAuth clients for `com.mphpmaster.prayer` with the SHA-1
 of the Play app-signing key and the upload key (and `com.mphpmaster.prayer.debug`
 with the debug key for debug builds).
+
+## Sign in with Apple (Android)
+
+No native code: Apple's web flow runs inside the app's WebView
+(`appleid.apple.com` is in `capacitor.config.json` `allowNavigation`). Apple
+posts its answer to the game server's `/v1/auth/apple/callback`, which forwards
+it to `https://localhost/apple-callback.html`; the game picks it up when it
+reopens (`AppleAuthFlow.pending`, `core/logic/apple-auth.js`). The button only
+shows once the server's `/v1/auth/config` returns `apple` (off until configured
+— see `docs/APPLE-SIGNIN.md`). The same "Sign-in methods" section in
+"My account" links / unlinks Google and Apple. Changing `capacitor.config.json`
+needs `npx cap sync` and a new build.
+
+## Play Integrity (`PlayIntegrity`, Java)
+
+`PlayIntegrityPlugin` (`com.google.android.play:integrity`) proves to the game
+server that it is the Play build on a genuine device. After sign-in and about
+once a day, the game (`core/logic/game-sync.js`) gets a one-time nonce and the
+Cloud project number from `GET /v1/integrity/challenge`, asks Google through
+`Platform.integrity` (`web/adapter.js` → `PlayIntegrity.token({ requestHash, projectNumber })`)
+for a **standard** Integrity token bound to that nonce, and posts it to
+`POST /v1/integrity`. The server has Google decode it and keeps
+the verdict on the player; the app never sees or trusts the result itself. A
+pass in the last 30 days shows the ✓ "verified" mark next to the name on the
+leaderboard; nobody is blocked. Off (the server answers `503 integrity-off`)
+until `PLAY_INTEGRITY_CREDENTIALS` and `PLAY_INTEGRITY_PROJECT_NUMBER` are set
+in the backend `.env`.

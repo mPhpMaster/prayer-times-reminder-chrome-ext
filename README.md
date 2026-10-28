@@ -7,7 +7,7 @@
 A Manifest V3 Chrome extension that:
 
 - 🔔 **Notifies you at each prayer time** (Fajr, Dhuhr, Asr, Maghrib, Isha) — in your chosen language.
-- 🔒 **Optional tab lock** — when prayer time arrives, blocks **all open browser tabs** for a configurable duration (1–120 minutes, default 5) with a countdown overlay; tabs you open or navigate to during the lock are covered too; optional manual unlock by tapping the lock screen.
+- 🔒 **Optional tab lock** — when prayer time arrives, blocks **all open browser tabs** for a configurable duration (1–120 minutes, default 5) with a countdown overlay; tabs you open or navigate to during the lock are covered too; optional manual unlock by tapping the lock screen. A calm line under the countdown reads “Turn to your prayer with humility and focus”.
 - 🕌 **Shows the full daily prayer schedule** for your city/country, with a live countdown to the next prayer.
 - 🌍 **Country & city dropdowns** — pick a country, and the city list loads automatically.
 - 🌐 **11 languages** — switch from the popup header or **Settings → Language** (see [Supported languages](#supported-languages)).
@@ -15,8 +15,12 @@ A Manifest V3 Chrome extension that:
 - 📅 **Date format** — choose how both the Hijri and Gregorian dates are displayed (e.g. `10-04-2026`, `10 April 2026`, long text).
 - 🌙 **Hijri date** shown alongside the Gregorian date.
 - 📿 **Periodic dhikr** — optional floating reminder with 151 unique phrases on your open tabs; tap to dismiss or auto-hide after 10 seconds.
-- 🎙️ **Prayer Adhkar game (optional)** — opens in its own tab from the popup's Settings: read each prayer's adhkar aloud, Chrome's speech recognition follows along, and you earn points per prayer, day and month. Plays without an account; email or Google sign-in only for the leaderboard and following friends. Prayer times never need an account.
+- 🎙️ **Prayer Adhkar game (optional)** — opens in its own tab from the popup's Settings: read each prayer's adhkar aloud, Chrome's speech recognition follows along, and you earn points per prayer, day and month. Plays without an account; email or Google sign-in only for the leaderboard and following friends. Prayer times never need an account. The leaderboard opens with the verse ﴿وَفِي ذَٰلِكَ فَلْيَتَنَافَسِ الْمُتَنَافِسُونَ﴾ (Al-Mutaffifin 83:26), its meaning first and the Arabic below, and shows each period's latest winners prominently, with first place in gold.
+- 🌅 **Morning and evening adhkar** — two daily side sets in the game, next to the prayer tasks: the morning adhkar from Fajr until Maghrib and the evening adhkar from Maghrib until the next Fajr (13 adhkar each, read aloud like any task, 50 bonus points per complete set). An optional section, off by default, adds two adhkar whose authenticity is disputed, each with its source and grading, for reading only and without points.
+- 🔗 **One account, several sign-in methods** — under the game's **My account › Sign-in methods** you can link Google to your account (and Apple, once Sign in with Apple is switched on) and sign in with either. On Android, players whose app passes Google Play Integrity get a ✓ verified mark on the leaderboard.
 - 🗂️ **New tab (optional)** — Chrome’s new tab shows a clock, the next prayer as hours/minutes/seconds, today’s prayer times, a web search, a dhikr and your adhkar progress, over a sky that follows the prayer times. Switch it off from the game’s “My account”, in any app.
+
+![Dhikr game — Asr tasks and the morning adhkar set](screenshots/game-en.png)
 
 ## Translations
 
@@ -34,8 +38,9 @@ Prayer times are calculated offline on your device with [adhan-js](https://githu
 ## Other platforms
 
 - **Website** — the whole app in your browser: https://mphpmaster.github.io/prayer-times-reminder-chrome-ext/app/
-- **Android** — Google Play: https://play.google.com/store/apps/details?id=com.mphpmaster.prayer
-- **Windows** — Microsoft Store: https://apps.microsoft.com/detail/9PFTWDWLNL7C
+- **Android** — Google Play: https://play.google.com/store/apps/details?id=com.mphpmaster.prayer — home-screen widgets (next prayer, prayer times, adhkar progress, countdown) come with the next Android update.
+- **Windows** — Microsoft Store: https://apps.microsoft.com/detail/9PFTWDWLNL7C, or the installer from the newest [desktop release](https://github.com/mPhpMaster/prayer-times-reminder-chrome-ext/releases)
+- **iPhone / iPad** — coming soon; not on the App Store yet. Build it from source, or sideload the free unsigned build: [targets/mobile/IOS.md](targets/mobile/IOS.md)
 - **Discord** — a Vencord plugin; install steps: [targets/vencord/README.md](targets/vencord/README.md)
 
 ## Install
@@ -59,12 +64,12 @@ That's it — the extension will fetch today's times, show them, and schedule a 
 
 ## Settings
 
+In the popup's settings these options are grouped into four cards, in this order: **Prayer times** (country, city, calculation method), **Alerts & lock** (the tab lock and its options), **Tasbih & reminders** (periodic dhikr), and **Appearance** (theme, language, date format, number style).
+
 | Setting | Description |
 |---------|-------------|
 | Country / City | Location used for prayer times (or use geolocation). |
 | Calculation method | AlAdhan method (ISNA, Muslim World League, Umm al-Qura, Egyptian, Karachi, Gulf, Diyanet, JAKIM, Kemenag, Moonsighting, etc.). |
-| Date format | How both the Hijri and Gregorian dates appear. |
-| Number style | When Arabic or Urdu is active: Arabic-Indic (٠١٢٣) or Western (0123) digits for times and countdowns. |
 | Lock tab during prayer | Injects a full-page overlay on all open tabs at prayer time. |
 | Lock duration | How long the tab stays locked (1–120 minutes). |
 | Allow manual unlock | Lets you dismiss the lock screen early by tapping anywhere on it (or pressing Esc). |
@@ -74,6 +79,8 @@ That's it — the extension will fetch today's times, show them, and schedule a 
 | Test dhikr | Preview the dhikr card on the current tab. |
 | Theme | Choose **Midnight Emerald** (default) or **Classic**. |
 | Language | Choose the UI language (also available in the popup header). |
+| Date format | How both the Hijri and Gregorian dates appear. |
+| Number style | When Arabic or Urdu is active: Arabic-Indic (٠١٢٣) or Western (0123) digits for times and countdowns. |
 
 ## Supported languages
 
@@ -105,7 +112,7 @@ Translations live in `i18n.js` (`I18N` + `SUPPORTED_LANGS`). Dhikr phrases in `t
 | `overlay-tasbih.js` | Injected floating dhikr card; dismiss on tap or after 10 seconds. |
 | `tasbih-phrases.js` | 151 unique dhikr phrases. |
 | `welcome.html` / `welcome.css` | First-install welcome page with pin-to-toolbar instructions (localized). |
-| `i18n.js` | Shared translations (EN/DE/AR/UR/HI/ID/FR/ES), prayer names, country list, calculation methods, date formats, digit helper. |
+| `i18n.js` | Shared translations (11 languages), prayer names, country list, calculation methods, date formats, digit helper. |
 | `popup.html` / `popup.css` / `popup.js` | The popup UI (schedule, countdown, language selector, settings). |
 | `theme.css` | Shared Midnight Emerald theme tokens and utilities (popup, settings, welcome). |
 | `icons/` | Extension icons (crescent + star). |

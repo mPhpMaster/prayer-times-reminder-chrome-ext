@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 2x2 by default, down to 2x1 (compact layout). No periodic system update
+     (updatePeriodMillis 0): HomeWidgets re-renders at its own boundaries. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_next_desc"
+    android:initialLayout="@layout/widget_next_prayer"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:previewImage="@drawable/widget_preview_next"
+    android:previewLayout="@layout/widget_next_prayer"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

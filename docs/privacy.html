@@ -29,13 +29,13 @@
 </head>
 <body>
   <h1>Privacy Policy — Prayer Times Reminder</h1>
-  <p class="updated">Last updated: 8 October 2026 &middot; Applies to the Chrome extension, the Windows app, and the Android app.</p>
+  <p class="updated">Last updated: 15 October 2026 &middot; Applies to the Chrome extension, the Windows app, the Android app, the website, and the iPhone / iPad app (not on the App Store yet).</p>
 
   <div class="card">
     <p><strong>Prayer Times Reminder</strong> (“the app”) is built to respect your privacy.
     It shows no ads and includes no third‑party analytics or tracking. The only data the developer
-    receives is what you choose to share through the optional <strong>game account</strong> in the Android
-    app or the Chrome extension (see “Dhikr game” below). Prayer times, prayer alerts and every prayer
+    receives is what you choose to share through the optional <strong>game account</strong>
+    (see “Dhikr game” below) and, in the Android app, the Google Play Integrity result for a signed-in account. Prayer times, prayer alerts and every prayer
     setting work without any account.</p>
   </div>
 
@@ -84,7 +84,7 @@
     <li><strong>geolocation</strong> — optional; only when you choose “Use my location”.</li>
     <li><strong>scripting</strong> and the optional <strong>access to your open tabs</strong> (<code>&lt;all_urls&gt;</code>) — place the prayer-break overlay and the dhikr card on your open tabs. Tab access is not granted at install; the extension asks for it when you first turn on the prayer break or dhikr reminders, and you can decline. The overlay and card do not read page content, forms, passwords or browsing history, and send nothing from the page anywhere.</li>
     <li><strong>offscreen</strong> — play the adhan or chime packaged with the extension at prayer time.</li>
-    <li><strong>identity</strong> — only for the optional “Continue with Google” in the game (see below).</li>
+    <li><strong>identity</strong> — only for the optional “Continue with Google” (and, once switched on, “Sign in with Apple”) in the game (see below).</li>
     <li><strong>search</strong> — the search box on the extension’s new tab sends what you type to <em>your browser’s own default search engine</em>, as Chrome’s address bar would; the extension does not see or keep it.</li>
   </ul>
   <p>The extension replaces Chrome’s new tab with a prayer-times page (clock, next prayer, today’s times, a dhikr, your adhkar progress). It can be switched off in the game’s “My account”, and then new tabs open Chrome’s own page. Its background, weather and favorite adhkar are kept only in your browser.</p>
@@ -109,10 +109,29 @@
     <li><strong>Internet</strong> — for the city lookups listed above and, if you create a game account, the game server.</li>
   </ul>
   <p>The app never ends or blocks a phone call: if a prayer lock is due during a call, it waits until the call ends.</p>
+  <p><strong>Google Play Integrity.</strong> If you are signed in to the game, the Android app asks Google Play, after
+  sign-in and about once a day, to confirm that it is the genuine app from Google Play on a genuine device. The
+  game server has Google decode that answer and keeps only the result on your account: passed or failed, a short
+  reason, and when it was checked. A pass in the last 30 days shows a ✓ “verified” mark next to your name on the
+  leaderboard; the app’s admins can see failed checks. Nobody is blocked, and the other apps never run this check.</p>
 
-  <h2>Dhikr game (Android app and Chrome extension)</h2>
-  <p>The Android app and Chrome extension open on prayer times. The dhikr game is an optional page opened
-  from the prayer-times interface. Playing works locally without an account, and your progress is saved on your device. Two parts
+  <h2>iPhone and iPad app</h2>
+  <p>The iPhone / iPad app is not on the App Store yet; it can be built from source and installed by the user.
+  It works like the Android app, with these differences:</p>
+  <ul>
+    <li><strong>Location</strong> — optional and only “while using the app”; used on the device to calculate prayer times and never sent anywhere.</li>
+    <li><strong>Notifications</strong> — prayer-time reminders and optional game alerts, scheduled on the device.</li>
+    <li><strong>Microphone</strong> and <strong>Speech Recognition</strong> — asked the first time you recite in the game.
+    The app uses Apple’s speech recognition (<code>SFSpeechRecognizer</code>). When your device supports it for Arabic,
+    recognition runs on the device; otherwise Apple processes the audio on its servers under
+    <a href="https://www.apple.com/legal/privacy/">Apple’s privacy policy</a>. The app receives only the recognized
+    text and keeps it on the device, as described under “Voice” below.</li>
+    <li>The iPhone app cannot lock or draw over other apps, change Do Not Disturb, or run the Play Integrity check.</li>
+  </ul>
+
+  <h2>Dhikr game (all apps)</h2>
+  <p>The apps open on prayer times. The dhikr game is an optional page opened
+  from the prayer-times interface. Playing works locally without an account, and your progress is saved on your device. These parts
   are optional:</p>
   <ul>
     <li><strong>Game account.</strong> If you create one, you sign in with your <strong>email address and a
@@ -121,8 +140,9 @@
     then stores: your email address; your password only as a one-way bcrypt hash (never the password itself); if you
     use Google, Google’s account ID for you and the email Google confirms (we do not store your Google name, photo,
     or any other Google data, and never see your Google password); your username and optional display name; the dhikr
-    tasks you finish (task, points, and the time you started and finished); the players you follow; whether you hid
-    your progress; and, for each signed-in device, a hash of its access token (never the token itself) and when it was
+    tasks you finish (task, points, and the time you started and finished — including the morning and evening adhkar
+    sets); your game preferences (for example game alerts, the new tab, and whether the adhkar of disputed
+    authenticity are shown); the players you follow; whether you hid your progress; and, for each signed-in device, a hash of its access token (never the token itself) and when it was
     last used. The email is used only to sign you in and, if you ask, to send a password-reset code, which is valid for
     15 minutes and stored only as a hash. Your username, display name and monthly points are shown to other signed-in
     players on the leaderboard and your profile unless you hide your progress. The server does not store your IP
@@ -132,10 +152,22 @@
     Chrome’s own Google sign-in window (the extension’s <code>identity</code> permission); the extension receives
     only the sign-in token that Google issues for the game, and passes it to the game server to confirm your
     account. In the Windows app, it opens Google’s sign-in page in your default browser, which hands the same
-    token back to the app through a local address on your own computer (127.0.0.1); nothing else is shared.</li>
+    token back to the app through a local address on your own computer (127.0.0.1); nothing else is shared.
+    The optional adhkar of disputed authenticity give no points and are never sent to the server.</li>
+    <li><strong>Sign in with Apple and linked sign-in methods.</strong> In <em>My account › Sign-in methods</em> you can
+    link Google (and Apple) to the same account, or unlink one as long as another way to sign in remains. Sign in with
+    Apple is built in but stays switched off until the developer configures it on the server. When it is on, the app
+    opens Apple’s sign-in page (in Chrome’s sign-in window, your default browser on Windows, the page itself on the
+    website, or inside the Android app); Apple sends its answer to the game server, which passes it straight back to
+    the app and then checks Apple’s signed token. The server stores your Apple user ID and, only if you share it,
+    the email Apple gives — which may be a private <code>@privaterelay.appleid.com</code> relay address if you choose
+    <em>Hide My Email</em>. It never sees your Apple ID password and does not store your name. It may also keep the
+    refresh token Apple issues for the app, <strong>encrypted</strong>, solely so it can revoke the app’s access with
+    Apple when you unlink Apple or delete your account.</li>
     <li><strong>Voice.</strong> When you tap the microphone to recite, the app uses the platform’s speech
     recognition — Android’s (Google’s voice input) in the Android app, Chrome’s built-in speech recognition in the
-    extension, which asks for microphone permission the first time. Your voice is processed by that service under
+    extension, which asks for microphone permission the first time, and Apple’s on the iPhone / iPad (see above).
+    On Android and in Chrome, your voice is processed by that service under
     <a href="https://policies.google.com/privacy">Google’s privacy policy</a>. The app only receives the recognized
     text and compares it with the dhikr on your device. The app does not record or keep your voice. The recognized
     text is never sent to us; it stays on your device only until the task it belongs to is finished.</li>
@@ -160,7 +192,7 @@
   <h2>Email confirmation and admins</h2>
   <ul>
     <li>To confirm your email, the server emails you a 6-digit code (valid 15 minutes; only its hash is stored).
-    Google sign-in confirms it automatically.</li>
+    Google or Apple sign-in confirms it automatically.</li>
     <li>The app’s <strong>admins</strong> (accounts whose confirmed email the owner has made an admin) can review name
     requests, manage the About page list, see account usernames, emails and points, and reset or delete accounts
     (for example when asked to, or for abuse). Every admin action is logged on the server.</li>
@@ -168,15 +200,15 @@
 
   <h2>Deleting your data</h2>
   <p><strong>Game account:</strong> in the app, open <em>حسابي</em> (My account) › <em>احذف حسابي</em> (Delete my account).
-  This permanently deletes your email, password hash, Google link, username, points, progress and follows from our
-  server at once. If you no longer
+  This permanently deletes your email, password hash, Google and Apple links (revoking Apple’s token with Apple),
+  username, points, progress and follows from our server at once. If you no longer
   have the app, see <a href="delete-account.html">how to request deletion</a>.</p>
   <p><strong>On your device:</strong> to delete everything the app keeps on your device, clear the app’s data
   (Android: Settings › Apps › Prayer Times Reminder › Storage › Clear data) or uninstall it (Chrome: remove the
   extension).</p>
 
   <h2>Children</h2>
-  <p>The app does not ask for age. The optional game account uses an email address (or Google sign-in) and a public username. A parent or guardian should supervise account creation where required by applicable law.</p>
+  <p>The app does not ask for age. The optional game account uses an email address (or Google or Apple sign-in) and a public username. A parent or guardian should supervise account creation where required by applicable law.</p>
 
   <h2>Changes</h2>
   <p>If this policy changes, the “last updated” date above will change accordingly.</p>

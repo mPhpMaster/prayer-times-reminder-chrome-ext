@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_name">Prochaine prière</string>
+    <string name="widget_next_desc">La prochaine prière et son heure, avec un compte à rebours</string>
+    <string name="widget_times_name">Horaires de prière</string>
+    <string name="widget_times_desc">Les horaires du jour, la prochaine prière mise en avant</string>
+    <string name="widget_tasks_name">Adhkar de la prière</string>
+    <string name="widget_tasks_desc">Vos adhkar de la prière en cours : progression, points et la suite</string>
+    <string name="widget_open_app">Ouvrez l’appli pour configurer ce widget</string>
+    <string name="widget_today">Aujourd’hui</string>
+    <string name="widget_p_fajr">Fajr</string>
+    <string name="widget_p_sunrise">Lever du soleil</string>
+    <string name="widget_p_dhuhr">Dhuhr</string>
+    <string name="widget_p_asr">Asr</string>
+    <string name="widget_p_maghrib">Maghrib</string>
+    <string name="widget_p_isha">Isha</string>
+    <string name="widget_sample_done">3/9 faites</string>
+    <string name="widget_sample_next">Suivante : Ayat al-Kursi</string>
+    <string name="widget_sample_points">120 pts</string>
+    <string name="widget_countdown_name">Compte à rebours</string>
+    <string name="widget_countdown_desc">Heures et minutes avant la prochaine prière, comme la carte de l’appli</string>
+    <string name="widget_u_hours">HEURES</string>
+    <string name="widget_u_min">MIN</string>
+</resources>

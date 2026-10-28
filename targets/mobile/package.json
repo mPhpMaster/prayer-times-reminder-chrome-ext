@@ -4,7 +4,8 @@
   "description": "Shares `core/` via `tools/sync-core.mjs mobile`, which assembles the web layer into `www/`. `web/index.html` redirects to the shared `popup.html`; the web ⇄ native bridge is `web/adapter.js` (`Platform` over Capacitor plugins + `Capacitor.Plugins.PrayerLock`).",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "capacitor:copy:after": "node scripts/ios-extras.mjs"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
     "@capacitor/cli": "^8.5.3",
     "@capacitor/core": "^8.5.3",
     "@capacitor/geolocation": "^8.2.0",
+    "@capacitor/ios": "^8.5.3",
     "@capacitor/local-notifications": "^8.2.0",
     "@capacitor/preferences": "^8.0.1"
   }

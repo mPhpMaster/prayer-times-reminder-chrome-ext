@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Small rounded chip: points and the countdown on the adhkar widget. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_pill" />
+    <corners android:radius="999dp" />
+</shape>

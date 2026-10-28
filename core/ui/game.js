@@ -5,13 +5,15 @@
 // progress lives in Platform.store[GAME_STORE_KEY].
 //
 // Screens are hash routes so Android back (adapter.js -> window.__ptBack)
-// steps through them: #tasks (home), #board, #me, #read/<taskId>, #gift,
-// #profile/<username>. Each pushed screen records its depth in history.state.
+// steps through them: #tasks (home), #board, #me, #read/<taskId>,
+// #side/<taskId> (morning / evening adhkar), #gift, #profile/<username>. Each pushed screen records its depth in history.state.
 //
 // Speech: the Google voice dialog, one meaningful segment per utterance.
 //
-// Accounts: email + password or Google (game-sync.js, GoogleAuthPlugin). A
-// name-only account from before is "legacy" and is linked on sign-in.
+// Accounts: email + password, Google (game-sync.js, GoogleAuthPlugin) or Apple
+// (Platform.appleAuth, apple-auth.js); one account can link Google and Apple
+// ("Sign-in methods"). A name-only account from before is "legacy" and is
+// linked on sign-in.
 
 const $ = (id) => document.getElementById(id);
 const NOTICE_HIDE_MS = 4000; // a toast: success fades after 4 s,
@@ -27,10 +29,14 @@ let state = emptyGameState();
 let current = null; // currentWindow() result
 let lastWindowCheck = 0;
 let tasks = []; // tasksForWindow(current.prayer), with .share (max points)
+let side = null; // sideWindow() result: the morning / evening adhkar, open beside the prayer window
+let sideTasks = []; // tasksForSide(side.kind), with .share (fixed bonus points)
+let disputedTasks = []; // disputedForSide(side.kind, disputedOn): optional, no points, device only
 
 // Settings
 let journeyOn = true;
 let soundOn = false;
+let disputedOn = false; // show the adhkar whose authentication is disputed (off by default)
 
 // Account / server
 let account = null; // { username, token, email, legacy, emailVerified, admin }
@@ -42,7 +48,9 @@ let boardPeriod = "month"; // all | year | half | quarter | month
 let profileName = null;
 
 // Reader state
-let reading = null; // { task, isGift, mode: "play" | "practice" | "missed" | "done" }
+// `at` is the window the reading banks into: `current`, or `side` for the
+// morning / evening adhkar (side: true).
+let reading = null; // { task, isGift, side, at, mode: "play" | "practice" | "missed" | "done" }
 let finals = [];
 let listening = false;
 let chunks = [];
@@ -81,7 +89,7 @@ function fmtDuration(ms) {
 
 // ---- load / save ----------------------------------------------------------
 async function load() {
-  const s = await Platform.store.get(["location", "lang", GAME_STORE_KEY, "theme", GAME_ACCOUNT_KEY, GAME_API_KEY, "gameJourney", "gameSound", "gameFontStep"]);
+  const s = await Platform.store.get(["location", "lang", GAME_STORE_KEY, "theme", GAME_ACCOUNT_KEY, GAME_API_KEY, "gameJourney", "gameSound", "gameFontStep", "gameDisputed"]);
   if (Number.isInteger(s.gameFontStep) && FONT_STEPS[s.gameFontStep]) fontStep = s.gameFontStep;
   applyFontStep();
   applyLanguage(s.lang);
@@ -92,6 +100,7 @@ async function load() {
   apiUrl = s[GAME_API_KEY] || GAME_API_DEFAULT;
   journeyOn = s.gameJourney !== false;
   soundOn = s.gameSound === true;
+  disputedOn = s.gameDisputed === true;
   if (s.theme && typeof normalizeTheme === "function") {
     document.documentElement.dataset.theme = normalizeTheme(s.theme);
   }
@@ -115,7 +124,7 @@ function parseRoute(hash) {
   const arg = rest.join("/");
   if (name === "board" || name === "me" || name === "gift") return { name };
   if (name === "family") return { name };
-  if ((name === "read" || name === "profile" || name === "member") && arg) return { name, arg };
+  if ((name === "read" || name === "side" || name === "profile" || name === "member") && arg) return { name, arg };
   return { name: "tasks" };
 }
 const routeHash = (r) => (r.arg ? `#${r.name}/${encodeURIComponent(r.arg)}` : `#${r.name}`);
@@ -168,19 +177,27 @@ window.__ptBack = () => {
   return true;
 };
 
+// The route of the open reader stays on it; anything else leaves it.
+function isReadingRoute(r) {
+  if (r.name === "read") return !reading.side && !reading.isGift && reading.task.id === r.arg;
+  if (r.name === "side") return reading.side && reading.task.id === r.arg;
+  return r.name === "gift" && reading.isGift;
+}
+
 function render(r) {
-  if (reading && !(r.name === "read" && reading.task.id === r.arg) && !(r.name === "gift" && reading.isGift)) {
+  if (reading && !isReadingRoute(r)) {
     leaveReader(); // partial progress is already saved with every recognized phrase
   }
   // A profile keeps the tab it was opened from (board or account) highlighted.
   const tab = isTab(r) ? r.name : r.name === "profile" ? currentTab() : r.name === "family" || r.name === "member" ? "me" : "tasks";
   for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === tab));
-  const onTasks = r.name === "tasks" || r.name === "read" || r.name === "gift";
-  document.body.classList.toggle("reader-active", r.name === "read" || r.name === "gift");
+  const inReader = r.name === "read" || r.name === "side" || r.name === "gift";
+  const onTasks = r.name === "tasks" || inReader;
+  document.body.classList.toggle("reader-active", inReader);
   document.querySelector(".scores").hidden = !onTasks;
   $("list-view").hidden = r.name !== "tasks";
   $("guest-note").hidden = !!account || !apiUrl;
-  $("reader").hidden = !(r.name === "read" || r.name === "gift");
+  $("reader").hidden = !inReader;
   $("board-view").hidden = r.name !== "board";
   $("me-view").hidden = r.name !== "me";
   $("profile-view").hidden = r.name !== "profile";
@@ -199,7 +216,12 @@ function render(r) {
     const task = r.name === "gift" ? giftForWindow(current.key) : tasks.find((t) => t.id === r.arg);
     const giftReady = r.name !== "gift" || allTasksDone(entry(), tasks.map((t) => t.id));
     if (!task || !giftReady) return replaceRoute({ name: "tasks" });
-    if (!reading || reading.task.id !== task.id) openReader(task, r.name === "gift");
+    if (!reading || reading.side || reading.task.id !== task.id) openReader(task, r.name === "gift");
+  }
+  if (r.name === "side") {
+    const task = side && [...sideTasks, ...disputedTasks].find((t) => t.id === r.arg);
+    if (!task) return replaceRoute({ name: "tasks" });
+    if (!reading || !reading.side || reading.task.id !== task.id) openReader(task, false, true);
   }
 }
 function currentTab() {
@@ -210,24 +232,36 @@ function currentTab() {
 // ---- window + list --------------------------------------------------------
 // Prayer times are recomputed once a minute (or right at the next prayer),
 // not every second — see needsWindowRefresh().
+// The side window (morning / evening adhkar) changes at Fajr and Maghrib,
+// which are prayer times too, so it is refreshed together with the window.
 function refreshWindow(now = Date.now()) {
-  if (!needsWindowRefresh(current, lastWindowCheck, now)) return;
+  if (!needsWindowRefresh(current, lastWindowCheck, now) && !(side && now >= side.endsAt)) return;
   lastWindowCheck = now;
   const w = currentWindow(PrayerEngine, location_, new Date(now));
-  if (!current || w.key !== current.key) {
-    const hadWindow = !!current;
+  const sw = sideWindow(PrayerEngine, location_, new Date(now));
+  const prayerChanged = !current || w.key !== current.key;
+  const sideChanged = !side || sw.key !== side.key;
+  if (!prayerChanged && !sideChanged) return;
+  // A reading belongs to the window it was opened in: leave it (saving its
+  // partial under that window) before switching to the new one.
+  const leave = !!reading && (reading.side ? sideChanged : prayerChanged);
+  if (leave) leaveReader();
+  if (prayerChanged) {
     current = w;
     tasks = tasksForWindow(w.prayer);
     splitWindowPoints(tasks).forEach((p, i) => (tasks[i].share = p));
-    // A finished window's partial recitations can't be completed any more.
-    clearStalePartials(state, current.key);
-    save();
-    if (hadWindow && reading) {
-      leaveReader();
-      replaceRoute({ name: "tasks" });
-    }
-    renderList();
   }
+  if (sideChanged) {
+    side = sw;
+    sideTasks = tasksForSide(sw.kind);
+    splitWindowPoints(sideTasks, SIDE_POINTS).forEach((p, i) => (sideTasks[i].share = p));
+    disputedTasks = disputedForSide(sw.kind, disputedOn);
+  }
+  // A finished window's partial recitations can't be completed any more.
+  clearStalePartials(state, [current.key, side.key]);
+  save();
+  if (leave) replaceRoute({ name: "tasks" });
+  renderList();
 }
 
 function entry() {
@@ -248,7 +282,8 @@ const GROUPS = [
   ["quran", "grpQuran"],
 ];
 
-function taskButton(t) {
+// route: "read" for the prayer's tasks, "side" for the morning / evening adhkar.
+function taskButton(t, route = "read") {
   const li = document.createElement("li");
   const b = document.createElement("button");
   b.type = "button";
@@ -267,10 +302,18 @@ function taskButton(t) {
   const ms = lastDuration(state, durationKey(t.id, t.repeat));
   if (ms) meta.append(` · ${G.lastTime(fmtDuration(ms))}`);
   left.append(name, meta);
+  if (t.grading) {
+    // Optional disputed adhkar: the grading note, so the player knows.
+    const grading = document.createElement("bdi");
+    grading.className = "grading";
+    grading.lang = "ar";
+    grading.textContent = t.grading;
+    left.append(grading);
+  }
   const pts = document.createElement("span");
   pts.className = "pts";
   b.append(left, pts);
-  b.addEventListener("click", () => go({ name: "read", arg: t.id }));
+  b.addEventListener("click", () => go({ name: route, arg: t.id }));
   li.appendChild(b);
   return li;
 }
@@ -287,11 +330,48 @@ function renderList() {
     h.textContent = G[key];
     const ul = document.createElement("ul");
     ul.className = "tasks";
-    ul.append(...list.map(taskButton));
+    ul.append(...list.map((t) => taskButton(t)));
     box.append(h, ul);
   }
+  renderSide();
   renderJourney();
   tick();
+}
+
+// The side task card: the morning or evening adhkar, a bonus set beside the
+// prayer's tasks (its points are filled in by tickSide).
+function renderSide() {
+  $("side-card").hidden = !side;
+  if (!side) return;
+  $("side-title").textContent = side.kind === "Morning" ? G.sideMorning : G.sideEvening;
+  $("side-tasks").replaceChildren(...sideTasks.map((t) => taskButton(t, "side")));
+  $("disputed-card").hidden = !disputedTasks.length;
+  $("disputed-tasks").replaceChildren(...disputedTasks.map((t) => taskButton(t, "side")));
+}
+
+// Every second, with tick(): the side set is open for its whole window and
+// its points don't fall with time.
+function tickSide(now) {
+  if (!side) return;
+  const e = state.windows[side.key];
+  let done = 0;
+  for (const b of $("side-tasks").querySelectorAll("button[data-id]")) {
+    const t = sideTasks.find((x) => x.id === b.dataset.id);
+    const rec = e && e.tasks[t.id];
+    const isDone = !!(rec && rec.doneAt);
+    if (isDone) done++;
+    b.classList.toggle("done", isDone);
+    b.querySelector(".pts").textContent = isDone ? `✓ +${rec.points}` : G.points(sidePoints(t.share, side.win, now));
+  }
+  $("side-count").textContent = G.doneCount(done, sideTasks.length);
+  $("side-time").textContent = G.sideEnds(fmtLeft(side.win.closesAt - now), fmtClock(side.win.closesAt), SIDE_POINTS);
+  $("side-card").classList.toggle("all-done", done === sideTasks.length);
+  for (const b of $("disputed-tasks").querySelectorAll("button[data-id]")) {
+    const rec = e && e.tasks[b.dataset.id];
+    const isDone = !!(rec && rec.doneAt);
+    b.classList.toggle("done", isDone);
+    b.querySelector(".pts").textContent = isDone ? "✓" : G.noPoints;
+  }
 }
 
 // The day's five windows and this month's calendar. Encouraging only: a past
@@ -392,15 +472,19 @@ function tick() {
   // period's top player (the board's winners), so the button stays hidden.
   $("gift").hidden = true;
 
+  tickSide(now);
+
+  // The day / month totals include the side adhkar (their keys carry the date too).
   $("pts-window").textContent = windowPoints(e);
   $("pts-day").textContent = pointsWithPrefix(state, current.day);
   $("pts-month").textContent = pointsWithPrefix(state, current.day.slice(0, 7));
 
-  if (reading && reading.mode === "play") $("reader-points").textContent = G.points(readerPoints());
-  if (reading && listening && now >= win.closesAt) {
+  if (reading && reading.mode === "play") $("reader-points").textContent = readerPointsText();
+  if (reading && listening && now >= reading.at.win.closesAt) {
+    const wasSide = reading.side;
     leaveReader();
     replaceRoute({ name: "tasks" });
-    showNotice(G.windowClosed);
+    showNotice(wasSide ? G.sideClosed : G.windowClosed);
   }
 }
 
@@ -487,26 +571,37 @@ function wordSpans(words, firstToken) {
   return out;
 }
 
-function readerMode(isGift, rec, now) {
+function readerMode(isGift, rec, now, win) {
   if (rec && rec.doneAt) return "done";
   if (isGift) return "play";
-  if (now < current.win.opensAt) return "practice";
-  if (now >= current.win.closesAt) return "missed";
+  if (now < win.opensAt) return "practice";
+  if (now >= win.closesAt) return "missed";
   return "play";
 }
 
-function openReader(task, isGift) {
-  const e = entry();
+function readerPointsText() {
+  return reading.task.disputed ? G.noPoints : G.points(readerPoints());
+}
+
+// The reading's record in its own window (prayer or side).
+function readingRecord() {
+  const e = state.windows[reading.at.key];
+  return reading.isGift ? e && e.gift : e && e.tasks[reading.task.id];
+}
+
+function openReader(task, isGift, isSide = false) {
+  const at = isSide ? side : current;
+  const e = state.windows[at.key];
   const rec = isGift ? e && e.gift : e && e.tasks[task.id];
-  const mode = readerMode(isGift, rec, Date.now());
-  reading = { task, isGift, mode };
+  const mode = readerMode(isGift, rec, Date.now(), at.win);
+  reading = { task, isGift, side: isSide, at, mode };
   const play = mode === "play";
-  finals = play ? partialHeard(state, current.key, task.id, isGift) : [];
+  finals = play ? partialHeard(state, at.key, task.id, isGift) : [];
   chunks = chunkText(task.text);
   shownChunk = -1;
   showNotice("");
   $("reader-title").textContent = isGift ? G.giftTitle : gameTaskTitle(lang, task);
-  $("reader-source").textContent = task.source;
+  $("reader-source").textContent = task.grading ? `${task.source} — ${task.grading}` : task.source;
   $("text").replaceChildren(...wordSpans(task.text.split(/\s+/).filter(Boolean), 0));
   $("text").hidden = chunks.length <= 1; // one part: the big card already shows all of it
   $("text").scrollTop = 0;
@@ -515,11 +610,13 @@ function openReader(task, isGift) {
 
   const modeText =
     mode === "practice"
-      ? G.practice(fmtClock(current.win.opensAt))
+      ? G.practice(fmtClock(at.win.opensAt))
       : mode === "missed"
         ? G.missedMode
         : mode === "done"
-          ? G.doneMode(rec.points)
+          ? task.disputed
+            ? G.disputedDoneMode
+            : (isSide ? G.sideDoneMode : G.doneMode)(rec.points)
           : finals.length
             ? G.resumed
             : "";
@@ -542,17 +639,19 @@ function leaveReader() {
     Platform.speech.stop();
   }
   if (reading && reading.mode === "play" && finals.length) {
-    savePartial(state, current.key, reading.task.id, reading.isGift, finals);
+    savePartial(state, reading.at.key, reading.task.id, reading.isGift, finals);
     save();
   }
   reading = null;
 }
 
 function readerPoints() {
-  const { task, isGift } = reading;
+  const { task, isGift, at } = reading;
   if (isGift) return GIFT_POINTS;
-  const rec = entry() && entry().tasks[task.id];
-  return taskPoints(task.share, current.win, rec && rec.startedAt ? rec.startedAt : Date.now());
+  if (task.disputed) return 0; // optional disputed adhkar: no points
+  const rec = readingRecord();
+  const startedAt = rec && rec.startedAt ? rec.startedAt : Date.now();
+  return reading.side ? sidePoints(task.share, at.win, startedAt) : taskPoints(task.share, at.win, startedAt);
 }
 
 function showChunk(pos) {
@@ -621,7 +720,7 @@ function updateReader({ final = false } = {}) {
   const { task, isGift } = reading;
   const r = matchTask(finals.join(" "), task, { final });
   // The task starts at its first recognized word — this fixes its points.
-  if (noteRecognition(state, current.key, task.id, isGift, r, Date.now())) save();
+  if (noteRecognition(state, reading.at.key, task.id, isGift, r, Date.now())) save();
   const tokens = r.matched.length;
   showChunk(r.done ? tokens - 1 : Math.round(r.progress * tokens));
   document.querySelectorAll("#text .w, #chunk .w").forEach((s) => {
@@ -631,7 +730,7 @@ function updateReader({ final = false } = {}) {
   const frac = task.repeat > 1 ? (r.count + (r.done ? 0 : r.progress)) / task.repeat : r.progress;
   $("fill").style.width = `${Math.round(Math.min(1, frac) * 100)}%`;
   $("counter").textContent = task.repeat > 1 ? `${r.count} / ${task.repeat}` : "";
-  $("reader-points").textContent = G.points(readerPoints());
+  $("reader-points").textContent = readerPointsText();
   if (r.done) finishReading();
   return r;
 }
@@ -655,7 +754,7 @@ async function startListening() {
       onFinal: (text) => {
         if (!reading) return;
         finals.push(text);
-        savePartial(state, current.key, reading.task.id, reading.isGift, finals);
+        savePartial(state, reading.at.key, reading.task.id, reading.isGift, finals);
         save();
         $("heard").textContent = finals.join(" ");
         updateReader();
@@ -700,25 +799,33 @@ async function finishReading() {
     setMic(false);
     Platform.speech.stop();
   }
-  const { task, isGift } = reading;
+  const { task, isGift, at, side: isSide } = reading;
   const now = Date.now();
   const points = readerPoints();
-  if (now >= current.win.closesAt) {
+  if (now >= at.win.closesAt) {
     reading = null;
     replaceRoute({ name: "tasks" });
-    showNotice(G.windowClosed);
+    showNotice(isSide ? G.sideClosed : G.windowClosed);
     return;
   }
-  const started = isGift ? entry() && entry().gift && entry().gift.startedAt : entry() && entry().tasks[task.id] && entry().tasks[task.id].startedAt;
-  const rec = isGift ? markGiftDone(state, current.key, task.id, points, now) : markTaskDone(state, current.key, task.id, points, now); // once: a done task is never re-banked
+  const before = readingRecord();
+  const started = before && before.startedAt;
+  const rec = isGift ? markGiftDone(state, at.key, task.id, points, now) : markTaskDone(state, at.key, task.id, points, now); // once: a done task is never re-banked
   if (!account) rec.local = true; // a guest's points stay on this device (never sent, even after signing in)
+  if (task.disputed) Object.assign(rec, { unscored: true, local: true }); // optional: no points, never sent
   if (!isGift && started) recordDuration(state, durationKey(task.id, task.repeat), now - started);
   await save();
   syncNow();
-  // A finished window no longer needs its "30 min left" alert.
-  const e = entry();
+  const e = state.windows[at.key];
   let windowComplete = false;
-  if (!isGift && !e.complete && allTasksDone(e, tasks.map((t) => t.id))) {
+  let sideComplete = false;
+  if (task.disputed) {
+    // Optional disputed adhkar: not part of the set, nothing to complete.
+  } else if (isSide) {
+    // The side set has no alerts and no journey step: just say it is complete.
+    sideComplete = allTasksDone(e, sideTasks.map((t) => t.id));
+  } else if (!isGift && !e.complete && allTasksDone(e, tasks.map((t) => t.id))) {
+    // A finished window no longer needs its "30 min left" alert.
     e.complete = true;
     windowComplete = true;
     await save();
@@ -726,7 +833,12 @@ async function finishReading() {
   }
   reading = null;
   goBack({ name: "tasks" });
-  showNotice(isGift ? G.giftDone(points) : G.taskDone(gameTaskTitle(lang, task), points), { autoHide: true });
+  const sideTitle = isSide && (at.kind === "Morning" ? G.sideMorning : G.sideEvening);
+  showNotice(
+    task.disputed ? G.disputedDone(gameTaskTitle(lang, task)) : sideComplete ? G.sideDone(sideTitle) : isGift ? G.giftDone(points) : G.taskDone(gameTaskTitle(lang, task), points),
+    { autoHide: true }
+  );
+  if (sideComplete && soundOn) softChime();
   if (windowComplete) celebrate(current.prayer);
 }
 
@@ -768,7 +880,7 @@ async function forgetAccount() {
 }
 
 // ---- the game's options, kept with the account ---------------------------------
-// Task alerts, the day's journey, the soft sound and the Chrome new tab are saved on the server
+// Task alerts, the day's journey, the soft sound, the optional disputed adhkar and the Chrome new tab are saved on the server
 // (PATCH /v1/me settings) and read back at sign-in, so they follow the player
 // to any device. The first time an account has none, this device's choices
 // become the account's.
@@ -779,7 +891,7 @@ function pushSettings(patch) {
 async function adoptAccountSettings(s) {
   if (!s) {
     const { gameAlerts, newTabPage } = await Platform.store.get(["gameAlerts", "newTabPage"]);
-    return pushSettings({ alerts: gameAlerts !== false, journey: journeyOn, sound: soundOn, newTab: newTabPage !== false });
+    return pushSettings({ alerts: gameAlerts !== false, journey: journeyOn, sound: soundOn, newTab: newTabPage !== false, disputed: disputedOn });
   }
   if (typeof s.newTab === "boolean") {
     await Platform.store.set({ newTabPage: s.newTab });
@@ -795,11 +907,22 @@ async function adoptAccountSettings(s) {
     await Platform.store.set({ gameJourney: journeyOn });
     $("journey-on").checked = journeyOn;
   }
+  if (typeof s.disputed === "boolean") await setDisputed(s.disputed);
   if (typeof s.sound === "boolean") {
     soundOn = s.sound;
     await Platform.store.set({ gameSound: soundOn });
     $("sound-on").checked = soundOn;
   }
+}
+
+// The optional disputed adhkar under the side card: saved on this device and
+// with the account (settings.disputed), off by default.
+async function setDisputed(on) {
+  disputedOn = on === true;
+  await Platform.store.set({ gameDisputed: disputedOn });
+  $("disputed-on").checked = disputedOn;
+  disputedTasks = side ? disputedForSide(side.kind, disputedOn) : [];
+  if (current) renderList();
 }
 
 // ---- tabs: board ------------------------------------------------------------
@@ -876,19 +999,20 @@ function renderWinners(winners) {
   box.replaceChildren(
     ...groups.map(([type, w]) => {
       const div = document.createElement("div");
+      div.className = "winners-card";
       const h = document.createElement("p");
       h.className = "winners-title";
       h.textContent = G.winnersOf(periodName(type, w.key));
       const ol = document.createElement("ol");
       ol.className = "board";
       for (const u of w.winners) {
-        ol.appendChild(
-          rowButton(
-            [["rank", "🏆"], ["name", u.displayName], ["p", u.points == null ? "—" : u.points]],
-            G.winnerRow(u.displayName, u.points),
-            () => go({ name: "profile", arg: u.username })
-          )
+        const li = rowButton(
+          [["rank", "🏆"], ["name", u.displayName], ["p", u.points == null ? "—" : u.points]],
+          G.winnerRow(u.displayName, u.points),
+          () => go({ name: "profile", arg: u.username })
         );
+        if (!ol.children.length) li.className = "top"; // the first winner stands out
+        ol.appendChild(li);
       }
       div.append(h, ol);
       return div;
@@ -896,8 +1020,11 @@ function renderWinners(winners) {
   );
 }
 
+let boardLoad = 0; // the latest renderBoard call; older answers are dropped
+
 async function renderBoard() {
   const box = $("board");
+  const load = ++boardLoad;
   $("board-me").textContent = "";
   $("board-month").textContent = "";
   if (!apiUrl) {
@@ -915,10 +1042,12 @@ async function renderBoard() {
   try {
     if (account) await syncNow();
     const data = await api().leaderboard(boardPeriod, boardScope, localDay());
+    if (load !== boardLoad) return; // the period or scope changed meanwhile
     // An older server ignores `period` and answers with this month.
     const type = data.period || "month";
     $("board-month").textContent = type === "all" ? G.boardAll : G.boardPeriod(periodName(type, data.periodKey || data.month));
     renderWinners(data.winners);
+    const rows = [];
     for (const r of data.rows) {
       const li = rowButton(
         [["rank", r.rank], ["name", r.displayName], ["p", r.points]],
@@ -937,11 +1066,13 @@ async function renderBoard() {
         li.classList.add("me");
         li.firstChild.setAttribute("aria-current", "true");
       }
-      box.appendChild(li);
+      rows.push(li);
     }
-    if (!data.rows.length) box.replaceChildren(messageItem(G.boardEmpty));
+    // Replace the loading skeletons (appending left them above the rows).
+    box.replaceChildren(...(rows.length ? rows : [messageItem(G.boardEmpty)]));
     $("board-me").textContent = !data.me ? G.guestBoardNote : data.me.hideProgress ? G.myPointsHidden(data.me.points) : G.myPoints(data.me.points);
   } catch {
+    if (load !== boardLoad) return;
     const li = messageItem(G.offline);
     li.append(retryButton(renderBoard));
     box.replaceChildren(li);
@@ -955,6 +1086,8 @@ function personItem(u) {
 // ---- tabs: account (settings + sign-in) --------------------------------------
 let authMode = "in"; // "in" | "up"
 let pendingGoogleToken = null; // ID token waiting for a new player's public name
+let pendingApple = null; // the same for Apple: { identityToken, authorizationCode?, nonce? }
+let myMethods = null; // { google, apple, hasPassword } from /v1/me
 
 function authErrorText(e) {
   const map = {
@@ -968,6 +1101,9 @@ function authErrorText(e) {
     "account-conflict": G.accountConflict,
     "google-invalid": G.googleFailed,
     "google-unavailable": G.googleFailed,
+    "apple-invalid": G.appleFailed,
+    "apple-unavailable": G.appleFailed,
+    "apple-unreachable": G.appleFailed,
     "bad-code": G.badCode,
     "code-expired": G.codeExpired,
     "too-many-attempts": G.tooMany,
@@ -1010,6 +1146,7 @@ async function renderMe() {
   $("alerts").checked = s.gameAlerts !== false;
   $("journey-on").checked = journeyOn;
   $("sound-on").checked = soundOn;
+  $("disputed-on").checked = disputedOn;
   $("newtab-on").checked = (await Platform.store.get(["newTabPage"])).newTabPage !== false;
   if (!apiUrl) {
     $("auth").hidden = false;
@@ -1029,6 +1166,7 @@ async function renderMe() {
         emailVerified: user.emailVerified,
         admin: user.admin,
       };
+      myMethods = { google: !!user.google, apple: !!user.apple, hasPassword: !!user.hasPassword };
       await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
       $("hide-progress").checked = user.hideProgress;
       await adoptAccountSettings(user.settings);
@@ -1048,7 +1186,13 @@ async function renderMe() {
   // Google sign-in is offered wherever the shell can do it (Android plugin,
   // Chrome identity); its client id is fetched when the button is pressed.
   $("google-btn").hidden = !Platform.googleAuth;
-  loadAuthConfig();
+  // Apple only when the server has it on (and the shell can do it).
+  $("apple-btn").hidden = !appleReady(authCfg);
+  loadAuthConfig().then((cfg) => {
+    $("apple-btn").hidden = !appleReady(cfg);
+    renderMethods(signedIn, cfg);
+  });
+  renderMethods(signedIn, authCfg);
 
   // Admin link and email confirmation follow the server's answer above.
   $("admin-link").hidden = !(signedIn && account.admin);
@@ -1099,6 +1243,7 @@ async function signedIn({ user, token }, message) {
   await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
   if (adoptSyncAccount(state, user.username)) await save();
   pendingGoogleToken = null;
+  pendingApple = null;
   $("password").value = "";
   $("reset-password").value = "";
   showAuthPane("main");
@@ -1153,9 +1298,177 @@ function signInWithGoogle() {
 
 function submitGoogleName(ev) {
   ev.preventDefault();
+  const name = $("google-username").value.trim();
   withBusy(ev.submitter || $("google-name").querySelector("button[type=submit]"), async () => {
-    await signedIn(await gameApi(apiUrl).google(pendingGoogleToken, $("google-username").value.trim(), legacyToken()));
+    // The same name step serves a new Apple player.
+    if (pendingApple) await signedIn(await gameApi(apiUrl).apple(pendingApple, name, legacyToken()));
+    else await signedIn(await gameApi(apiUrl).google(pendingGoogleToken, name, legacyToken()));
   });
+}
+
+// ---- Sign in with Apple -------------------------------------------------------
+// Off unless the server has Apple configured (GET /v1/auth/config .apple). Web
+// shells need its Services ID; the native iOS sign-in needs only the switch.
+function appleReady(cfg) {
+  const a = Platform.appleAuth;
+  return !!(a && cfg && cfg.apple && (cfg.apple.servicesId || a.native));
+}
+
+function appleErrorText(e) {
+  if (e && e.code === "canceled") return G.appleCanceled;
+  if (e && e.code === "failed") return G.appleFailed;
+  if (e && e.code === "account-conflict") return G.appleConflict;
+  return authErrorText(e);
+}
+
+function signInWithApple() {
+  const btn = $("apple-btn");
+  btn.disabled = true;
+  (async () => {
+    const cfg = await loadAuthConfig();
+    if (!cfg) throw { code: "offline" };
+    if (!appleReady(cfg)) throw { code: "apple-unavailable" };
+    // Website / Android leave the page here; resumeApple() finishes on return.
+    await finishAppleSignIn(await Platform.appleAuth.signIn(cfg.apple, { intent: "signin" }));
+  })()
+    .catch((e) => showNotice(appleErrorText(e)))
+    .finally(() => (btn.disabled = false));
+}
+
+async function finishAppleSignIn(a) {
+  try {
+    await signedIn(await gameApi(apiUrl).apple(a, undefined, legacyToken()));
+  } catch (e) {
+    if (e.code !== "username-required") throw e;
+    pendingApple = a; // new player: ask for a public name first
+    pendingGoogleToken = null;
+    showAuthPane("google-name");
+    $("google-username").focus();
+  }
+}
+
+// Website / Android: Apple's answer arrives when this page opens again.
+async function resumeApple() {
+  if (!Platform.appleAuth || !Platform.appleAuth.pending) return;
+  let a = null;
+  try {
+    a = await Platform.appleAuth.pending();
+  } catch (e) {
+    showNotice(appleErrorText(e));
+    return;
+  }
+  if (!a) return;
+  try {
+    if (a.intent === "link") {
+      if (!account || !account.token) return;
+      const { user } = await api().linkApple(a);
+      await afterLinkChange(user, G.linked("Apple"));
+    } else {
+      await finishAppleSignIn(a);
+    }
+  } catch (e) {
+    showNotice(a.intent === "link" ? linkErrorText(e, "apple") : appleErrorText(e));
+  }
+}
+
+// ---- sign-in methods (My account): link / unlink Google and Apple ---------------
+const PROVIDER_NAMES = { google: "Google", apple: "Apple" };
+
+function linkErrorText(e, kind) {
+  const name = PROVIDER_NAMES[kind];
+  const map = {
+    "account-conflict": G.linkConflict(name),
+    "already-linked": G.alreadyLinked(name),
+    "last-method": G.lastMethod,
+  };
+  if (e && map[e.code]) return map[e.code];
+  return kind === "apple" ? appleErrorText(e) : authErrorText(e);
+}
+
+function renderMethods(signedIn, cfg) {
+  const box = $("methods");
+  box.hidden = !(signedIn && myMethods);
+  if (box.hidden) return;
+  const can = {
+    google: !!(Platform.googleAuth && cfg && cfg.google),
+    apple: appleReady(cfg),
+  };
+  const rows = [];
+  for (const kind of ["google", "apple"]) {
+    const on = myMethods[kind];
+    if (!on && !can[kind]) continue; // nothing to show or do here
+    const li = document.createElement("li");
+    li.className = "method" + (on ? " on" : "");
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = PROVIDER_NAMES[kind];
+    const st = document.createElement("span");
+    st.className = "state";
+    st.textContent = on ? G.methodOn : G.methodOff;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "ghost";
+    b.textContent = on ? G.unlinkBtn : G.linkBtn;
+    b.addEventListener("click", () => (on ? unlinkProvider(kind, b) : linkProvider(kind, b)));
+    li.append(name, st, b);
+    rows.push(li);
+  }
+  const pw = document.createElement("li");
+  pw.className = "method" + (myMethods.hasPassword ? " on" : "");
+  const pwName = document.createElement("span");
+  pwName.className = "name";
+  pwName.textContent = G.methodEmail;
+  const pwState = document.createElement("span");
+  pwState.className = "state";
+  pwState.textContent = myMethods.hasPassword ? G.passwordSet : G.passwordNotSet;
+  pw.append(pwName, pwState);
+  rows.push(pw);
+  $("methods-list").replaceChildren(...rows);
+}
+
+// A link or unlink changed the account: keep the stored copy and the screen in step.
+async function afterLinkChange(user, message) {
+  myMethods = { google: !!user.google, apple: !!user.apple, hasPassword: !!user.hasPassword };
+  account = { ...account, email: user.email, emailVerified: user.emailVerified, admin: user.admin };
+  await Platform.store.set({ [GAME_ACCOUNT_KEY]: account });
+  await renderMe();
+  showNotice(message, { autoHide: true });
+}
+
+async function linkProvider(kind, button) {
+  button.disabled = true;
+  try {
+    const cfg = await loadAuthConfig();
+    if (!cfg) throw { code: "offline" };
+    let res;
+    if (kind === "google") {
+      if (!cfg.google || !Platform.googleAuth) throw { code: "google-unavailable" };
+      res = await api().linkGoogle(await Platform.googleAuth.signIn(cfg.google.clientId));
+    } else {
+      if (!appleReady(cfg)) throw { code: "apple-unavailable" };
+      // Website / Android leave the page here; resumeApple() finishes the link.
+      res = await api().linkApple(await Platform.appleAuth.signIn(cfg.apple, { intent: "link" }));
+    }
+    await afterLinkChange(res.user, G.linked(PROVIDER_NAMES[kind]));
+  } catch (e) {
+    showNotice(linkErrorText(e, kind));
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function unlinkProvider(kind, button) {
+  if (!confirm(G.unlinkConfirm(PROVIDER_NAMES[kind]))) return;
+  button.disabled = true;
+  try {
+    const { user } = await api().unlink(kind);
+    if (kind === "google" && Platform.googleAuth) await Platform.googleAuth.signOut();
+    await afterLinkChange(user, G.unlinked(PROVIDER_NAMES[kind]));
+  } catch (e) {
+    showNotice(linkErrorText(e, kind));
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function logout() {
@@ -1397,6 +1710,10 @@ $("journey-on").addEventListener("change", async (e) => {
   await Platform.store.set({ gameJourney: journeyOn });
   pushSettings({ journey: journeyOn });
 });
+$("disputed-on").addEventListener("change", async (e) => {
+  await setDisputed(e.target.checked);
+  pushSettings({ disputed: disputedOn });
+});
 $("newtab-on").addEventListener("change", async (e) => {
   await Platform.store.set({ newTabPage: e.target.checked });
   pushSettings({ newTab: e.target.checked });
@@ -1412,8 +1729,10 @@ $("mode-up").addEventListener("click", () => setAuthMode("up"));
 $("auth-form").addEventListener("submit", submitAuth);
 $("google-btn").addEventListener("click", signInWithGoogle);
 $("google-name").addEventListener("submit", submitGoogleName);
+$("apple-btn").addEventListener("click", signInWithApple);
 $("google-name-cancel").addEventListener("click", () => {
   pendingGoogleToken = null;
+  pendingApple = null;
   showAuthPane("main");
 });
 $("forgot").addEventListener("click", () => {
@@ -1485,4 +1804,5 @@ $("tools").addEventListener("click", () => {
   setInterval(tick, 1000);
   syncNow();
   checkIntegrity(false);
+  resumeApple();
 })();

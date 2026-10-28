@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_bg">#F5011612</color>
+    <color name="widget_bg_classic">#F50F2027</color>
+    <color name="widget_fg">#EEF7F5</color>
+    <color name="widget_muted">#92A39F</color>
+    <color name="widget_accent">#3AD4AA</color>
+    <color name="widget_pill">#333AD4AA</color>
+    <color name="widget_chip_stroke">#993AD4AA</color>
+    <color name="widget_track">#2E3AD4AA</color>
+    <!-- popup .next-card: its gradient over the page background, and its border -->
+    <color name="widget_next_start">#F7012F23</color>
+    <color name="widget_next_end">#F7022722</color>
+    <color name="widget_next_stroke">#593AD4AA</color>
+    <!-- popup .countdown-block: fill, border, and the accent border -->
+    <color name="widget_box">#80041A18</color>
+    <color name="widget_box_stroke">#14FFFFFF</color>
+    <color name="widget_box_sec_stroke">#803AD4AA</color>
+</resources>
