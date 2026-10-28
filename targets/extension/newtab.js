@@ -16,19 +16,26 @@
 
 (function () {
   const $ = (id) => document.getElementById(id);
-  const PRAYERS = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
-  const FIVE = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
-  const ICONS = { Fajr: "🌄", Sunrise: "🌅", Dhuhr: "☀️", Asr: "🌤️", Maghrib: "🌇", Isha: "🌙" };
-  const BACKGROUNDS = ["sky", "emerald", "night", "desert", "dawn"];
-  const API_DEFAULT = "https://prayer-times.sarhsoft.com"; // = GAME_API_DEFAULT (game-sync.js)
-  const SETTING_CHECK_MS = 6 * 3600 * 1000;
-  const WEATHER_MS = 30 * 60 * 1000;
-  const SOON_MS = 10 * 60 * 1000; // the countdown pulses in the last ten minutes
+  const { five: FIVE, icons: ICONS, backgrounds: BACKGROUNDS, weatherMs: WEATHER_MS, soonMs: SOON_MS } = NewTabConfig;
 
   let s = {}; // storage snapshot
   let L = null;
   let lang = "en";
-  let today = null; // { at: {prayer: ms}, tomorrowFajr, yesterdayIsha, day }
+  let today = null;
+  let progress = null; // Only completed IDs for the current window, never the full history.
+  let timeFormat = null;
+  let lastDate = "";
+  let lastOffset = null;
+  let lastNext = "";
+  let revision = 0;
+  let clockTimer = 0;
+  let weatherTimer = 0;
+  let listening = false;
+  let started = false;
+
+  function text(id, value) {
+    if ($(id).textContent !== value) $(id).textContent = value;
+  }
 
   function toChromeNewTab() {
     chrome.tabs.getCurrent((tab) => {
@@ -59,18 +66,9 @@
   // The account's "newTab" setting, checked now and then (a change on the
   // phone reaches this browser within hours, or at once from the game page).
   async function followAccountSetting() {
-    const acct = s.gameAccount;
-    if (!acct || !acct.token || Date.now() - (s.newTabCheckedAt || 0) < SETTING_CHECK_MS) return;
     try {
-      const res = await fetch(`${String(s.gameApiUrl || API_DEFAULT).replace(/\/+$/, "")}/v1/me`, {
-        headers: { authorization: `Bearer ${acct.token}` },
-      });
-      const patch = { newTabCheckedAt: Date.now() };
-      if (res.ok) {
-        const { user } = await res.json();
-        if (user && user.settings && typeof user.settings.newTab === "boolean") patch.newTabPage = user.settings.newTab;
-      }
-      await save(patch);
+      const patch = await NewTabData.accountSetting(s);
+      if (patch) await save(patch);
     } catch {
       /* offline: try again next time */
     }
@@ -85,7 +83,8 @@
 
   function fmtTime(ms) {
     try {
-      return new Date(ms).toLocaleTimeString(locale(), { hour: "numeric", minute: "2-digit", hour12: !uses24hClock(lang) });
+      if (!timeFormat) timeFormat = new Intl.DateTimeFormat(locale(), { hour: "numeric", minute: "2-digit", hour12: !uses24hClock(lang) });
+      return timeFormat.format(ms);
     } catch {
       return new Date(ms).toTimeString().slice(0, 5);
     }
@@ -99,29 +98,32 @@
   const pad = (n) => String(n).padStart(2, "0");
   // Same digits as the prayer-times window (popup.js localizeNum).
   const digits = (str) => (lang === "hi" ? toDevanagariDigits(str) : usesArabicDigits(lang, s.arabicDigits) ? toArabicDigits(str) : str);
+  const cards = createNewTabCards(() => ({ s, L, today, progress }), { digits, fmtTime });
 
-  function computeToday() {
-    const loc = s.location;
-    if (!loc || loc.latitude == null) return null;
+  async function refreshProgress(expected = revision) {
+    if (!today || document.hidden) return;
     try {
-      const now = new Date();
-      const day = (d) => {
-        const data = PrayerEngine.timings(loc, d);
-        return { t: data.timings, tz: data.meta && data.meta.timezone, d };
-      };
-      const a = day(now);
-      const at = {};
-      for (const p of PRAYERS) at[p] = prayerTimestamp(a.t[p], now, a.tz);
-      const tm = day(new Date(now.getTime() + 86400000));
-      const ye = day(new Date(now.getTime() - 86400000));
-      return {
-        at,
-        tomorrowFajr: prayerTimestamp(tm.t.Fajr, tm.d, tm.tz),
-        yesterdayIsha: prayerTimestamp(ye.t.Isha, ye.d, ye.tz),
-        day: now.getDate(),
-      };
+      const next = await NewTabData.progress(today);
+      if (expected !== revision || document.hidden) return;
+      progress = next;
+      renderTasks();
+    } catch { $("tasks-card").hidden = true; }
+  }
+
+  async function refreshPrayers() {
+    const expected = ++revision;
+    try {
+      const next = await NewTabData.schedule(s.location);
+      if (expected !== revision || document.hidden) return;
+      today = next;
+      progress = null;
+      renderTasks();
+      lastNext = "";
+      renderTimes();
+      tick();
+      refreshProgress(expected);
     } catch {
-      return null;
+      if (expected === revision) { today = null; progress = null; renderTimes(); renderTasks(); tick(); }
     }
   }
 
@@ -142,42 +144,25 @@
     return "night";
   }
 
-  function renderTimes() {
-    const list = $("times");
-    $("today-title").textContent = L.ntTodayTitle;
-    $("set-city").hidden = !!today;
-    $("set-city").textContent = L.webOpenApp;
-    if (!today) return list.replaceChildren();
-    const now = Date.now();
-    const next = FIVE.find((p) => today.at[p] > now) || "Fajr";
-    list.replaceChildren(
-      ...PRAYERS.map((p) => {
-        const li = document.createElement("li");
-        if (p === next) li.className = "is-next";
-        else if (today.at[p] < now) li.className = "is-past";
-        if (p === "Sunrise") li.classList.add("info");
-        const name = document.createElement("span");
-        name.textContent = `${ICONS[p]}  ${prayerLabel(L, p)}`;
-        const t = document.createElement("span");
-        t.className = "t";
-        t.textContent = digits(fmtTime(today.at[p]));
-        li.append(name, t);
-        return li;
-      })
-    );
-  }
+  function renderTimes() { return cards.renderTimes(); }
 
   function tick() {
     const now = Date.now();
     const d = new Date(now);
-    if (today && today.day !== d.getDate()) {
-      today = computeToday(); // a new day
-      renderTimes();
+    const day = NewTabPrayers.dayKey(d);
+    const offset = d.getTimezoneOffset();
+    if (lastOffset !== offset) { timeFormat = null; lastDate = ""; lastNext = ""; }
+    if (today && (today.day !== day || (lastOffset !== null && lastOffset !== offset))) {
+      today = null;
+      progress = null;
       renderTasks();
+      refreshPrayers();
     }
-    $("clock").textContent = digits(fmtTime(now));
-    $("date").textContent = digits(fmtDate(d));
-    document.body.dataset.phase = phase(now);
+    lastOffset = offset;
+    text("clock", digits(fmtTime(now)));
+    if (lastDate !== day) { text("date", digits(fmtDate(d))); lastDate = day; }
+    const sky = phase(now);
+    if (document.body.dataset.phase !== sky) document.body.dataset.phase = sky;
 
     if (!today) return ($("next").hidden = true);
     let next = FIVE.find((p) => today.at[p] > now);
@@ -188,39 +173,26 @@
     const from = next === "Fajr" ? (now < today.at.Fajr ? today.yesterdayIsha : today.at.Isha) : today.at[FIVE[i - 1]];
     const secs = Math.max(0, Math.floor((at - now) / 1000));
     $("next").hidden = false;
-    $("next-label").textContent = L.nextPrayer;
-    $("next-name").textContent = `${ICONS[next]} ${prayerLabel(L, next)} · ${digits(fmtTime(at))}`;
-    $("cd-h").textContent = digits(pad(Math.floor(secs / 3600)));
-    $("cd-m").textContent = digits(pad(Math.floor((secs % 3600) / 60)));
-    $("cd-s").textContent = digits(pad(secs % 60));
+    if (lastNext !== String(at)) {
+      text("next-label", L.nextPrayer);
+      text("next-name", `${ICONS[next]} ${prayerLabel(L, next)} · ${digits(fmtTime(at))}`);
+      lastNext = String(at);
+      renderTimes();
+      if (progress && NewTabPrayers.currentWindow(today, now).key !== progress.key) refreshProgress();
+    }
+    text("cd-h", digits(pad(Math.floor(secs / 3600))));
+    text("cd-m", digits(pad(Math.floor((secs % 3600) / 60))));
+    text("cd-s", digits(pad(secs % 60)));
     $("boxes").setAttribute("aria-label", L.countdown(Math.floor(secs / 3600), Math.floor((secs % 3600) / 60), secs % 60));
-    $("wait-bar").style.width = `${Math.min(100, Math.max(0, ((now - from) / Math.max(1, at - from)) * 100)).toFixed(1)}%`;
+    const width = `${Math.min(100, Math.max(0, ((now - from) / Math.max(1, at - from)) * 100)).toFixed(1)}%`;
+    if ($("wait-bar").style.width !== width) $("wait-bar").style.width = width;
     $("next").classList.toggle("soon", at - now <= SOON_MS);
     if (secs === 0) setTimeout(renderTimes, 1500);
   }
 
   // ---- weather ------------------------------------------------------------------------------
 
-  // WMO weather codes -> an icon (day / night where it matters).
-  function weatherIcon(code, isDay) {
-    if (code === 0) return isDay ? "☀️" : "🌙";
-    if (code <= 2) return isDay ? "🌤️" : "☁️";
-    if (code === 3) return "☁️";
-    if (code === 45 || code === 48) return "🌫️";
-    if (code >= 51 && code <= 57) return "🌦️";
-    if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return "🌧️";
-    if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "🌨️";
-    if (code >= 95) return "⛈️";
-    return "🌡️";
-  }
-
-  function showWeather(w) {
-    const on = s.ntWeather !== false && w && typeof w.temp === "number";
-    $("weather").hidden = !on;
-    if (!on) return;
-    $("w-icon").textContent = weatherIcon(w.code, w.day);
-    $("w-temp").textContent = digits(`${Math.round(w.temp)}°`);
-  }
+  function showWeather (w) { return cards.showWeather (w); }
 
   async function renderWeather() {
     const loc = s.location;
@@ -231,10 +203,8 @@
     if (c && c.lat === lat && c.lon === lon && Date.now() - c.at < WEATHER_MS) return showWeather(c);
     if (c && c.lat === lat && c.lon === lon) showWeather(c); // stale meanwhile
     try {
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day`);
-      if (!res.ok) return;
-      const cur = (await res.json()).current || {};
-      const w = { at: Date.now(), lat, lon, temp: cur.temperature_2m, code: cur.weather_code, day: cur.is_day === 1 };
+      const w = await NewTabData.weather(lat, lon);
+      if (!w || s.ntWeather === false || lat !== Math.round(s.location?.latitude * 10) / 10 || lon !== Math.round(s.location?.longitude * 10) / 10) return;
       await save({ ntWeatherCache: w });
       showWeather(w);
     } catch {
@@ -244,28 +214,7 @@
 
   // ---- the current prayer's adhkar tasks ----------------------------------------------
 
-  function renderTasks() {
-    const card = $("tasks-card");
-    if (!s.location || s.location.latitude == null) return (card.hidden = true);
-    try {
-      const w = currentWindow(PrayerEngine, s.location, new Date());
-      const ids = tasksForWindow(w.prayer).map((t) => t.id);
-      const entry = s.gameState && s.gameState.windows && s.gameState.windows[w.key];
-      const done = ids.filter((id) => entry && entry.tasks && entry.tasks[id] && entry.tasks[id].doneAt).length;
-      const name = prayerLabel(L, w.prayer);
-      const share = done / Math.max(1, ids.length);
-      $("tasks-text").textContent = done >= ids.length ? L.ntTasksDone(name) : L.ntTasks(name, done, ids.length);
-      $("tasks-bar").style.width = `${Math.round(share * 100)}%`;
-      const circumference = 2 * Math.PI * 18;
-      $("ring-fill").style.strokeDasharray = `${(share * circumference).toFixed(1)} ${circumference.toFixed(1)}`;
-      $("ring-pct").textContent = digits(`${Math.round(share * 100)}%`);
-      $("tasks-open").textContent = L.ntOpenTasks;
-      card.classList.toggle("all-done", done >= ids.length);
-      card.hidden = false;
-    } catch {
-      card.hidden = true;
-    }
-  }
+  function renderTasks() { return cards.renderTasks(); }
 
   // ---- a dhikr ----------------------------------------------------------------------------
   // Shown in the reader's language; in any other language than Arabic the
@@ -351,6 +300,9 @@
 
   function render() {
     L = tr(lang);
+    timeFormat = null;
+    lastDate = "";
+    lastNext = "";
     document.documentElement.lang = lang;
     document.documentElement.dir = L.dir;
     document.title = L.appTitle;
@@ -363,7 +315,6 @@
       $(id).setAttribute("aria-label", label);
       $(id).title = label;
     }
-    today = computeToday();
     renderTimes();
     renderTasks();
     renderDhikr(current);
@@ -399,31 +350,88 @@
     renderWeather();
   });
 
-  chrome.storage.onChanged.addListener((changes, area) => {
+  function storageChanged(changes, area) {
     if (area !== "local") return;
-    for (const [k, v] of Object.entries(changes)) s[k] = v.newValue;
+    for (const [k, v] of Object.entries(changes)) {
+      if (NewTabConfig.settingsKeys.includes(k)) s[k] = v.newValue;
+    }
+    if (changes.newTabPage?.newValue === false) return toChromeNewTab();
     if (changes.lang) lang = SUPPORTED_LANGS.some((l) => l.code === s.lang) ? s.lang : lang;
     if (changes.lang || changes.location || changes.arabicDigits) {
+      if (changes.location) { today = null; progress = null; }
       render();
-      if (changes.location) renderWeather();
-    } else if (changes.gameState) renderTasks();
+      if (changes.location) { refreshPrayers(); renderWeather(); }
+    }
+    if (changes.gameState && today) {
+      progress = NewTabPrayers.progress(today, changes.gameState.newValue);
+      renderTasks();
+    }
+    if (changes.ntBackground) applyBackground();
+    if (changes.ntWeather || changes.ntWeatherCache) renderWeather();
+    if (changes.ntFavDhikr) renderDhikr(current);
+  }
+
+  function activeTimers() {
+    clearInterval(clockTimer);
+    clearInterval(weatherTimer);
+    if (listening) chrome.storage.onChanged.removeListener(storageChanged);
+    listening = !document.hidden;
+    document.body.classList.toggle("nt-paused", !listening);
+    if (!listening) return;
+    chrome.storage.onChanged.addListener(storageChanged);
+    tick();
+    clockTimer = setInterval(tick, 1000);
+    weatherTimer = setInterval(renderWeather, WEATHER_MS);
+  }
+
+  function afterPaint(callback) {
+    requestAnimationFrame(() => setTimeout(callback, 0));
+  }
+
+  async function resume() {
+    if (!started) return;
+    activeTimers();
+    if (document.hidden) { ++revision; return; }
+    try {
+      s = await chrome.storage.local.get(NewTabConfig.settingsKeys);
+      if (document.hidden) return;
+      if (s.newTabPage === false) return toChromeNewTab();
+      lang = SUPPORTED_LANGS.some((l) => l.code === s.lang) ? s.lang : DEFAULT_SETTINGS.lang;
+      today = null;
+      progress = null;
+      render();
+      afterPaint(() => { refreshPrayers(); renderWeather(); followAccountSetting(); });
+    } catch { /* The existing clock and search remain usable if storage fails. */ }
+  }
+
+  document.addEventListener("visibilitychange", resume);
+  window.addEventListener("pageshow", (event) => { if (event.persisted) resume(); });
+  window.addEventListener("pagehide", () => {
+    clearInterval(clockTimer);
+    clearInterval(weatherTimer);
+    if (listening) chrome.storage.onChanged.removeListener(storageChanged);
+    listening = false;
+    ++revision;
   });
 
   chrome.storage.local
-    .get([
-      "newTabPage", "newTabCheckedAt", "lang", "location", "arabicDigits", "gameState", "gameAccount", "gameApiUrl",
-      "ntBackground", "ntWeather", "ntFavDhikr", "ntWeatherCache",
-    ])
+    .get(NewTabConfig.settingsKeys)
     .then((got) => {
       s = got;
       if (s.newTabPage === false) return toChromeNewTab();
       lang = SUPPORTED_LANGS.some((l) => l.code === s.lang) ? s.lang : DEFAULT_SETTINGS.lang;
       render();
       show();
-      setInterval(tick, 1000);
-      renderWeather();
-      setInterval(renderWeather, WEATHER_MS);
-      followAccountSetting();
+      started = true;
+      activeTimers();
+      afterPaint(() => { if (!document.hidden) { refreshPrayers(); renderWeather(); followAccountSetting(); } });
       $("q").focus();
+    })
+    .catch(() => {
+      lang = "en";
+      render();
+      show();
+      started = true;
+      activeTimers();
     });
 })();

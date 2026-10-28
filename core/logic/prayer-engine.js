@@ -104,17 +104,32 @@ function dateBlock(date, tz) {
   return { readable: gregorian.date, gregorian, hijri };
 }
 
-// timings(location, date) -> Aladhan-compatible payload. `location` must carry
-// numeric latitude/longitude (city mode resolves these when the city is picked).
-function timings(location, date = new Date()) {
+// Shared calculation for the formatted API payload and the numeric instants.
+function calculatePrayerTimes(location, date) {
   const lat = Number(location.latitude);
   const lon = Number(location.longitude);
-  const tz = tzForCoords(lat, lon);
   const params = adhanParamsForMethod(location.method);
   // At high latitudes the sun may never reach the Fajr/Isha twilight angle;
   // Aladhan applies an angle-based adjustment by default, so match it.
   params.highLatitudeRule = adhan.HighLatitudeRule.TwilightAngle;
-  const pt = new adhan.PrayerTimes(new adhan.Coordinates(lat, lon), date, params);
+  return new adhan.PrayerTimes(new adhan.Coordinates(lat, lon), date, params);
+}
+
+// Absolute instants for countdowns: avoid formatting six dates and parsing
+// them back through Intl just to recover the instants adhan already computed.
+function prayerTimestamps(location, date = new Date()) {
+  const pt = calculatePrayerTimes(location, date);
+  return {
+    Fajr: pt.fajr.getTime(), Sunrise: pt.sunrise.getTime(),
+    Dhuhr: pt.dhuhr.getTime(), Asr: pt.asr.getTime(),
+    Maghrib: pt.maghrib.getTime(), Isha: pt.isha.getTime(),
+  };
+}
+
+// Aladhan-compatible payload for existing popup, scheduler and game callers.
+function timings(location, date = new Date()) {
+  const tz = tzForCoords(Number(location.latitude), Number(location.longitude));
+  const pt = calculatePrayerTimes(location, date);
   return {
     timings: {
       Fajr: fmtHM(pt.fajr, tz),
@@ -136,4 +151,4 @@ function qibla(location) {
   );
 }
 
-const PrayerEngine = { timings, qibla, adhanParamsForMethod, tzForCoords };
+const PrayerEngine = { timings, timestamps: prayerTimestamps, qibla, adhanParamsForMethod, tzForCoords };

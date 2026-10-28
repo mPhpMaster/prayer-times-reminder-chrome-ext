@@ -319,4 +319,5 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   .stars, .sun, .bar span, .ring-fill { transition: none; }
   .box.sec b, .next.soon { animation: none; }
 }
+.nt-paused .box.sec b, .nt-paused .next.soon { animation-play-state: paused; }
 .search input:focus-visible { outline: none; } /* the pill shows focus itself (.search:focus-within) */
