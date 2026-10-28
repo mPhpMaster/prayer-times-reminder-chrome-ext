@@ -10,7 +10,7 @@
 //              approve (the name goes on the page), decline with a reason.
 //   Names    — the names on the About page: add, edit, hide, reorder, delete.
 //   Admins   — add an admin by email (their rights start once they sign in
-//              with that email confirmed); only the owner removes admins.
+//              with that email confirmed); any admin can remove listed admins.
 //   Accounts — search players; edit their username / display name / email /
 //              privacy, ban or unban them (any admin; not other admins), reset
 //              their data or delete their account (typing the username
@@ -370,7 +370,7 @@ async function loadAdmins() {
 }
 
 function adminRow(a) {
-  const canRemove = me && me.superAdmin && !a.super;
+  const canRemove = me && me.admin && !a.super;
   const remove = el("button", {
     type: "button",
     class: "danger",

@@ -20,8 +20,8 @@ use Illuminate\Support\Facades\DB;
  * Guard rails:
  * - The super admin (config game.super_admin) is never listed in game_admins
  *   and can't be removed, deleted or reset from here.
- * - Removing an admin, and deleting or resetting another admin's account, is
- *   for the super admin only, so one admin can't lock the others out.
+ * - Deleting or resetting another admin's account is
+ *   for the super admin only. Any admin can remove a listed admin.
  * - An admin deletes their own account from "My account", not from here.
  * - Banning and editing a player are for players who aren't admins (remove
  *   the admin first).
@@ -75,16 +75,13 @@ class AdminController extends Controller
         return $this->admins()->setStatusCode(201);
     }
 
-    /** DELETE /v1/admin/admins/{email} -> 204. Super admin only. */
+    /** DELETE /v1/admin/admins/{email} -> 204. Any verified admin; the owner is protected. */
     public function removeAdmin(Request $request, string $email): Response
     {
         $me = $this->me($request);
         $email = mb_strtolower($email);
         if (GameAdmins::isSuper($email)) {
             GameRules::fail(403, 'super-admin');
-        }
-        if (! GameAdmins::isSuperAdmin($me)) {
-            GameRules::fail(403, 'super-admin-only');
         }
         if (! DB::table('game_admins')->where('email', $email)->delete()) {
             GameRules::fail(404, 'not-found');

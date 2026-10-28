@@ -53,7 +53,10 @@ class GameApiTest extends TestCase
         $reg = fn (string $name, string $email) => $this->postJson('/v1/auth/register', ['email' => $email, 'password' => 'secret-pass-1', 'username' => $name]);
         $reg('Ahmed', 'a1@example.com')->assertCreated();
         $reg('AHMED', 'a2@example.com')->assertStatus(409)->assertJson(['error' => 'username-taken']);
-        $reg('a b', 'a3@example.com')->assertStatus(400)->assertJson(['error' => 'bad-username']);
+        $reg('a/b', 'a3@example.com')->assertStatus(400)->assertJson(['error' => 'bad-username']);
+        $reg('Moh. Al-Safadi', 'a5@example.com')->assertCreated()->assertJsonPath('user.username', 'Moh. Al-Safadi');
+        $reg('محمد علي-أحمد.', 'a6@example.com')->assertCreated();
+        $reg('moh. al-safadi', 'a7@example.com')->assertStatus(409);
         $reg('ab', 'a4@example.com')->assertStatus(400);
         $this->assertDatabaseMissing('game_tokens', ['token_hash' => $token]); // only the hash is stored
     }

@@ -174,9 +174,8 @@ class GameAdminTest extends TestCase
         $this->as($owner)->postJson('/v1/admin/admins', ['email' => self::OWNER])->assertStatus(409);
         $this->as($helper)->getJson('/v1/me')->assertJsonPath('user.admin', true)->assertJsonPath('user.superAdmin', false);
 
-        // Only the owner adds or removes admins — and nobody removes the owner.
+        // Only the owner adds admins; every admin may remove a listed admin.
         $this->as($helper)->postJson('/v1/admin/admins', ['email' => 'third@example.com'])->assertForbidden()->assertJsonPath('error', 'super-admin-only');
-        $this->as($helper)->deleteJson('/v1/admin/admins/helper@example.com')->assertForbidden()->assertJsonPath('error', 'super-admin-only');
         $this->as($helper)->deleteJson('/v1/admin/admins/'.self::OWNER)->assertForbidden()->assertJsonPath('error', 'super-admin');
         $this->as($owner)->deleteJson('/v1/admin/admins/'.self::OWNER)->assertForbidden();
         $this->as($owner)->deleteJson('/v1/admin/admins/helper@example.com')->assertNoContent();
@@ -184,6 +183,21 @@ class GameAdminTest extends TestCase
 
         $actions = DB::table('game_admin_log')->orderBy('id')->pluck('action')->all();
         $this->assertSame(['admin.add', 'admin.remove'], $actions);
+    }
+
+    public function test_regular_admin_can_remove_another_admin_and_themself(): void
+    {
+        $owner = $this->owner();
+        $helper = $this->verified('helper@example.com', 'helper');
+        $other = $this->verified('other@example.com', 'other');
+        foreach (['helper@example.com', 'other@example.com'] as $email) {
+            $this->as($owner)->postJson('/v1/admin/admins', ['email' => $email])->assertCreated();
+        }
+        $this->as($helper)->deleteJson('/v1/admin/admins/other@example.com')->assertNoContent();
+        $this->as($other)->getJson('/v1/admin/overview')->assertForbidden();
+        $this->as($helper)->deleteJson('/v1/admin/admins/helper@example.com')->assertNoContent();
+        $this->as($helper)->getJson('/v1/admin/overview')->assertForbidden();
+        $this->assertSame(2, DB::table('game_admin_log')->where('action', 'admin.remove')->count());
     }
 
     public function test_an_added_admin_email_needs_verifying_first(): void
@@ -454,7 +468,7 @@ class GameAdminTest extends TestCase
         $url = "/v1/admin/users/$id";
 
         $this->as($owner)->patchJson($url, ['username' => 'Taken'])->assertStatus(409)->assertJson(['error' => 'username-taken']);
-        $this->as($owner)->patchJson($url, ['username' => 'a b'])->assertStatus(400)->assertJson(['error' => 'bad-username']);
+        $this->as($owner)->patchJson($url, ['username' => 'a/b'])->assertStatus(400)->assertJson(['error' => 'bad-username']);
         $this->as($owner)->patchJson($url, ['email' => 'other@example.com'])->assertStatus(409)->assertJson(['error' => 'email-taken']);
         $this->as($owner)->patchJson($url, ['email' => self::OWNER])->assertStatus(409);
 
