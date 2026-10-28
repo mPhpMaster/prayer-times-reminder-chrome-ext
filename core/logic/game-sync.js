@@ -39,9 +39,11 @@ function gameApi(baseUrl, token) {
   const base = String(baseUrl || "").replace(/\/+$/, "");
   async function call(method, path, body) {
     if (!base) throw new GameApiError(0, "no-server");
+    const signal = typeof AbortSignal !== "undefined" && AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined;
     let res;
     try {
       res = await fetch(base + path, {
+        signal,
         method,
         headers: {
           "content-type": "application/json",
@@ -53,6 +55,7 @@ function gameApi(baseUrl, token) {
       throw new GameApiError(0, "offline");
     }
     const data = await res.json().catch(() => ({}));
+    if (signal && signal.aborted) throw new GameApiError(0, "offline");
     if (!res.ok) throw new GameApiError(res.status, data.error || "http-" + res.status);
     return data;
   }

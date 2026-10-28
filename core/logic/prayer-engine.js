@@ -59,8 +59,18 @@ function tzForCoords(lat, lon) {
   }
 }
 
+const prayerFormatters = new Map();
+function cachedPrayerFormatter(locale, options) {
+  const key = JSON.stringify([locale, options]);
+  if (!prayerFormatters.has(key)) {
+    if (prayerFormatters.size >= 24) prayerFormatters.delete(prayerFormatters.keys().next().value);
+    prayerFormatters.set(key, new Intl.DateTimeFormat(locale, options));
+  }
+  return prayerFormatters.get(key);
+}
+
 function fmtHM(date, tz) {
-  return new Intl.DateTimeFormat("en-GB", {
+  return cachedPrayerFormatter("en-GB", {
     timeZone: tz,
     hour: "2-digit",
     minute: "2-digit",
@@ -70,12 +80,12 @@ function fmtHM(date, tz) {
 
 function hijriMonthName(date, tz, lang) {
   const loc = lang === "ar" ? "ar-u-ca-islamic-umalqura" : "en-u-ca-islamic-umalqura";
-  return new Intl.DateTimeFormat(loc, { timeZone: tz, month: "long" }).format(date);
+  return cachedPrayerFormatter(loc, { timeZone: tz, month: "long" }).format(date);
 }
 
 // Build the gregorian + hijri date block in the Aladhan shape, computed in `tz`.
 function dateBlock(date, tz) {
-  const g = new Intl.DateTimeFormat("en-GB", {
+  const g = cachedPrayerFormatter("en-GB", {
     timeZone: tz,
     day: "2-digit",
     month: "2-digit",
@@ -84,7 +94,7 @@ function dateBlock(date, tz) {
   const [dd, mm, yy] = g.split("/");
   const gregorian = { date: `${dd}-${mm}-${yy}` };
 
-  const parts = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", {
+  const parts = cachedPrayerFormatter("en-u-ca-islamic-umalqura", {
     timeZone: tz,
     day: "numeric",
     month: "numeric",

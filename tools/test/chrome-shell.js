@@ -8,6 +8,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const vm = require("vm");
+const { pageSource } = require("./helpers/page-scripts");
 const { pathToFileURL } = require("url");
 
 const BUILD = path.resolve(__dirname, "..", "..", "targets", "extension", "build");
@@ -74,7 +75,7 @@ function manifestChecks() {
     ok(`${f} parses`, parsed);
   }
   ok("no eval / new Function in shipped scripts", all.every((f) => !/\beval\(|new Function\(/.test(read(f))));
-  ok("game UI never says Google is disabled", !/googleOff|google-off/.test(read("game.js") + read("game.html") + read("game-i18n.js")));
+  ok("game UI never says Google is disabled", !/googleOff|google-off/.test(pageSource(BUILD, "game.html", "game") + read("game.html")));
 }
 
 // ---- speech-web.js -----------------------------------------------------------

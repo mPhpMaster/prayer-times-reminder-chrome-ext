@@ -20,7 +20,8 @@ function fakeEl() {
     get(_t, p) {
       if (p === "options" || p === "children") return [];
       if (p === "classList") return { add: noop, remove: noop, toggle: noop, contains: () => false };
-      if (p === "style" || p === "dataset") return {};
+      if (p === "style") return { setProperty: noop };
+      if (p === "dataset") return {};
       if (p === "getBoundingClientRect") return () => ({ height: 0, width: 0 });
       if (p === "getAttribute") return () => null;
       if (p === "value" || p === "textContent" || p === "innerHTML" || p === "id") return "";
@@ -99,10 +100,44 @@ try {
   vm.runInContext(read("prayer-engine.js"), ctx, { filename: "prayer-engine.js" });
   vm.runInContext(read("lock-config.js"), ctx, { filename: "lock-config.js" });
   vm.runInContext(read("notify-plan.js"), ctx, { filename: "notify-plan.js" });
-  vm.runInContext(read("popup.js"), ctx, { filename: "popup.js" });
+  const popupScripts = [...read("popup.html").matchAll(/<script[^>]+src="([^"]+)"/g)].map(m => m[1].split("?")[0]);
+  const firstPopup = popupScripts.indexOf("view-updates.js");
+  for (const script of popupScripts.slice(firstPopup)) vm.runInContext(read(script), ctx, { filename: script });
   console.log("  ok: popup realm (adapter + platform + i18n + engine + popup) booted");
 } catch (e) {
   console.error("  FAIL: popup realm — " + e.message);
+  failures++;
+}
+
+// ---- Game realm: load every dependency in its actual HTML order ------------
+try {
+  const win = {};
+  const ctx = Object.assign(baseCtx(), {
+    window: win, parent: win,
+    location: { hash: "", origin: "chrome-extension://test" },
+    navigator: { geolocation: { getCurrentPosition: noop } },
+    ResizeObserver: function () { this.observe = noop; },
+    document: new Proxy({}, {
+      get(_t, p) {
+        if (p === "getElementById" || p === "querySelector") return () => fakeEl();
+        if (p === "querySelectorAll") return () => [];
+        if (p === "createElement" || p === "createDocumentFragment") return () => fakeEl();
+        if (p === "documentElement" || p === "body") return fakeEl();
+        if (p === "addEventListener") return noop;
+        return fakeEl();
+      }
+    })
+  });
+  win.addEventListener = noop;
+  win.location = ctx.location;
+  ctx.globalThis = ctx;
+  ctx.navigator.geolocation = { getCurrentPosition: noop };
+  vm.createContext(ctx);
+  const scripts = [...read("game.html").matchAll(/<script[^>]+src="([^"]+)"/g)].map(m => m[1].split("?")[0]);
+  for (const script of scripts) vm.runInContext(read(script), ctx, { filename: script });
+  console.log("  ok: game realm (HTML script order) booted");
+} catch (e) {
+  console.error("  FAIL: game realm — " + e.message);
   failures++;
 }
 

@@ -42,6 +42,7 @@ function planFamilyChecks(engine, location, now, mode, days = FAMILY_ALERT_DAYS)
   const nowMs = now.getTime();
   const MIN = 60000;
   const times = (date) => {
+    if (typeof engine.timestamps === "function") return engine.timestamps(location, date);
     const data = engine.timings(location, date);
     const tz = data.meta && data.meta.timezone;
     const t = {};
@@ -124,6 +125,7 @@ async function familyAlertFor(apiBase, token, lang, check) {
   try {
     const res = await fetch(`${String(apiBase).replace(/\/+$/, "")}/v1/family/status?keys=${encodeURIComponent(check.keys.join(","))}`, {
       headers: { authorization: `Bearer ${token}` },
+      signal: typeof AbortSignal !== "undefined" && AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined,
     });
     if (!res.ok) return null;
     const status = await res.json();

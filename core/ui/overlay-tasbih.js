@@ -30,7 +30,7 @@
     const root = document.getElementById(ROOT_ID);
     if (!root) return;
     const card = root.shadowRoot?.querySelector(".tasbih-card");
-    if (card) {
+    if (card && !document.hidden) {
       card.classList.add("fade-out");
       setTimeout(() => root.remove(), 200);
     } else {

@@ -12,6 +12,7 @@
 const GAME_PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 function prayerDay(engine, location, date) {
+  if (typeof engine.timestamps === "function") return engine.timestamps(location, date);
   const data = engine.timings(location, date);
   const tz = data.meta && data.meta.timezone;
   const out = {};

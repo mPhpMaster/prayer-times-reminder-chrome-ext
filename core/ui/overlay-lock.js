@@ -14,6 +14,9 @@
   const ROOT_ID = "prayer-times-lock-root";
   const UNLOCK_GRACE_MS = 2000;
   let tickTimer = null;
+  let expiryTimer = null;
+  let hintTimer = null;
+  let visibilityListener = null;
   let blockers = [];
   let lastFocused = null;
   let activeSound = null;
@@ -134,6 +137,11 @@
       clearInterval(tickTimer);
       tickTimer = null;
     }
+    clearTimeout(expiryTimer);
+    clearTimeout(hintTimer);
+    expiryTimer = hintTimer = null;
+    if (visibilityListener) document.removeEventListener("visibilitychange", visibilityListener);
+    visibilityListener = null;
     for (const b of blockers) {
       window.removeEventListener(b.type, b.fn, b.opts);
     }
@@ -367,7 +375,7 @@
       // Described (not labelled) by the hint, so screen readers still announce
       // the prayer title from aria-labelledby.
       overlay.setAttribute("aria-describedby", "pt-lock-unlock-hint");
-      setTimeout(() => {
+      hintTimer = setTimeout(() => {
         hintEl.hidden = false;
         overlay.style.cursor = "pointer";
       }, UNLOCK_GRACE_MS);
@@ -423,11 +431,24 @@
         }
         return;
       }
-      countdownEl.textContent = formatCountdown(remaining, lang, arabicDigits);
+      if (!document.hidden) countdownEl.textContent = formatCountdown(remaining, lang, arabicDigits);
     }
 
-    tick();
-    tickTimer = setInterval(tick, 1000);
+    function syncVisibility() {
+      if (tickTimer) clearInterval(tickTimer);
+      tickTimer = null;
+      tick();
+      if (document.getElementById(ROOT_ID) && !document.hidden) tickTimer = setInterval(tick, 1000);
+    }
+    function expire() {
+      const remaining = unlockAt - Date.now();
+      if (remaining > 0) { expiryTimer = setTimeout(expire, remaining); return; }
+      tick();
+    }
+    visibilityListener = syncVisibility;
+    document.addEventListener("visibilitychange", visibilityListener);
+    expiryTimer = setTimeout(expire, Math.max(0, unlockAt - Date.now()));
+    syncVisibility();
 
     // Announce prayer time with the chosen sound (chime / adhan / none).
     playSound(config);

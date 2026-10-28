@@ -2,6 +2,9 @@
    languages are included. Amiri ships per weight; Plus Jakarta Sans is a
    variable font, so one file per subset covers weights 400–700. */
 
+/* Hidden app pages keep their appearance when resumed without animating in the background. */
+body.pt-background * { animation-play-state: paused !important; }
+
 /* Privacy / terms links at the foot of the app's pages (fillLegalLinks in i18n.js). */
 .legal-links {
   margin: 14px 0 4px;

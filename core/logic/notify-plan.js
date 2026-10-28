@@ -13,10 +13,11 @@ function planPrayerNotifications(engine, location, now, days, prayers) {
   for (let d = 0; d < days; d++) {
     const date = new Date(now);
     date.setDate(date.getDate() + d);
-    const data = engine.timings(location, date);
-    const tz = data.meta && data.meta.timezone;
+    const instants = typeof engine.timestamps === "function" ? engine.timestamps(location, date) : null;
+    const data = instants ? null : engine.timings(location, date);
+    const tz = data && data.meta && data.meta.timezone;
     for (const prayer of prayers) {
-      const when = prayerTimestamp(data.timings[prayer], date, tz);
+      const when = instants ? instants[prayer] : prayerTimestamp(data.timings[prayer], date, tz);
       if (when == null || when <= nowMs) continue;
       out.push({ id: notifId(when, prayer, prayers), prayer, when });
     }
@@ -52,6 +53,7 @@ function planGameAlerts(engine, location, now, days, prayers) {
   const MIN = 60000;
   const p2 = (n) => String(n).padStart(2, "0");
   const dayTimes = (date) => {
+    if (typeof engine.timestamps === "function") return engine.timestamps(location, date);
     const data = engine.timings(location, date);
     const tz = data.meta && data.meta.timezone;
     const t = {};

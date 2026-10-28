@@ -50,6 +50,12 @@ function setVersionInFile(file, version) {
 
 function setVersionEverywhere(version) {
   for (const f of FILES) setVersionInFile(f, version);
+  for (const page of ["popup.html", "game.html"]) {
+    const file = path.join(ROOT, "core", "ui", page);
+    const html = fs.readFileSync(file, "utf8");
+    const scripts = /(<script src=")((?:popup|game)[^"?]*\.js|page-clock\.js|view-updates\.js|prayer-instant-cache\.js|game-totals-cache\.js)(?:\?[^" ]*)?(">)/g;
+    fs.writeFileSync(file, html.replace(scripts, `$1$2?v=${version}$3`));
+  }
 }
 
 function nextVersion(current, level) {

@@ -172,9 +172,10 @@ body[data-bg="sky"]:is([data-phase="sunset"], [data-phase="dawn"]) .sun, body[da
 .wait span { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, rgba(58, 212, 170, 0.7), #3ad4aa); box-shadow: 0 0 10px rgba(58, 212, 170, 0.5); }
 [dir="rtl"] .wait span { margin-inline-start: 0; }
 /* The last ten minutes: a gentle, slow pulse. */
-.next.soon { animation: soon 2.4s ease-in-out infinite; }
+.next.soon { border-color: rgba(127, 240, 207, 0.8); }
+.next.soon .next-name { animation: soon 2.4s ease-in-out infinite; }
 @keyframes soon {
-  50% { box-shadow: 0 0 0 6px rgba(58, 212, 170, 0.18), 0 18px 50px -24px rgba(0, 0, 0, 0.6); border-color: rgba(127, 240, 207, 0.8); }
+  50% { opacity: 0.7; }
 }
 
 /* ---- search ---- */
@@ -317,7 +318,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 }
 @media (prefers-reduced-motion: reduce) {
   .stars, .sun, .bar span, .ring-fill { transition: none; }
-  .box.sec b, .next.soon { animation: none; }
+  .box.sec b, .next.soon .next-name { animation: none; }
 }
-.nt-paused .box.sec b, .nt-paused .next.soon { animation-play-state: paused; }
+.nt-paused .box.sec b, .nt-paused .next.soon .next-name { animation-play-state: paused; }
 .search input:focus-visible { outline: none; } /* the pill shows focus itself (.search:focus-within) */
