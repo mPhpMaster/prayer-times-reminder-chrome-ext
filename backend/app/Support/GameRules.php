@@ -35,7 +35,9 @@ final class GameRules
      */
     public const LAUNCH_DAY = '2026-09-01';
 
-    private const USERNAME = '/\A[\p{L}\p{N}_. -]{3,20}\z/u'; // letters, digits, underscore, space, period, hyphen
+    // Letters, digits, underscore, period, hyphen; single internal spaces; at
+    // least one letter or digit (so "..." or "- -" is not a name).
+    private const USERNAME = '/\A(?=.*[\p{L}\p{N}])[\p{L}\p{N}_.-]+(?: [\p{L}\p{N}_.-]+)*\z/u';
     private const WINDOW_KEY = '/^\d{4}-\d{2}-\d{2}:(Fajr|Dhuhr|Asr|Maghrib|Isha)$/';
     private const SIDE_KEY = '/^\d{4}-\d{2}-\d{2}:(Morning|Evening)$/';
     private const ITEM_ID = '/^[a-z0-9-]{1,64}$/';
@@ -55,7 +57,9 @@ final class GameRules
             $u = \Normalizer::normalize($u, \Normalizer::FORM_C) ?: $u;
         }
 
-        return preg_match(self::USERNAME, $u) ? $u : null;
+        $len = mb_strlen($u);
+
+        return $len >= 3 && $len <= 20 && preg_match(self::USERNAME, $u) ? $u : null;
     }
 
     /** A sign-in email, lowercased; fails 400 bad-email. */

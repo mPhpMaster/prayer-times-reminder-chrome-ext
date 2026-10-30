@@ -370,7 +370,9 @@ async function loadAdmins() {
 }
 
 function adminRow(a) {
-  const canRemove = me && me.admin && !a.super;
+  // Super admins are config-based; removing yourself would 403 the very
+  // next admin call, so the row stays read-only for both.
+  const canRemove = me && me.admin && !a.super && a.email !== me.email;
   const remove = el("button", {
     type: "button",
     class: "danger",

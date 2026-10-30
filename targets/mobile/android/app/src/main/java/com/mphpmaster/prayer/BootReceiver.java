@@ -16,6 +16,8 @@ public class BootReceiver extends BroadcastReceiver {
         PrayerLockScheduler.armNext(context);
         // If a lock was still in its window when the device rebooted, resume it.
         LockState.rearmIfActive(context);
+        // ...or if it ended while the phone was off, lift the DND it left behind.
+        Dnd.restoreIfStale(context);
         // The daily "new version" check.
         UpdateChecker.schedule(context);
         // A parent's family checks.

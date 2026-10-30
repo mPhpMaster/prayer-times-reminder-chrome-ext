@@ -58,6 +58,9 @@ class GameApiTest extends TestCase
         $reg('محمد علي-أحمد.', 'a6@example.com')->assertCreated();
         $reg('moh. al-safadi', 'a7@example.com')->assertStatus(409);
         $reg('ab', 'a4@example.com')->assertStatus(400);
+        $reg('...', 'a8@example.com')->assertStatus(400)->assertJson(['error' => 'bad-username']);
+        $reg('Moh  Al', 'a9@example.com')->assertStatus(400); // double space
+        $reg('Moh Al', 'a10@example.com')->assertCreated();
         $this->assertDatabaseMissing('game_tokens', ['token_hash' => $token]); // only the hash is stored
     }
 

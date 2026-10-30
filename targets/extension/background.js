@@ -323,6 +323,12 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     }
 });
 
+// Re-hydrate the in-memory lock flag whenever the worker cold-starts, so
+// tabs.onUpdated re-locks new tabs even after the service worker was suspended.
+const activeLockReady = chrome.storage.local.get("activeLock").then(({ activeLock }) => {
+    activeLockActive = !!(activeLock && activeLock.unlockAt > Date.now());
+}).catch(() => {});
+
 // While a lock window is active, lock any tab that finishes loading — covers
 // tabs the user opens (Ctrl+T then navigate) or pages they navigate to.
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -401,12 +407,6 @@ async function ensureUpdateAlarm() {
 }
 chrome.runtime.onInstalled.addListener(() => ensureUpdateAlarm());
 chrome.runtime.onStartup.addListener(() => ensureUpdateAlarm());
-
-// Re-hydrate the in-memory lock flag whenever the worker cold-starts, so
-// tabs.onUpdated re-locks new tabs even after the service worker was suspended.
-const activeLockReady = chrome.storage.local.get("activeLock").then(({ activeLock }) => {
-    activeLockActive = !!(activeLock && activeLock.unlockAt > Date.now());
-}).catch(() => {});
 
 // Clicking a notification opens the welcome page (install) or clears others.
 chrome.notifications.onClicked.addListener((id) => {
