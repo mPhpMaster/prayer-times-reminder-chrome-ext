@@ -38,12 +38,24 @@ final class LockLauncher {
         }
         // Silent (Do Not Disturb) only when the setting is on.
         if (silent) Dnd.enable(ctx);
+        // Independent of the watchdog (and of test vs real): lift DND after the
+        // window even if the app is killed or the Activity never shows.
+        long restoreAt = unlockAt > 0 ? unlockAt : System.currentTimeMillis() + durationMs(configJson);
+        Dnd.scheduleRestore(ctx, restoreAt);
         bringToFront(ctx, configJson);
 
         // Real (non-test) locks get the anti-escape watchdog; the 5 s test lock
         // doesn't need it.
         if (!test && unlockAt > 0) {
             LockState.setActive(ctx, configJson, unlockAt);
+        }
+    }
+
+    private static long durationMs(String configJson) {
+        try {
+            return new JSONObject(configJson).optLong("durationSecs", 300) * 1000;
+        } catch (Exception e) {
+            return 300_000;
         }
     }
 

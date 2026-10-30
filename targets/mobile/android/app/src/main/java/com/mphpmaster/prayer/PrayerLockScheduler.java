@@ -63,6 +63,8 @@ final class PrayerLockScheduler {
     /** Alarm fired: launch the freshest due lock, drop stale ones, re-arm. */
     static void onFire(Context ctx) {
         long now = System.currentTimeMillis();
+        // Lift DND left over from a previous lock before (possibly) engaging it again.
+        Dnd.restoreIfStale(ctx);
         JSONArray arr = load(ctx);
         JSONObject due = null;
         long dueWhen = 0;

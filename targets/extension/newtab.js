@@ -363,8 +363,9 @@
       if (changes.location) { refreshPrayers(); renderWeather(); }
     }
     if (changes.gameState && today) {
-      progress = NewTabPrayers.progress(today, changes.gameState.newValue);
-      renderTasks();
+      // Goes through NewTabData so game-tasks.js (WINDOW_TASKS) is loaded
+      // even when this change lands before the first refreshProgress().
+      refreshProgress();
     }
     if (changes.ntBackground) applyBackground();
     if (changes.ntWeather || changes.ntWeatherCache) renderWeather();

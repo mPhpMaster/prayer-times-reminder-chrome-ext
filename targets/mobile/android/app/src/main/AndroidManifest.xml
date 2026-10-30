@@ -62,6 +62,8 @@
         <receiver android:name=".PrayerAlarmReceiver" android:exported="false" />
         <!-- Watchdog that re-asserts the lock if the app is killed mid-prayer. -->
         <receiver android:name=".LockWatchdogReceiver" android:exported="false" />
+        <!-- Safety net that lifts Do-Not-Disturb after the lock window if the process died. -->
+        <receiver android:name=".DndRestoreReceiver" android:exported="false" />
         <receiver android:name=".UpdateCheckReceiver" android:exported="false" />
         <!-- A parent's family checks: ask the server when a prayer window closes. -->
         <receiver android:name=".FamilyAlertReceiver" android:exported="false" />

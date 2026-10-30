@@ -45,6 +45,8 @@ public class LockForegroundService extends Service {
             configJson = LockState.config(this);
         }
         if (configJson == null) {
+            // The lock ended while we were dead — make sure DND went with it.
+            Dnd.restoreIfStale(getApplicationContext());
             // startForeground is still owed after startForegroundService().
             startForeground(NOTIF_ID, buildNotification(null));
             stopForeground(true);

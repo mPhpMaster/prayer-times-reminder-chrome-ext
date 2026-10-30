@@ -30,6 +30,8 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onResume() {
         super.onResume();
+        // A lock that ended while the process was dead may have left DND on.
+        Dnd.restoreIfStale(getApplicationContext());
         // Play's recommended check: finish an immediate update the user
         // already started if the app was sent to the background mid-flow.
         UpdateChecker.startFlow(this, true);
