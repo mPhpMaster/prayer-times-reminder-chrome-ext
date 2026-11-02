@@ -7,8 +7,11 @@
 // The "City" setting: type a city, pick it from the results, and its
 // coordinates fill latitude / longitude (which stay editable below).
 
+import { Button } from "@components/Button";
+import { Heading } from "@components/Heading";
+import { Paragraph } from "@components/Paragraph";
 import { PluginNative } from "@utils/types";
-import { Button, Forms, React, TextInput, useState } from "@webpack/common";
+import { React, TextInput, useState } from "@webpack/common";
 
 import { tr } from "./core.generated";
 import type { CityHit } from "./native";
@@ -50,12 +53,12 @@ export function CitySearch() {
 
     return (
         <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Forms.FormTitle tag="h3">{L.vencordCityLabel}</Forms.FormTitle>
-            <Forms.FormText>
+            <Heading tag="h3">{L.vencordCityLabel}</Heading>
+            <Paragraph>
                 {hasPlace
                     ? L.vencordCityCurrent(store.cityLabel || `${store.latitude}, ${store.longitude}`)
                     : L.vencordCityNone}
-            </Forms.FormText>
+            </Paragraph>
             <div style={{ display: "flex", gap: 8 }}>
                 <div style={{ flex: 1 }}>
                     <TextInput
@@ -69,15 +72,15 @@ export function CitySearch() {
                     {L.vencordCityBtn}
                 </Button>
             </div>
-            {failed && <Forms.FormText style={{ color: "var(--text-danger)" }}>{L.vencordCityFail}</Forms.FormText>}
-            {hits && hits.length === 0 && <Forms.FormText>{L.vencordCityEmpty}</Forms.FormText>}
+            {failed && <Paragraph style={{ color: "var(--text-danger)" }}>{L.vencordCityFail}</Paragraph>}
+            {hits && hits.length === 0 && <Paragraph>{L.vencordCityEmpty}</Paragraph>}
             {hits && hits.length > 0 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     {hits.map(h => (
                         <Button
                             key={`${h.lat},${h.lon}`}
-                            color={Button.Colors.PRIMARY}
-                            size={Button.Sizes.SMALL}
+                            variant="secondary"
+                            size="small"
                             style={{ justifyContent: "flex-start", textAlign: "start" }}
                             onClick={() => pick(h)}
                         >
