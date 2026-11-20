@@ -29,7 +29,12 @@ public class LockWatchdogReceiver extends BroadcastReceiver {
 
         // Still within the window: make sure the lock is up, then tick again.
         String config = LockState.config(ctx);
-        if (config != null && !LockActivity.isActive()) {
+        // Skip while the screen is off: re-launching would wake it (turn-screen-on)
+        // and keep it lit. The next tick after the user wakes the phone does it.
+        android.os.PowerManager pm =
+            (android.os.PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+        boolean screenOn = pm == null || pm.isInteractive();
+        if (config != null && screenOn && !LockActivity.isActive()) {
             LockLauncher.bringToFront(ctx, config);
         }
         LockState.scheduleTick(ctx, now + LockState.TICK_MS);

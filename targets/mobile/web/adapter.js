@@ -316,7 +316,8 @@
           body: L.notifBody ? L.notifBody(name) : "",
           schedule: { at: new Date(n.when), allowWhileIdle: true },
           channelId: PRAYER_CHANNEL,
-          extra: { prayer: n.prayer },
+          // "when" lets a late tap lock only for what is left of the window.
+          extra: { prayer: n.prayer, when: n.when },
         };
       });
       if (notifications.length) await LocalNotifications.schedule({ notifications });
@@ -678,14 +679,28 @@
     store.onChange((changes) => { if ("lang" in changes) label(); });
   }
 
-  async function startLockForPrayer(prayer) {
+  // `when` (ms) is the prayer time the notification was for. The lock window
+  // runs from the adhan, so a notification tapped late locks only for what is
+  // left of it, and not at all once it has passed.
+  async function startLockForPrayer(prayer, when) {
     const s = await readSettings([
       "lang", "theme", "arabicDigits", "lockMinutes", "allowUnlock", "silentDuringPrayer", "tabLockEnabled", "prayerSound",
     ]);
     if (s.tabLockEnabled === false) return;
     const L = tr(s.lang || "en");
     const prayerName = prayer ? prayerLabel(L, prayer) : L.testLockPrayer || "";
-    enforce.start(buildLockConfig(s, { prayerName }));
+    const config = buildLockConfig(s, { prayerName });
+    const start = Number(when);
+    if (prayer && start > 0) {
+      const unlockAt = start + config.durationSecs * 1000;
+      const left = unlockAt - Date.now();
+      if (left < 15000) return; // window already over
+      if (left < config.durationSecs * 1000) {
+        config.unlockAt = unlockAt;
+        config.durationSecs = Math.ceil(left / 1000);
+      }
+    }
+    enforce.start(config);
   }
 
   // --- game alerts: "tasks open" / "30 min left" per prayer window ------------
@@ -1147,7 +1162,7 @@
         if (!/\/game\.html$/.test(location.pathname)) location.href = "game.html";
         return;
       }
-      startLockForPrayer(extra && extra.prayer);
+      startLockForPrayer(extra && extra.prayer, extra && extra.when);
     });
   }
 
@@ -1181,7 +1196,7 @@
     };
     if (LocalNotifications && LocalNotifications.addListener) {
       LocalNotifications.addListener("localNotificationReceived", (n) => {
-        if (n && n.extra && n.extra.prayer) startLockForPrayer(n.extra.prayer);
+        if (n && n.extra && n.extra.prayer) startLockForPrayer(n.extra.prayer, n.extra.when);
       });
     }
     // The web view runs edge to edge: let pages read the notch / home-bar

@@ -29,7 +29,20 @@ final class PrayerLockScheduler {
     // re-checked, so it fires once the call ends (never mid-call).
     private static final long CALL_RETRY_MS = 20_000;
 
+    // Original prayer (adhan) time of an entry that was re-queued for a call.
+    private static final String KEY_START = "start";
+    // Don't bother engaging a lock with less than this left of its window.
+    private static final long MIN_REMAINING_MS = 15_000;
+
     private PrayerLockScheduler() {}
+
+    /** End of an entry's lock window: prayer start + configured duration. */
+    static long windowEnd(JSONObject entry) {
+        long start = entry.optLong(KEY_START, entry.optLong("when", 0));
+        JSONObject cfg = entry.optJSONObject("config");
+        long durationMs = (cfg != null ? cfg.optLong("durationSecs", 300) : 300) * 1000;
+        return start + durationMs;
+    }
 
     /** Replace the whole schedule (JSON array of {when, config}) and re-arm. */
     static void setSchedule(Context ctx, String entriesJson) {
@@ -75,16 +88,22 @@ final class PrayerLockScheduler {
             long when = o.optLong("when", 0);
             if (when > now) {
                 keep.put(o);
-            } else if (now - when <= LATE_TOLERANCE_MS && when > dueWhen) {
+            } else if (now - when <= LATE_TOLERANCE_MS && when > dueWhen
+                    && windowEnd(o) - now >= MIN_REMAINING_MS) {
+                // Still inside the prayer's lock window (measured from the
+                // adhan, not from now) — otherwise it's dropped: a call that
+                // outlasted the whole window must not lock the phone afterwards.
                 due = o;
                 dueWhen = when;
             }
         }
         // Don't lock over an active call — re-queue the due lock a short time
-        // out and re-check, so it fires the moment the call ends. (Its unlockAt
-        // is stamped only at launch, so it still runs its full duration then.)
+        // out and re-check, so it fires the moment the call ends. The original
+        // prayer time is kept in "start", so the lock then only covers what is
+        // left of the window (or nothing, if the call outlasted it).
         if (due != null && CallState.isInCall(ctx)) {
             try {
+                if (!due.has(KEY_START)) due.put(KEY_START, due.optLong("when", now));
                 due.put("when", now + CALL_RETRY_MS);
                 keep.put(due);
             } catch (Exception ignored) {}
@@ -97,8 +116,11 @@ final class PrayerLockScheduler {
         if (due != null) {
             try {
                 JSONObject cfg = due.getJSONObject("config");
-                long durationMs = cfg.optLong("durationSecs", 300) * 1000;
-                cfg.put("unlockAt", now + durationMs);
+                long unlockAt = windowEnd(due);
+                cfg.put("unlockAt", unlockAt);
+                // Native fallbacks (DND restore, etc.) read durationSecs as the
+                // remaining time, so keep it consistent with unlockAt.
+                cfg.put("durationSecs", Math.max(1, (unlockAt - now + 999) / 1000));
                 LockLauncher.launch(ctx, cfg.toString());
             } catch (Exception ignored) {
                 // Malformed entry — skip; the next schedule sync replaces it.

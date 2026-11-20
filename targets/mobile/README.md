@@ -66,7 +66,7 @@ re-arms after reboot; requires the "display over other apps" grant
 
 - **Lock**: high-importance notification with `setFullScreenIntent(...)`
   (`USE_FULL_SCREEN_INTENT`) launching a full-screen `Activity`
-  (`FLAG_KEEP_SCREEN_ON`, `setShowWhenLocked`) that loads `overlay-lock.js`;
+  (`setShowWhenLocked` + turn-screen-on once; the screen may time out normally) that loads `overlay-lock.js`;
   a foreground `Service` keeps it alive; a `TYPE_APPLICATION_OVERLAY`
   (`SYSTEM_ALERT_WINDOW`) re-asserts if the user leaves.
 - **Silent/DND**: `NotificationManager.setInterruptionFilter(INTERRUPTION_FILTER_ALARMS)` (alarms-only: silences calls, ringtone and notifications but keeps media, so the lock's own adhan/chime still plays — `NONE` muted it)
@@ -151,7 +151,8 @@ which follows the phone's language: "مواقيت الصلاة" on an Arabic pho
 - ✅ **Never over a call**: if a prayer lock is due while a call is active or
   ringing (`CallState.isInCall` via `AudioManager` mode — no READ_PHONE_STATE),
   `PrayerLockScheduler` re-queues it ~20 s out and re-checks, so it fires the
-  moment the call ends and still runs its full duration. It never ends the call
+  moment the call ends and only for what is left of the window (measured from
+  the prayer time; nothing if the call outlasted it). It never ends the call
   (emergency-safe, no `ANSWER_PHONE_CALLS`). Device-verified with a debug-only
   simulated-call hook (removed from the shipped build).
 - ✅ **Silent during prayer**: `Dnd.enable/restore` around the lock, gated on
