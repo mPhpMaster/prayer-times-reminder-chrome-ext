@@ -71,6 +71,21 @@ public class LockActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Turn-screen-on is only for the initial engagement. Drop it once shown
+        // so a later re-launch/resume (watchdog, re-assert) never wakes a
+        // screen that timed out by itself.
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                setTurnScreenOn(false);
+            } else {
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+            }
+        }, 1500);
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus && active) hideSystemBars();
@@ -82,7 +97,10 @@ public class LockActivity extends Activity {
         super.onCreate(savedInstanceState);
         current = this;
 
-        // Show over the lock screen and keep the display on.
+        // Show over the lock screen and wake the display once at prayer time.
+        // No FLAG_KEEP_SCREEN_ON: the screen is allowed to time out and turn
+        // off normally while the lock is up (showWhenLocked keeps the lock
+        // there when the user wakes the phone again).
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true);
             setTurnScreenOn(true);
@@ -91,7 +109,6 @@ public class LockActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                     | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Cover the ENTIRE screen: draw edge-to-edge behind the system bars and
         // a dark window background (removes the white flash while lock.html
